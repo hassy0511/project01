@@ -19,7 +19,6 @@
       "Bash(ls*)"
     ],
     "deny": [
-      "Bash(git push*)",
       "Bash(rm -rf *)",
       "Bash(curl *)",
       "Bash(wget *)"
