@@ -1,4 +1,6 @@
 /* そざい入手セッション: pluck / dig / timing / whack / quiz のステップ実行。
+   各ミニゲームの実体は scenes/minigames/ に分離。このシーンは
+   進行(ステップ・ドット・スコア集計・★判定)の指揮役に専念する。
    せいこうは常に保証。できばえで★1〜3(core/stars.ts) */
 import Phaser from 'phaser';
 import { findMaterial, findPref, GAME_DATA, type Material } from '../data/gameData';
@@ -8,7 +10,6 @@ import { pickSessionQuiz } from '../core/quiz';
 import {
   calcStars,
   harvestYield,
-  pluckPoints,
   sessionMaxBase,
   sessionPoints,
   type SessionStep,
@@ -21,8 +22,13 @@ import { SFX } from '../audio/sfx';
 import { buildQuizView } from '../ui/quizRunner';
 import { showTriviaOnce } from '../ui/trivia';
 import { COLORS, DEPTH, FONT, GAME_W, TEXT_COLORS } from '../ui/theme';
-import { makeButton, makeStarRow, Modal, showToast } from '../ui/widgets';
-import { burst, cameraPulse, confetti, floatUp, missShake, soilPuff, squashStretch } from '../ui/effects';
+import { makeStarRow, Modal, showToast } from '../ui/widgets';
+import { confetti } from '../ui/effects';
+import { renderPluck } from './minigames/pluckGame';
+import { renderDig } from './minigames/digGame';
+import { renderTiming } from './minigames/timingGame';
+import { renderWhack } from './minigames/whackGame';
+import type { MinigameApi } from './minigames/types';
 
 export type SessionMode = 'instant' | 'harvest' | 'care';
 
@@ -35,15 +41,7 @@ const TOP_H = 48;
 const STAGE_Y = 130;
 const GAME_AREA_Y = 210;
 const GAME_AREA_H = 420;
-
-const TIMING_TICK_MS = 25;
-const TIMING_SPEED = 0.11;
-const TIMING_PERFECT = [42, 58] as const;
-const TIMING_GOOD = [30, 70] as const;
-const DIG_HINT_MS = 900;
 const PLUCK_COUNT = 6;
-const WHACK_TOTAL = 5;
-const WHACK_INTERVAL_MS = 1400;
 
 export class SessionScene extends Phaser.Scene {
   private matId = '';
@@ -157,6 +155,21 @@ export class SessionScene extends Phaser.Scene {
     });
   }
 
+  /** ミニゲーム側に渡す足場(スコア加算・進行・演出はここに集約) */
+  private minigameApi(): MinigameApi {
+    return {
+      scene: this,
+      area: this.area!,
+      areaY: GAME_AREA_Y,
+      addScore: (n) => {
+        this.score += n;
+      },
+      advance: (delayMs) => this.stepAdvance(delayMs),
+      feedback: (text, good) => this.feedback(text, good),
+      sign: (text) => this.sign(text),
+    };
+  }
+
   private renderStep(): void {
     this.area?.destroy();
     this.area = this.add.container(0, GAME_AREA_Y);
@@ -179,11 +192,17 @@ export class SessionScene extends Phaser.Scene {
       return;
     }
     const st = this.steps[this.idx];
+    const api = this.minigameApi();
     if (st.kind === 'quiz') this.renderQuizStep(st as QuizStep);
-    else if (st.kind === 'timing') this.renderTimingStep();
-    else if (st.kind === 'dig') this.renderDigStep();
-    else if (st.kind === 'pluck') this.renderPluckStep();
-    else if (st.kind === 'whack') this.renderWhackStep();
+    else if (st.kind === 'timing' && g.type === 'timing') renderTiming(api, g.theme);
+    else if (st.kind === 'dig') {
+      const prompt = g.type === 'dig' ? g.theme.prompt : g.type === 'plant' ? g.harvest.prompt : '';
+      renderDig(api, prompt, this.material.emoji);
+    } else if (st.kind === 'pluck' && g.type === 'plant') {
+      renderPluck(api, g.harvest.target ?? this.material.emoji, g.harvest.prompt, PLUCK_COUNT);
+    } else if (st.kind === 'whack' && g.type === 'plant') {
+      renderWhack(api, g.care);
+    }
   }
 
   private sign(text: string): void {
@@ -224,249 +243,6 @@ export class SessionScene extends Phaser.Scene {
     });
     view.container.setPosition(GAME_W / 2, 60);
     this.area?.add(view.container);
-  }
-
-  /* ---------- タイミングゲーム(いわし漁など) ---------- */
-  private renderTimingStep(): void {
-    const g = this.material.gather;
-    if (g.type !== 'timing') return;
-    const th = g.theme;
-    this.sign(th.prompt);
-
-    const trackY = 150;
-    const trackW = 360;
-    const gfx = this.add.graphics();
-    gfx.fillStyle(COLORS.barBg, 1);
-    gfx.fillRoundedRect(GAME_W / 2 - trackW / 2, trackY - 14, trackW, 28, 14);
-    gfx.fillStyle(0xbfe3a8, 1);
-    gfx.fillRoundedRect(
-      GAME_W / 2 - trackW / 2 + (trackW * TIMING_GOOD[0]) / 100,
-      trackY - 14,
-      (trackW * (TIMING_GOOD[1] - TIMING_GOOD[0])) / 100,
-      28,
-      14,
-    );
-    gfx.fillStyle(0x8ed46f, 1);
-    gfx.fillRect(
-      GAME_W / 2 - trackW / 2 + (trackW * TIMING_PERFECT[0]) / 100,
-      trackY - 14,
-      (trackW * (TIMING_PERFECT[1] - TIMING_PERFECT[0])) / 100,
-      28,
-    );
-    this.area?.add(gfx);
-    const marker = this.add.text(GAME_W / 2, trackY, th.marker, { fontSize: '30px' }).setOrigin(0.5);
-    this.area?.add(marker);
-
-    let pos = 0;
-    let t = Math.random() * Math.PI * 2;
-    let stopped = false;
-    setHook({ kind: 'timing', pos });
-    const timer = this.time.addEvent({
-      delay: TIMING_TICK_MS,
-      loop: true,
-      callback: () => {
-        t += TIMING_SPEED;
-        pos = 50 + 50 * Math.sin(t);
-        marker.x = GAME_W / 2 - trackW / 2 + (trackW * pos) / 100;
-        setHook({ kind: 'timing', pos });
-        // 残像
-        if (!stopped && Math.random() < 0.35) {
-          const ghost = this.add.text(marker.x, trackY, th.marker, { fontSize: '30px' }).setOrigin(0.5).setAlpha(0.35);
-          this.area?.add(ghost);
-          this.tweens.add({ targets: ghost, alpha: 0, scale: 0.7, duration: 260, onComplete: () => ghost.destroy() });
-        }
-      },
-    });
-
-    const stopBtn = makeButton(this, {
-      x: GAME_W / 2,
-      y: 260,
-      w: 220,
-      h: 54,
-      label: th.stopBtn,
-      color: COLORS.orange,
-      onClick: () => {
-        if (stopped) return;
-        stopped = true;
-        timer.remove();
-        const perfect = pos >= TIMING_PERFECT[0] && pos <= TIMING_PERFECT[1];
-        const good = pos >= TIMING_GOOD[0] && pos <= TIMING_GOOD[1];
-        if (perfect) {
-          this.score++;
-          this.feedback(UI_TEXT.session.timingPerfect, true);
-          cameraPulse(this);
-          burst(this, marker.x, trackY + GAME_AREA_Y, 14);
-          SFX.good();
-        } else if (good) {
-          this.score++;
-          this.feedback(UI_TEXT.session.timingGood, true);
-          burst(this, marker.x, trackY + GAME_AREA_Y, 8);
-          SFX.good();
-        } else {
-          this.feedback(UI_TEXT.session.timingMiss, false);
-          missShake(this);
-          SFX.bad();
-        }
-        this.stepAdvance(good ? 750 : 1300);
-      },
-    });
-    this.area?.add(stopBtn);
-  }
-
-  /* ---------- ほりあてゲーム(ねんど・いもほり) ---------- */
-  private renderDigStep(): void {
-    const g = this.material.gather;
-    const prompt = g.type === 'dig' ? g.theme.prompt : g.type === 'plant' ? g.harvest.prompt : '';
-    this.sign(prompt);
-
-    const cell = Math.floor(Math.random() * 9);
-    setHook({ kind: 'dig', cell });
-    const size = 96;
-    const gap = 10;
-    const originX = GAME_W / 2 - (size * 3 + gap * 2) / 2 + size / 2;
-    const originY = 120;
-    let answered = false;
-    let hintOn = true;
-    const cells: Phaser.GameObjects.Container[] = [];
-
-    for (let i = 0; i < 9; i++) {
-      const cx = originX + (i % 3) * (size + gap);
-      const cy = originY + Math.floor(i / 3) * (size + gap);
-      const c = this.add.container(cx, cy);
-      const bg = this.add.graphics();
-      bg.fillStyle(0xd8c49a, 1);
-      bg.lineStyle(2, 0xb89b6a, 1);
-      bg.fillRoundedRect(-size / 2, -size / 2, size, size, 12);
-      bg.strokeRoundedRect(-size / 2, -size / 2, size, size, 12);
-      const label = this.add.text(0, 0, i === cell ? '✨' : '', { fontSize: '34px' }).setOrigin(0.5);
-      c.add([bg, label]);
-      c.setSize(size, size);
-      c.setInteractive({ useHandCursor: true });
-      c.on('pointerup', () => {
-        if (answered || hintOn) return;
-        answered = true;
-        const ok = i === cell;
-        soilPuff(this, cx, cy + GAME_AREA_Y);
-        if (ok) {
-          label.setText(this.material.emoji);
-          label.setScale(0);
-          this.tweens.add({ targets: label, scale: 1, ease: 'Back.easeOut', duration: 260 });
-          floatUp(this, cx, cy + GAME_AREA_Y - 40, '+1');
-          this.score++;
-          SFX.good();
-        } else {
-          label.setText('🕳️');
-          (cells[cell].list[1] as Phaser.GameObjects.Text).setText(this.material.emoji);
-          this.feedback(UI_TEXT.session.digHere, false);
-          missShake(this);
-          SFX.bad();
-        }
-        this.stepAdvance(ok ? 750 : 1400);
-      });
-      cells.push(c);
-      this.area?.add(c);
-    }
-    this.time.delayedCall(DIG_HINT_MS, () => {
-      hintOn = false;
-      (cells[cell].list[1] as Phaser.GameObjects.Text).setText('');
-    });
-  }
-
-  /* ---------- ぽんぽん摘みゲーム(収穫アクション) ---------- */
-  private renderPluckStep(): void {
-    const g = this.material.gather;
-    if (g.type !== 'plant') return;
-    this.sign(g.harvest.prompt);
-
-    let left = PLUCK_COUNT;
-    setHook({ kind: 'pluck', remaining: left });
-    const t0 = Date.now();
-    for (let i = 0; i < PLUCK_COUNT; i++) {
-      const x = 60 + Math.random() * (GAME_W - 120);
-      const y = 110 + Math.random() * 250;
-      const b = this.add
-        .text(x, y, g.harvest.target ?? this.material.emoji, { fontSize: '40px' })
-        .setOrigin(0.5)
-        .setInteractive({ useHandCursor: true });
-      this.tweens.add({
-        targets: b,
-        scale: { from: 0.92, to: 1.08 },
-        yoyo: true,
-        repeat: -1,
-        duration: 600,
-        delay: Math.random() * 800,
-      });
-      b.on('pointerup', () => {
-        if (!b.visible) return;
-        b.setVisible(false);
-        SFX.pop();
-        this.popGhost(b.x, b.y + GAME_AREA_Y, g.harvest.target ?? this.material.emoji);
-        floatUp(this, b.x, b.y + GAME_AREA_Y - 26, '+1');
-        left--;
-        setHook({ kind: 'pluck', remaining: left });
-        if (left === 0) {
-          const pts = pluckPoints(Date.now() - t0);
-          this.score += pts;
-          this.feedback(pts === 2 ? UI_TEXT.session.pluckFast : UI_TEXT.session.pluckDone, true);
-          this.stepAdvance(800);
-        }
-      });
-      this.area?.add(b);
-    }
-  }
-
-  /* ---------- おせわチャンス(タップ撃退) ---------- */
-  private renderWhackStep(): void {
-    const g = this.material.gather;
-    if (g.type !== 'plant') return;
-    const th = g.care;
-    this.sign(`${th.target} ${th.label}`);
-
-    let shown = 0;
-    let hits = 0;
-    let active: Phaser.GameObjects.Text | null = null;
-    const spawn = (): void => {
-      active?.destroy();
-      active = null;
-      if (shown >= WHACK_TOTAL) {
-        timer.remove();
-        this.feedback(hits > 0 ? UI_TEXT.session.whackDone : UI_TEXT.session.whackEnd, true);
-        this.stepAdvance(800);
-        return;
-      }
-      shown++;
-      const b = this.add
-        .text(60 + Math.random() * (GAME_W - 120), 110 + Math.random() * 250, th.target, { fontSize: '42px' })
-        .setOrigin(0.5)
-        .setInteractive({ useHandCursor: true });
-      b.on('pointerup', () => {
-        if (!b.visible) return;
-        b.setVisible(false);
-        SFX.pop();
-        this.popGhost(b.x, b.y + GAME_AREA_Y, th.target);
-        floatUp(this, b.x, b.y + GAME_AREA_Y - 28, UI_TEXT.session.whackTap);
-        hits++;
-      });
-      this.area?.add(b);
-      active = b;
-    };
-    spawn();
-    const timer = this.time.addEvent({ delay: WHACK_INTERVAL_MS, loop: true, callback: spawn });
-  }
-
-  /** タップした絵文字がぐにゃっと潰れて消えるゴースト演出 */
-  private popGhost(x: number, y: number, emoji: string): void {
-    const ghost = this.add.text(x, y, emoji, { fontSize: '40px' }).setOrigin(0.5).setDepth(DEPTH.overlay);
-    squashStretch(this, ghost);
-    burst(this, x, y, 8);
-    this.tweens.add({
-      targets: ghost,
-      alpha: 0,
-      y: y + 14,
-      duration: 260,
-      delay: 130,
-      onComplete: () => ghost.destroy(),
-    });
   }
 
   /* ---------- セッション終了 ---------- */

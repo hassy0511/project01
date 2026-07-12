@@ -128,7 +128,8 @@ export function makeDriver(page, shotsDir) {
     await answerQuiz();
   }
 
-  /** timing×N+クイズ: __mq.pos が中央帯に入った瞬間に止める */
+  /** timing×N+クイズ: __mq.pos が中央帯に入った瞬間に止める。
+   * 成功時は「ひっぱれ!」連打フェーズ(__mq.kind==='reel')が挟まるので、それも捌く */
   async function timingAllSteps() {
     for (;;) {
       await page.waitForFunction(() => window.__mq?.kind === 'timing' || window.__mq?.kind === 'quiz', null, {
@@ -142,7 +143,21 @@ export function makeDriver(page, shotsDir) {
       });
       const stop = await findTexts('あみを ひく!');
       if (stop.length) await page.mouse.click(stop[0].x, stop[0].y);
-      await page.waitForTimeout(1200);
+      await page.waitForTimeout(400);
+      const afterStop = await page.evaluate(() => window.__mq);
+      if (afterStop?.kind === 'reel') {
+        for (let i = 0; i < 12; i++) {
+          const cur = await page.evaluate(() => window.__mq);
+          if (!cur || cur.kind !== 'reel') break;
+          // ボタンラベルは「コンテナがinteractive・テキストは子」なので interactiveOnly は使わない
+          const pull = await findTexts('ひっぱれ!');
+          if (pull.length) await page.mouse.click(pull[0].x, pull[0].y);
+          await page.waitForTimeout(200);
+        }
+        await page.waitForTimeout(900); // 「つれた!」演出 + advance
+      } else {
+        await page.waitForTimeout(1200); // ミス時の advance
+      }
     }
     await answerQuiz();
   }

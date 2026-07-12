@@ -6,6 +6,7 @@ export type MqHook =
   | { kind: 'dig'; cell: number }
   | { kind: 'pluck'; remaining: number }
   | { kind: 'timing'; pos: number }
+  | { kind: 'reel'; progress: number; target: number }
   | { kind: 'whack'; active: boolean }
   | { kind: 'done' };
 
