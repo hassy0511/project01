@@ -16,7 +16,10 @@ export function makeDriver(page, shotsDir) {
             if (o.text !== undefined && o.text === lbl && o.visible) {
               if (io && !(o.input && o.input.enabled)) continue; // 演出用ゴーストを除外
               const m = o.getWorldTransformMatrix();
-              out.push({ x: m.tx, y: m.ty });
+              // 原点が左寄せ等でも見た目の中心をクリックできるよう補正
+              const cx = m.tx + (0.5 - (o.originX ?? 0.5)) * (o.displayWidth ?? 0);
+              const cy = m.ty + (0.5 - (o.originY ?? 0.5)) * (o.displayHeight ?? 0);
+              out.push({ x: cx, y: cy });
             }
           }
         };
@@ -55,6 +58,18 @@ export function makeDriver(page, shotsDir) {
     });
     await clickText(correct);
     await page.waitForTimeout(1000);
+  }
+
+  /** わざと不正解を選ぶ(★のおせわ保険の検証用) */
+  async function answerQuizWrong() {
+    await page.waitForFunction(() => window.__mq?.kind === 'quiz', null, { timeout: 8000 });
+    const wrong = await page.evaluate(() => {
+      const { correctText, choices } = window.__mq;
+      window.__mq = { kind: 'done' };
+      return choices.find((c) => c !== correctText);
+    });
+    await clickText(wrong);
+    await page.waitForTimeout(1800); // 不正解時は遷移が長い
   }
 
   async function dismissTrivia() {
@@ -137,6 +152,7 @@ export function makeDriver(page, shotsDir) {
     waitText,
     clickText,
     answerQuiz,
+    answerQuizWrong,
     dismissTrivia,
     scrollList,
     scrollAndClick,

@@ -2,7 +2,7 @@
    自動プレイテストがミニゲームの内部状態(正解・光ったマス等)を読むために使う */
 
 export type MqHook =
-  | { kind: 'quiz'; correctText: string }
+  | { kind: 'quiz'; correctText: string; choices: string[] }
   | { kind: 'dig'; cell: number }
   | { kind: 'pluck'; remaining: number }
   | { kind: 'timing'; pos: number }

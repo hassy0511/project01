@@ -120,7 +120,46 @@ await d.clickText('もどる');
 await d.dismissTrivia();
 log('ちば開拓 → いわし漁(timing)');
 
-/* 9. セーブ検証 */
+/* 9. おせわチャンス: メロン50%成長 → whack → 収穫(クイズをわざと間違えても★保険で★3) */
+await d.clickText('← ちず');
+await page.waitForTimeout(600);
+await page.mouse.click(10 + 276 * 1.263, 80 + 155 * 1.263); // いばらき(開拓済み)
+await d.waitText('くみあげる');
+await d.scrollAndClick('たねを まく', 1); // だいず, [メロン], いちご
+await page.evaluate(() => window.__mqAdmin.halfGrow());
+await page.waitForTimeout(1600);
+await d.scrollAndClick('おせわに いく!');
+// whack: 5回スポーンする敵をタップし続ける(care 対象=🌀)
+for (let i = 0; i < 40; i++) {
+  const done = await page.evaluate(() => window.__mq?.kind === 'done');
+  if (done) break;
+  const targets = await d.findTexts('🌀', true);
+  if (targets.length) await page.mouse.click(targets[0].x, targets[0].y);
+  await page.waitForTimeout(280);
+}
+await d.waitText('くみあげる', 12000); // おせわ完了 → 県画面へ戻る
+let mid = await page.evaluate(() => JSON.parse(localStorage.getItem('meisanquest-save-v1')));
+if (!mid.plots['ibaraki|m05']?.careDone) throw new Error('careDone flag expected');
+log('おせわチャンス(whack)→ careDone 記録');
+
+await page.evaluate(() => window.__mqAdmin.boostAll());
+await page.waitForTimeout(1600);
+await d.scrollAndClick('しゅうかく!');
+await page.waitForFunction(() => window.__mq?.kind === 'pluck', null, { timeout: 8000 });
+for (let i = 0; i < 24; i++) {
+  const hook = await page.evaluate(() => window.__mq);
+  if (hook?.kind !== 'pluck' || hook.remaining === 0) break;
+  const targets = await d.findTexts('🍈', true);
+  if (targets.length) await page.mouse.click(targets[0].x, targets[0].y);
+  await page.waitForTimeout(150);
+}
+await d.answerQuizWrong(); // わざと間違える → pluck2pt+保険1=3pt=★3 のはず
+await d.waitText('もどる');
+await d.clickText('もどる');
+await d.dismissTrivia();
+log('メロン収穫(クイズ不正解でも おせわ保険で★3)');
+
+/* 10. セーブ検証 */
 const save = await page.evaluate(() => JSON.parse(localStorage.getItem('meisanquest-save-v1')));
 const assert = (cond, msg) => {
   if (!cond) throw new Error('assert failed: ' + msg);
@@ -132,6 +171,8 @@ assert(save.zukanProd.r05.jimoto === true, 'r05 jimoto medal');
 assert(save.zukanMat.m06.ibaraki === 3, 'ume ★3');
 assert(save.zukanMat.m01.ibaraki === 2, 'mizu ★2');
 assert(save.zukanMat.m09?.chiba >= 1, 'iwashi obtained');
+assert(save.zukanMat.m05?.ibaraki === 3, 'melon ★3 (care insurance)');
+assert(!save.plots['ibaraki|m05'], 'melon plot cleared');
 log('セーブ検証 OK');
 
 if (errors.length) {

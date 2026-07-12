@@ -75,7 +75,7 @@ export function buildQuizView(
 ): QuizViewHandle {
   const c = scene.add.container(0, 0);
   let cursor = 0;
-  setHook({ kind: 'quiz', correctText: quiz.choices[quiz.answer] });
+  setHook({ kind: 'quiz', correctText: quiz.choices[quiz.answer], choices: quiz.choices });
 
   const visual = buildQuizVisual(scene, quiz);
   if (visual) {
