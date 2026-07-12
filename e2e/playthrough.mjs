@@ -41,11 +41,12 @@ await page.evaluate(() => window.__mqAdmin.boostAll());
 await page.waitForTimeout(1600); // 1秒ティッカーの再描画待ち
 await d.clickText('しゅうかく!');
 await page.waitForFunction(() => window.__mq?.kind === 'pluck', null, { timeout: 8000 });
-for (let i = 0; i < 6; i++) {
-  const targets = await d.findTexts('🫒');
-  if (!targets.length) break;
-  await page.mouse.click(targets[0].x, targets[0].y);
-  await page.waitForTimeout(120);
+for (let i = 0; i < 24; i++) {
+  const hook = await page.evaluate(() => window.__mq);
+  if (hook?.kind !== 'pluck' || hook.remaining === 0) break;
+  const targets = await d.findTexts('🫒', true); // 演出ゴーストを除いた本物のみ
+  if (targets.length) await page.mouse.click(targets[0].x, targets[0].y);
+  await page.waitForTimeout(150);
 }
 await d.answerQuiz();
 await d.waitText('もどる');

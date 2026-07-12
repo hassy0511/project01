@@ -6,14 +6,15 @@ export const CHROMIUM_PATH =
   process.env.MQ_CHROMIUM ?? (existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : undefined);
 
 export function makeDriver(page, shotsDir) {
-  const findTexts = (label) =>
-    page.evaluate((lbl) => {
+  const findTexts = (label, interactiveOnly = false) =>
+    page.evaluate(({ lbl, io }) => {
       const out = [];
       for (const scene of window.__game.scene.getScenes(true)) {
         const walk = (list) => {
           for (const o of list) {
             if (o.list) walk(o.list);
             if (o.text !== undefined && o.text === lbl && o.visible) {
+              if (io && !(o.input && o.input.enabled)) continue; // 演出用ゴーストを除外
               const m = o.getWorldTransformMatrix();
               out.push({ x: m.tx, y: m.ty });
             }
@@ -23,7 +24,7 @@ export function makeDriver(page, shotsDir) {
       }
       out.sort((a, b) => a.y - b.y || a.x - b.x);
       return out;
-    }, label);
+    }, { lbl: label, io: interactiveOnly });
 
   async function waitText(label, timeout = 8000) {
     const t0 = Date.now();

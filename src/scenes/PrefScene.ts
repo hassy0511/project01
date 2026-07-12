@@ -22,6 +22,7 @@ import { runQuizModal } from '../ui/quizRunner';
 import { showTriviaOnce } from '../ui/trivia';
 import { COLORS, DEPTH, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { makeButton, makeGuideRow, Modal, ScrollArea, showToast } from '../ui/widgets';
+import { confetti, wobble } from '../ui/effects';
 
 const CARD_W = 452;
 const CARD_H = 80;
@@ -329,6 +330,7 @@ export class PrefScene extends Phaser.Scene {
       }
       const c = this.cardBase(y, true);
       this.cardTexts(c, m.emoji, m.name + badge, UI_TEXT.pref.ready);
+      wobble(this, c.list[1] as Phaser.GameObjects.Text); // 実がぷるんと揺れる
       this.cardButton(c, UI_TEXT.pref.harvestBtn, COLORS.primary, () =>
         this.scene.start('SessionScene', { matId: m.id, prefId: this.prefId, mode: 'harvest' }),
       );
@@ -392,6 +394,7 @@ export class PrefScene extends Phaser.Scene {
         store.state.recipes.push(r.id);
         store.save();
         SFX.fanfare();
+        confetti(this);
         const done = new Modal(this, UI_TEXT.recipe.getTitle);
         done.add(this.add.text(0, 0, r.emoji, { fontSize: '54px' }).setOrigin(0.5), 60);
         done.addText(UI_TEXT.recipe.found(r.name), 18);
@@ -437,6 +440,7 @@ export class PrefScene extends Phaser.Scene {
       const { jimoto } = applyCraft(store.state, r);
       store.save();
       SFX.fanfare();
+      confetti(this);
       modal.close();
       const done = new Modal(this, UI_TEXT.craft.doneTitle);
       done.add(this.add.text(0, 0, r.emoji, { fontSize: '54px' }).setOrigin(0.5), 60);
@@ -531,6 +535,8 @@ export class PrefScene extends Phaser.Scene {
     store.save();
     puzzle.close();
     SFX.fest();
+    confetti(this);
+    this.time.delayedCall(500, () => confetti(this));
     // ちょうちん演出(暫定): 数個の🏮がふわっと昇る
     for (let i = 0; i < 8; i++) {
       const l = this.add

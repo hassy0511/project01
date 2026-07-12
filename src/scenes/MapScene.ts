@@ -12,6 +12,7 @@ import { buildHeader, buildNav, HEADER_H } from '../ui/nav';
 import { runQuizModal } from '../ui/quizRunner';
 import { COLORS, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { makeGuideRow, Modal, showToast, type MascotMood } from '../ui/widgets';
+import { confetti } from '../ui/effects';
 
 const GUIDE_UPDATE_MS = 3000;
 const TIP_ROTATE_MS = 9000;
@@ -122,6 +123,7 @@ export class MapScene extends Phaser.Scene {
         store.state.unlocked.push(p.id);
         store.save();
         SFX.fanfare();
+        confetti(this);
         const done = new Modal(this, UI_TEXT.kaitaku.successTitle);
         const big = this.add.text(0, 0, '🎉', { fontSize: '56px' }).setOrigin(0.5);
         done.add(big, 62);

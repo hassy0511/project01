@@ -22,6 +22,7 @@ import { buildQuizView } from '../ui/quizRunner';
 import { showTriviaOnce } from '../ui/trivia';
 import { COLORS, DEPTH, FONT, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { makeButton, makeStarRow, Modal, showToast } from '../ui/widgets';
+import { burst, cameraPulse, confetti, floatUp, missShake, soilPuff, squashStretch } from '../ui/effects';
 
 export type SessionMode = 'instant' | 'harvest' | 'care';
 
@@ -268,6 +269,12 @@ export class SessionScene extends Phaser.Scene {
         pos = 50 + 50 * Math.sin(t);
         marker.x = GAME_W / 2 - trackW / 2 + (trackW * pos) / 100;
         setHook({ kind: 'timing', pos });
+        // 残像
+        if (!stopped && Math.random() < 0.35) {
+          const ghost = this.add.text(marker.x, trackY, th.marker, { fontSize: '30px' }).setOrigin(0.5).setAlpha(0.35);
+          this.area?.add(ghost);
+          this.tweens.add({ targets: ghost, alpha: 0, scale: 0.7, duration: 260, onComplete: () => ghost.destroy() });
+        }
       },
     });
 
@@ -287,13 +294,17 @@ export class SessionScene extends Phaser.Scene {
         if (perfect) {
           this.score++;
           this.feedback(UI_TEXT.session.timingPerfect, true);
+          cameraPulse(this);
+          burst(this, marker.x, trackY + GAME_AREA_Y, 14);
           SFX.good();
         } else if (good) {
           this.score++;
           this.feedback(UI_TEXT.session.timingGood, true);
+          burst(this, marker.x, trackY + GAME_AREA_Y, 8);
           SFX.good();
         } else {
           this.feedback(UI_TEXT.session.timingMiss, false);
+          missShake(this);
           SFX.bad();
         }
         this.stepAdvance(good ? 750 : 1300);
@@ -335,14 +346,19 @@ export class SessionScene extends Phaser.Scene {
         if (answered || hintOn) return;
         answered = true;
         const ok = i === cell;
+        soilPuff(this, cx, cy + GAME_AREA_Y);
         if (ok) {
           label.setText(this.material.emoji);
+          label.setScale(0);
+          this.tweens.add({ targets: label, scale: 1, ease: 'Back.easeOut', duration: 260 });
+          floatUp(this, cx, cy + GAME_AREA_Y - 40, '+1');
           this.score++;
           SFX.good();
         } else {
           label.setText('🕳️');
           (cells[cell].list[1] as Phaser.GameObjects.Text).setText(this.material.emoji);
           this.feedback(UI_TEXT.session.digHere, false);
+          missShake(this);
           SFX.bad();
         }
         this.stepAdvance(ok ? 750 : 1400);
@@ -384,6 +400,8 @@ export class SessionScene extends Phaser.Scene {
         if (!b.visible) return;
         b.setVisible(false);
         SFX.pop();
+        this.popGhost(b.x, b.y + GAME_AREA_Y, g.harvest.target ?? this.material.emoji);
+        floatUp(this, b.x, b.y + GAME_AREA_Y - 26, '+1');
         left--;
         setHook({ kind: 'pluck', remaining: left });
         if (left === 0) {
@@ -425,14 +443,30 @@ export class SessionScene extends Phaser.Scene {
         if (!b.visible) return;
         b.setVisible(false);
         SFX.pop();
+        this.popGhost(b.x, b.y + GAME_AREA_Y, th.target);
+        floatUp(this, b.x, b.y + GAME_AREA_Y - 28, UI_TEXT.session.whackTap);
         hits++;
-        showToast(this, UI_TEXT.session.whackTap);
       });
       this.area?.add(b);
       active = b;
     };
     spawn();
     const timer = this.time.addEvent({ delay: WHACK_INTERVAL_MS, loop: true, callback: spawn });
+  }
+
+  /** タップした絵文字がぐにゃっと潰れて消えるゴースト演出 */
+  private popGhost(x: number, y: number, emoji: string): void {
+    const ghost = this.add.text(x, y, emoji, { fontSize: '40px' }).setOrigin(0.5).setDepth(DEPTH.overlay);
+    squashStretch(this, ghost);
+    burst(this, x, y, 8);
+    this.tweens.add({
+      targets: ghost,
+      alpha: 0,
+      y: y + 14,
+      duration: 260,
+      delay: 130,
+      onComplete: () => ghost.destroy(),
+    });
   }
 
   /* ---------- セッション終了 ---------- */
@@ -474,6 +508,7 @@ export class SessionScene extends Phaser.Scene {
     const note =
       stars === 3 ? UI_TEXT.session.star3Note : stars === 2 ? UI_TEXT.session.star2Note : UI_TEXT.session.star1Note;
 
+    if (stars === 3) confetti(this);
     const modal = new Modal(this, UI_TEXT.session.resultTitle);
     modal.add(this.add.text(0, 0, this.material.emoji, { fontSize: '56px' }).setOrigin(0.5), 62);
     modal.addText(successWord, 18);
