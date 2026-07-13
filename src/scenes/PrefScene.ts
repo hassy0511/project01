@@ -296,7 +296,7 @@ export class PrefScene extends Phaser.Scene {
       const view = plotState(s.plots[plotKey(this.prefId, m.id)], g, now);
       if (view.st === 'empty') {
         const c = this.cardBase(y);
-        this.cardTexts(c, '🟫', UI_TEXT.pref.fieldName(m.name) + badge, starsTxt);
+        this.cardTexts(c, '🟫', UI_TEXT.pref.fieldName(m.name, g.fieldLabel) + badge, starsTxt);
         this.cardButton(c, g.verb, COLORS.primary, () => {
           plantSeed(s, m.id, this.prefId, Date.now());
           store.save();

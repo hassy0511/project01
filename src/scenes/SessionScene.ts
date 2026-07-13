@@ -1,6 +1,7 @@
-/* そざい入手セッション: pluck / dig / timing / whack / quiz のステップ実行。
+/* そざい入手セッション: swipe / shake / roll / reap / dig / timing / whack / quiz のステップ実行。
    各ミニゲームの実体は scenes/minigames/ に分離。このシーンは
    進行(ステップ・ドット・スコア集計・★判定)の指揮役に専念する。
+   どのエンジンを使うかはデータ(harvest.engine)が決め、シーン側に品種分岐は書かない。
    せいこうは常に保証。できばえで★1〜3(core/stars.ts) */
 import Phaser from 'phaser';
 import { findMaterial, findPref, GAME_DATA, type Material } from '../data/gameData';
@@ -23,8 +24,10 @@ import { buildQuizView } from '../ui/quizRunner';
 import { showTriviaOnce } from '../ui/trivia';
 import { COLORS, DEPTH, FONT, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { makeStarRow, Modal, showToast } from '../ui/widgets';
-import { confetti } from '../ui/effects';
-import { renderPluck } from './minigames/pluckGame';
+import { confetti, screenFlash } from '../ui/effects';
+import { renderSwipe } from './minigames/swipeGame';
+import { renderShake } from './minigames/shakeGame';
+import { renderRoll } from './minigames/rollGame';
 import { renderDig } from './minigames/digGame';
 import { renderTiming } from './minigames/timingGame';
 import { renderWhack } from './minigames/whackGame';
@@ -41,7 +44,13 @@ const TOP_H = 48;
 const STAGE_Y = 130;
 const GAME_AREA_Y = 210;
 const GAME_AREA_H = 420;
-const PLUCK_COUNT = 6;
+/** 素材の性質に応じた収穫個数(データではなくエンジンの見せ方に紐づく値なのでここで定数化) */
+const HARVEST_COUNT: Record<'swipe' | 'shake' | 'roll' | 'reap', number> = {
+  swipe: 6,
+  shake: 5,
+  roll: 3,
+  reap: 8,
+};
 
 export class SessionScene extends Phaser.Scene {
   private matId = '';
@@ -132,9 +141,10 @@ export class SessionScene extends Phaser.Scene {
     const g = this.material.gather;
     if (this.mode === 'care') return [{ kind: 'whack' }];
     if (this.mode === 'harvest' && g.type === 'plant') {
-      return g.harvest.engine === 'dig'
+      const engine = g.harvest.engine;
+      return engine === 'dig'
         ? [{ kind: 'dig' }, { kind: 'dig' }, this.makeQuizStep()]
-        : [{ kind: 'pluck' }, this.makeQuizStep()];
+        : [{ kind: engine }, this.makeQuizStep()];
     }
     if (g.type === 'timing' || g.type === 'dig') {
       return [{ kind: g.type }, { kind: g.type }, { kind: g.type }, this.makeQuizStep()];
@@ -198,10 +208,20 @@ export class SessionScene extends Phaser.Scene {
     else if (st.kind === 'dig') {
       const prompt = g.type === 'dig' ? g.theme.prompt : g.type === 'plant' ? g.harvest.prompt : '';
       renderDig(api, prompt, this.material.emoji);
-    } else if (st.kind === 'pluck' && g.type === 'plant') {
-      renderPluck(api, g.harvest.target ?? this.material.emoji, g.harvest.prompt, PLUCK_COUNT);
     } else if (st.kind === 'whack' && g.type === 'plant') {
       renderWhack(api, g.care);
+    } else if (g.type === 'plant' && (st.kind === 'swipe' || st.kind === 'reap')) {
+      renderSwipe(api, {
+        target: g.harvest.target ?? this.material.emoji,
+        prompt: g.harvest.prompt,
+        count: HARVEST_COUNT[st.kind],
+        layout: st.kind === 'reap' ? 'rows' : 'cluster',
+        cursor: st.kind === 'reap' ? '🌾' : undefined,
+      });
+    } else if (st.kind === 'shake' && g.type === 'plant') {
+      renderShake(api, g.harvest.target ?? this.material.emoji, g.harvest.prompt, HARVEST_COUNT.shake);
+    } else if (st.kind === 'roll' && g.type === 'plant') {
+      renderRoll(api, g.harvest.target ?? this.material.emoji, g.harvest.prompt, HARVEST_COUNT.roll);
     }
   }
 
@@ -284,7 +304,10 @@ export class SessionScene extends Phaser.Scene {
     const note =
       stars === 3 ? UI_TEXT.session.star3Note : stars === 2 ? UI_TEXT.session.star2Note : UI_TEXT.session.star1Note;
 
-    if (stars === 3) confetti(this);
+    if (stars === 3) {
+      screenFlash(this, 0xfff2c4, 0.35);
+      confetti(this);
+    }
     const modal = new Modal(this, UI_TEXT.session.resultTitle);
     modal.add(this.add.text(0, 0, this.material.emoji, { fontSize: '56px' }).setOrigin(0.5), 62);
     modal.addText(successWord, 18);

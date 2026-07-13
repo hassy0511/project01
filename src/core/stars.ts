@@ -6,23 +6,26 @@
 
 /** おせわチャンスをやっておくと収穫時に +1(★の保険) */
 export const CARE_BONUS = 1;
-/** pluck を9秒以内に全部タップすると 2pt(それ以外の成功は 1pt) */
-export const PLUCK_FAST_MS = 9000;
-export const PLUCK_FAST_PTS = 2;
-export const PLUCK_SLOW_PTS = 1;
+/** 収穫系ミニゲーム(swipe/shake/roll/reap/dig)を既定9秒以内に完了すると 2pt(それ以外は 1pt) */
+export const DEFAULT_FAST_MS = 9000;
+export const FAST_PTS = 2;
+export const SLOW_PTS = 1;
 /** ★3収穫は yield 2個(おまけ) */
 export const STAR3_YIELD = 2;
 export const NORMAL_YIELD = 1;
 
-export type SessionStepKind = 'quiz' | 'timing' | 'dig' | 'pluck' | 'whack';
+export type SessionStepKind = 'quiz' | 'timing' | 'whack' | 'swipe' | 'shake' | 'roll' | 'reap' | 'dig';
 
 export interface SessionStep {
   kind: SessionStepKind;
 }
 
-/** セッション満点: pluck ステップ=2pt、他は各1pt */
+/** 収穫系ミニゲーム(はやさで2pt/1ptが決まるもの)の種類 */
+const HARVEST_KINDS: ReadonlySet<SessionStepKind> = new Set(['swipe', 'shake', 'roll', 'reap', 'dig']);
+
+/** セッション満点: 収穫系ステップ=2pt、クイズ・タイミングは各1pt */
 export function sessionMaxBase(steps: SessionStep[]): number {
-  return steps.reduce((acc, s) => acc + (s.kind === 'pluck' ? PLUCK_FAST_PTS : 1), 0);
+  return steps.reduce((acc, s) => acc + (HARVEST_KINDS.has(s.kind) ? FAST_PTS : 1), 0);
 }
 
 /** おせわ保険を得点に反映する */
@@ -40,7 +43,7 @@ export function harvestYield(stars: number): number {
   return stars === 3 ? STAR3_YIELD : NORMAL_YIELD;
 }
 
-/** pluck の得点: 全部タップまでの経過ミリ秒で決まる */
-export function pluckPoints(elapsedMs: number): number {
-  return elapsedMs <= PLUCK_FAST_MS ? PLUCK_FAST_PTS : PLUCK_SLOW_PTS;
+/** 収穫系ミニゲームの得点: 完了までの経過ミリ秒がしきい値以内なら2pt、それ以外は1pt */
+export function harvestSpeedPoints(elapsedMs: number, fastThresholdMs: number = DEFAULT_FAST_MS): number {
+  return elapsedMs <= fastThresholdMs ? FAST_PTS : SLOW_PTS;
 }

@@ -1,95 +1,96 @@
-/* ほりあてゲーム(ねんど・いもほり): 記憶して当てる骨格は残しつつ、
-   平らな四角のマス目を「土のマウンド+クワのカーソル+崩れる演出」に作り直した */
-import Phaser from 'phaser';
+/* 掘り進めゲーム(dig): 「どこが光ったか当てる」記憶ゲームをやめて、
+   1つの土山を連続タップで掘り進める直接的な操作に作り直した。
+   ハズレという概念自体が無くなったので、常に成功に近づくだけ(成功保証をより素直に表現) */
+import { harvestSpeedPoints } from '../../core/stars';
 import { SFX } from '../../audio/sfx';
-import { floatUp, missShake, soilPuff } from '../../ui/effects';
+import { burst, floatUp, screenFlash, soilPuff } from '../../ui/effects';
 import { setHook } from '../../game/testHooks';
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_W } from '../../ui/theme';
 import type { MinigameApi } from './types';
 
-const SIZE = 96;
-const GAP = 10;
-const HINT_MS = 900;
+const HITS_NEEDED = 5;
+const MOUND_SIZE = 190;
+const FAST_MS = 6000;
 
 export function renderDig(api: MinigameApi, prompt: string, targetEmoji: string): void {
   const { scene, area } = api;
   api.sign(prompt);
 
-  const cell = Math.floor(Math.random() * 9);
-  setHook({ kind: 'dig', cell });
-  const originX = GAME_W / 2 - (SIZE * 3 + GAP * 2) / 2 + SIZE / 2;
-  const originY = 120;
-  let answered = false;
-  let hintOn = true;
-  let hintTween: Phaser.Tweens.Tween | undefined;
-  const cells: { label: Phaser.GameObjects.Text; x: number; y: number }[] = [];
+  const cx = GAME_W / 2;
+  const cy = 190;
 
-  const shovel = scene.add.text(originX, originY - SIZE, '⛏️', { fontSize: '30px' }).setOrigin(0.5, 1).setAlpha(0.85);
-  area.add(shovel);
-  scene.tweens.add({ targets: shovel, angle: { from: -12, to: 12 }, duration: 500, yoyo: true, repeat: -1 });
-
-  for (let i = 0; i < 9; i++) {
-    const cx = originX + (i % 3) * (SIZE + GAP);
-    const cy = originY + Math.floor(i / 3) * (SIZE + GAP);
-    const c = scene.add.container(cx, cy);
-    const bg = scene.add.graphics();
+  const mound = scene.add.container(cx, cy);
+  const bg = scene.add.graphics();
+  const drawMound = (hits: number): void => {
+    bg.clear();
+    const shrink = hits * 6;
+    const radius = MOUND_SIZE / 2 - shrink;
     bg.fillGradientStyle(0xe4cf9f, 0xe4cf9f, 0xc7a86e, 0xc7a86e, 1);
-    bg.fillRoundedRect(-SIZE / 2, -SIZE / 2, SIZE, SIZE, 14);
-    bg.lineStyle(2, 0xb0895a, 0.7);
-    bg.strokeRoundedRect(-SIZE / 2, -SIZE / 2, SIZE, SIZE, 14);
-    bg.lineStyle(1.5, 0xb0895a, 0.35);
-    bg.lineBetween(-SIZE / 4, -SIZE / 3, -SIZE / 8, 4);
-    bg.lineBetween(SIZE / 6, SIZE / 4, SIZE / 3, -SIZE / 8);
-    const label = scene.add.text(0, 0, i === cell ? '✨' : '', { fontSize: '34px' }).setOrigin(0.5);
-    c.add([bg, label]);
-    c.setSize(SIZE, SIZE);
-    c.setInteractive({ useHandCursor: true });
-    if (i === cell) {
-      hintTween = scene.tweens.add({
-        targets: label,
-        scale: { from: 1, to: 1.3 },
-        alpha: { from: 1, to: 0.6 },
-        yoyo: true,
-        repeat: -1,
-        duration: 350,
-      });
+    bg.fillCircle(0, 0, radius);
+    bg.lineStyle(3, 0xb0895a, 0.8);
+    bg.strokeCircle(0, 0, radius);
+    for (let i = 0; i < hits; i++) {
+      const a = (i / HITS_NEEDED) * Math.PI * 2 + 0.4;
+      bg.lineStyle(2, 0x8a6242, 0.6);
+      bg.lineBetween(Math.cos(a) * 10, Math.sin(a) * 10, Math.cos(a) * (radius - 6), Math.sin(a) * (radius - 6));
     }
-    const moveShovel = (): void => {
-      shovel.setPosition(cx, cy - SIZE / 2 - 6);
-    };
-    c.on('pointerover', moveShovel);
-    c.on('pointerdown', moveShovel);
-    c.on('pointerup', () => {
-      if (answered || hintOn) return;
-      answered = true;
-      const ok = i === cell;
-      soilPuff(scene, cx, cy + api.areaY);
-      if (ok) {
-        label.setText(targetEmoji);
-        label.setScale(0);
-        scene.tweens.add({ targets: label, scale: 1, ease: 'Back.easeOut', duration: 280 });
-        floatUp(scene, cx, cy + api.areaY - 40, '+1');
-        api.addScore(1);
-        SFX.good();
-      } else {
-        label.setText('🕳️');
-        const correct = cells[cell];
-        correct.label.setText(targetEmoji);
-        correct.label.setScale(0);
-        scene.tweens.add({ targets: correct.label, scale: 1, ease: 'Back.easeOut', duration: 280 });
-        api.feedback(UI_TEXT.session.digHere, false);
-        missShake(scene);
-        SFX.bad();
-      }
-      api.advance(ok ? 750 : 1400);
-    });
-    cells.push({ label, x: cx, y: cy });
-    area.add(c);
-  }
-  scene.time.delayedCall(HINT_MS, () => {
-    hintOn = false;
-    hintTween?.stop();
-    cells[cell].label.setText('');
+  };
+  drawMound(0);
+  mound.add(bg);
+  mound.setSize(MOUND_SIZE, MOUND_SIZE);
+  mound.setInteractive({ useHandCursor: true });
+  area.add(mound);
+
+  const pick = scene.add.text(cx, cy - MOUND_SIZE / 2 - 18, '⛏️', { fontSize: '32px' }).setOrigin(0.5, 1);
+  area.add(pick);
+
+  const gaugeBg = scene.add.graphics();
+  gaugeBg.fillStyle(0xe6e0d0, 1);
+  gaugeBg.fillRoundedRect(cx - 100, cy + MOUND_SIZE / 2 + 24, 200, 16, 8);
+  area.add(gaugeBg);
+  const gaugeFill = scene.add.graphics();
+  area.add(gaugeFill);
+  const drawGauge = (hits: number): void => {
+    gaugeFill.clear();
+    gaugeFill.fillStyle(0xff9f40, 1);
+    gaugeFill.fillRoundedRect(cx - 100, cy + MOUND_SIZE / 2 + 24, 200 * (hits / HITS_NEEDED), 16, 8);
+  };
+  drawGauge(0);
+
+  let hits = 0;
+  let finished = false;
+  const t0 = Date.now();
+  setHook({ kind: 'dig', hits: 0, needed: HITS_NEEDED });
+
+  mound.on('pointerup', () => {
+    if (finished) return;
+    hits++;
+    setHook({ kind: 'dig', hits, needed: HITS_NEEDED });
+    SFX.pop();
+    scene.tweens.add({ targets: pick, angle: { from: -55, to: 20 }, duration: 150, yoyo: true });
+    scene.cameras.main.shake(80, 0.0035);
+    soilPuff(scene, cx + (Math.random() - 0.5) * 70, cy + (Math.random() - 0.5) * 50 + api.areaY);
+    scene.tweens.add({ targets: mound, x: cx + (Math.random() - 0.5) * 8, duration: 60, yoyo: true });
+    drawMound(hits);
+    drawGauge(hits);
+
+    if (hits >= HITS_NEEDED) {
+      finished = true;
+      mound.disableInteractive();
+      scene.cameras.main.shake(220, 0.009);
+      screenFlash(scene, 0xfff2c4, 0.4);
+      burst(scene, cx, cy + api.areaY, 22);
+      bg.clear();
+      const reveal = scene.add.text(0, 0, targetEmoji, { fontSize: '48px' }).setOrigin(0.5).setScale(0);
+      mound.add(reveal);
+      scene.tweens.add({ targets: reveal, scale: 1, ease: 'Back.easeOut', duration: 320 });
+      floatUp(scene, cx, cy + api.areaY - 50, '+1');
+      SFX.good();
+      const pts = harvestSpeedPoints(Date.now() - t0, FAST_MS);
+      api.addScore(pts);
+      api.feedback(pts === 2 ? UI_TEXT.session.digFast : UI_TEXT.session.digFound, true);
+      api.advance(900);
+    }
   });
 }

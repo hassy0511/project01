@@ -1,7 +1,8 @@
-/* ゲームフィール用エフェクト(M3): スカッシュ&ストレッチ・パーティクル・
-   スコアポップ・紙吹雪・画面パルス。すべて Tween ベースでアセット不要 */
+/* ゲームフィール用エフェクト: スカッシュ&ストレッチ・パーティクル・
+   スコアポップ・紙吹雪・画面パルス・衝撃リング・画面フラッシュ。
+   すべて Tween ベースでアセット不要 */
 import Phaser from 'phaser';
-import { DEPTH, FONT, GAME_W } from './theme';
+import { DEPTH, FONT, GAME_H, GAME_W } from './theme';
 
 const CONF_COLORS = [0xff9f40, 0x6fbf44, 0xff9eb5, 0xffd166, 0x8ed4e8, 0xb39ddb];
 
@@ -20,68 +21,108 @@ export function squashStretch(scene: Phaser.Scene, target: Phaser.GameObjects.Co
 /** スコアポップ: +1 などがふわっと浮いて消える */
 export function floatUp(scene: Phaser.Scene, x: number, y: number, text: string, color = '#e0812a'): void {
   const t = scene.add
-    .text(x, y, text, { fontFamily: FONT, fontSize: '20px', color, fontStyle: 'bold', stroke: '#ffffff', strokeThickness: 4 })
+    .text(x, y, text, { fontFamily: FONT, fontSize: '22px', color, fontStyle: 'bold', stroke: '#ffffff', strokeThickness: 4 })
     .setOrigin(0.5)
-    .setDepth(DEPTH.overlay);
+    .setDepth(DEPTH.overlay)
+    .setScale(0.6);
   scene.tweens.add({
     targets: t,
-    y: y - 54,
-    alpha: { from: 1, to: 0 },
-    scale: { from: 1, to: 1.25 },
-    duration: 700,
-    ease: 'Quad.easeOut',
-    onComplete: () => t.destroy(),
+    scale: 1.15,
+    duration: 130,
+    ease: 'Back.easeOut',
+    onComplete: () =>
+      scene.tweens.add({
+        targets: t,
+        y: y - 58,
+        alpha: { from: 1, to: 0 },
+        duration: 560,
+        ease: 'Quad.easeOut',
+        onComplete: () => t.destroy(),
+      }),
   });
 }
 
-/** その場で弾けるパーティクル(小さな色つき破片) */
-export function burst(scene: Phaser.Scene, x: number, y: number, count = 10, colors = CONF_COLORS): void {
+/** 衝撃リング: 一瞬でパッと広がって消える輪(打撃・命中の"ドン!"を強調) */
+export function impactRing(scene: Phaser.Scene, x: number, y: number, color = 0xffffff, startRadius = 8): void {
+  const ring = scene.add.circle(x, y, startRadius).setStrokeStyle(5, color, 0.9).setDepth(DEPTH.overlay);
+  scene.tweens.add({
+    targets: ring,
+    radius: startRadius + 46,
+    alpha: 0,
+    duration: 300,
+    ease: 'Quad.easeOut',
+    onUpdate: () => ring.setStrokeStyle(5, color, ring.alpha),
+    onComplete: () => ring.destroy(),
+  });
+}
+
+/** その場で弾けるパーティクル(色つき破片+中心の衝撃リング) */
+export function burst(scene: Phaser.Scene, x: number, y: number, count = 14, colors = CONF_COLORS): void {
+  impactRing(scene, x, y, colors[0]);
   for (let i = 0; i < count; i++) {
     const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
-    const dist = 34 + Math.random() * 30;
-    const p = scene.add
-      .rectangle(x, y, 7, 7, colors[i % colors.length])
-      .setDepth(DEPTH.overlay)
-      .setAngle(Math.random() * 360);
+    const dist = 40 + Math.random() * 46;
+    const size = 6 + Math.random() * 6;
+    const color = colors[i % colors.length];
+    const shape =
+      Math.random() < 0.5
+        ? scene.add.rectangle(x, y, size, size, color)
+        : scene.add.circle(x, y, size / 2, color);
+    shape.setDepth(DEPTH.overlay).setAngle(Math.random() * 360);
     scene.tweens.add({
-      targets: p,
+      targets: shape,
       x: x + Math.cos(angle) * dist,
-      y: y + Math.sin(angle) * dist + 12,
-      angle: p.angle + 200,
+      y: y + Math.sin(angle) * dist + 14,
+      angle: shape.angle + 220,
       alpha: { from: 1, to: 0 },
-      scale: { from: 1, to: 0.4 },
-      duration: 420 + Math.random() * 180,
+      scale: { from: 1, to: 0.3 },
+      duration: 460 + Math.random() * 220,
       ease: 'Quad.easeOut',
-      onComplete: () => p.destroy(),
+      onComplete: () => shape.destroy(),
     });
   }
 }
 
-/** 土けむり(dig 用): 茶色の破片が舞う */
+/** 土けむり(dig 用): 茶色の破片+石ころが舞う */
 export function soilPuff(scene: Phaser.Scene, x: number, y: number): void {
-  burst(scene, x, y, 8, [0xb89b6a, 0x8a6242, 0xd8c49a]);
+  burst(scene, x, y, 12, [0xb89b6a, 0x8a6242, 0xd8c49a, 0x9c7d4f]);
 }
 
-/** 紙吹雪: 上から降ってくる(祝福用) */
-export function confetti(scene: Phaser.Scene, count = 26): void {
+/** 紙吹雪: 上から降ってくる(祝福用)。角形+きらめき絵文字を混ぜる */
+export function confetti(scene: Phaser.Scene, count = 34): void {
   for (let i = 0; i < count; i++) {
     const x = Math.random() * GAME_W;
-    const p = scene.add
-      .rectangle(x, -20, 9, 12, CONF_COLORS[Math.floor(Math.random() * CONF_COLORS.length)])
-      .setDepth(DEPTH.overlay)
-      .setAngle(Math.random() * 360);
+    const useEmoji = Math.random() < 0.25;
+    const p = useEmoji
+      ? scene.add.text(x, -20, Math.random() < 0.5 ? '✨' : '⭐', { fontSize: '18px' }).setDepth(DEPTH.overlay)
+      : scene.add
+          .rectangle(x, -20, 10, 14, CONF_COLORS[Math.floor(Math.random() * CONF_COLORS.length)])
+          .setDepth(DEPTH.overlay)
+          .setAngle(Math.random() * 360);
     scene.tweens.add({
       targets: p,
       y: 620 + Math.random() * 160,
-      x: x + (Math.random() - 0.5) * 130,
-      angle: p.angle + 380 + Math.random() * 240,
-      duration: 1500 + Math.random() * 700,
+      x: x + (Math.random() - 0.5) * 160,
+      angle: (p.angle ?? 0) + 380 + Math.random() * 240,
+      duration: 1400 + Math.random() * 700,
       delay: Math.random() * 400,
       ease: 'Sine.easeIn',
-      alpha: { from: 1, to: 0.15 },
+      alpha: { from: 1, to: 0.1 },
       onComplete: () => p.destroy(),
     });
   }
+}
+
+/** 画面いっぱいのフラッシュ(でっかい成功の一瞬を強調) */
+export function screenFlash(scene: Phaser.Scene, color = 0xffffff, peakAlpha = 0.55): void {
+  const flash = scene.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, color, peakAlpha).setDepth(DEPTH.overlay);
+  scene.tweens.add({
+    targets: flash,
+    alpha: 0,
+    duration: 260,
+    ease: 'Quad.easeOut',
+    onComplete: () => flash.destroy(),
+  });
 }
 
 /** ジャスト成功の画面パルス(ズームがふっと寄って戻る) */
@@ -89,8 +130,8 @@ export function cameraPulse(scene: Phaser.Scene): void {
   const cam = scene.cameras.main;
   scene.tweens.add({
     targets: cam,
-    zoom: { from: 1.035, to: 1 },
-    duration: 240,
+    zoom: { from: 1.045, to: 1 },
+    duration: 260,
     ease: 'Quad.easeOut',
   });
 }

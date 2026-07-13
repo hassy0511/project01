@@ -3,10 +3,11 @@
 
 export type MqHook =
   | { kind: 'quiz'; correctText: string; choices: string[] }
-  | { kind: 'dig'; cell: number }
+  | { kind: 'dig'; hits: number; needed: number }
   | { kind: 'pluck'; remaining: number }
   | { kind: 'timing'; pos: number }
   | { kind: 'reel'; progress: number; target: number }
+  | { kind: 'shake'; progress: number }
   | { kind: 'whack'; active: boolean }
   | { kind: 'done' };
 

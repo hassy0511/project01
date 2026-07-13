@@ -20,8 +20,16 @@ export interface Prefecture {
 
 export type Rarity = 'common' | 'local' | 'unique';
 
+/**
+ * 収穫の操作方式(素材の実在の性質に合わせて選ぶ。コード側に品種分岐は書かない):
+ *   swipe = なぞって集める(まめ・べりーなど小さく群生するもの)
+ *   shake = 木をゆさぶって落として集める(木の実)
+ *   roll  = つかんで かごまで ドラッグする(重く数が少ないもの)
+ *   reap  = れつに なった ものを なぞって かりとる(いね)
+ *   dig   = 1箇所を連続タップして掘り進める
+ */
 export interface HarvestSpec {
-  engine: 'pluck' | 'dig';
+  engine: 'swipe' | 'shake' | 'roll' | 'reap' | 'dig';
   target?: string;
   prompt: string;
   success?: string;
@@ -63,6 +71,8 @@ export interface PlantGather {
   growSec: number;
   harvest: HarvestSpec;
   care: CareSpec;
+  /** 畑の呼び名(既定は「はたけ」。米は「たんぼ」等) */
+  fieldLabel?: string;
 }
 
 export interface TimingGather {
@@ -161,44 +171,46 @@ export const GAME_DATA: GameData = {
     { id: 'm01', name: 'みず', emoji: '💧', origins: ['ibaraki', 'tochigi', 'chiba'], rarity: 'common',
       gather: { type: 'infra', building: 'いど', bEmoji: '⛲', rateSec: 120, max: 3, collectVerb: 'くみあげる' } },
     { id: 'm02', name: 'こめ', emoji: '🌾', origins: ['ibaraki', 'tochigi', 'chiba'], rarity: 'common',
-      gather: { type: 'infra', building: 'たんぼ', bEmoji: '🌾', rateSec: 180, max: 3, collectVerb: 'かりとる' } },
+      gather: { type: 'plant', verb: 'いねを うえる', growSec: 240, fieldLabel: 'たんぼ',
+        harvest: { engine: 'reap', target: '🌾', prompt: 'いねを なぞって かりとろう!' },
+        care: { target: '🦗', label: 'いなごが きた! タップで おいはらえ!' } } },
     { id: 'm03', name: 'だいず', emoji: '🫘', origins: ['ibaraki', 'tochigi'], rarity: 'local',
       gather: { type: 'plant', verb: 'たねを まく', growSec: 300,
-        harvest: { engine: 'pluck', target: '🫘', prompt: 'さやを ぷちぷち つみとろう!' },
+        harvest: { engine: 'swipe', target: '🫘', prompt: 'さやを なぞって ぷちぷち はじこう!' },
         care: { target: '🐛', label: 'むしが ついてる! タップで とろう!' } } },
     { id: 'm04', name: 'さつまいも', emoji: '🍠', origins: ['ibaraki', 'chiba'], rarity: 'local',
       gather: { type: 'plant', verb: 'たねいもを うえる', growSec: 420,
-        harvest: { engine: 'dig', prompt: '✨が ひかった ところに いもが うまってる!', success: 'いもほり せいこう!' },
+        harvest: { engine: 'dig', prompt: 'つちの なかの いもを ほりだそう!', success: 'いもほり せいこう!' },
         care: { target: '🐗', label: 'いのししが きた! タップで おいはらえ!' } } },
     { id: 'm05', name: 'メロン', emoji: '🍈', origins: ['ibaraki'], rarity: 'local',
       gather: { type: 'plant', verb: 'たねを まく', growSec: 600,
-        harvest: { engine: 'pluck', target: '🍈', prompt: 'たべごろの メロンを ぜんぶ あつめよう!' },
+        harvest: { engine: 'roll', target: '🍈', prompt: 'おもい メロンを かごまで ころがそう!' },
         care: { target: '🌀', label: 'つるが のびすぎ! タップで ととのえよう!' } } },
     { id: 'm06', name: 'うめ', emoji: '🌸', origins: ['ibaraki'], rarity: 'unique',
       gather: { type: 'plant', verb: 'なえを うえる', growSec: 1200,
-        harvest: { engine: 'pluck', target: '🫒', prompt: 'うめの みを つみとろう!' },
+        harvest: { engine: 'shake', target: '🫒', prompt: 'きを ゆさぶって うめを おとそう!' },
         care: { target: '🐛', label: 'むしが えだに ついてる! タップで とろう!' } } },
     { id: 'm07', name: 'ねんど', emoji: '🧱', origins: ['ibaraki', 'tochigi'], rarity: 'local',
       gather: { type: 'dig', verb: 'ほりに いく',
-        theme: { intro: 'いい ねんどが ねむる つちばを みつけた!', prompt: '✨が ひかった ばしょを おぼえて ほろう!', success: 'ほりあて せいこう!', stages: ['⛰️', '⛏️', '✨'] } } },
+        theme: { intro: 'いい ねんどが ねむる つちばを みつけた!', prompt: 'ドンドン ほって みつけよう!', success: 'ほりあて せいこう!', stages: ['⛰️', '⛏️', '✨'] } } },
     { id: 'm08', name: 'らっかせい', emoji: '🥜', origins: ['chiba'], rarity: 'unique',
       gather: { type: 'plant', verb: 'たねを まく', growSec: 360,
-        harvest: { engine: 'pluck', target: '🥜', prompt: 'ずぼっと ひっこぬこう!' },
+        harvest: { engine: 'swipe', target: '🥜', prompt: 'つちの なかの まめを なぞって ひろおう!' },
         care: { target: '🐜', label: 'ありが あつまってきた! タップで はらおう!' } } },
     { id: 'm09', name: 'いわし', emoji: '🐟', origins: ['chiba'], rarity: 'local',
       gather: { type: 'timing', verb: 'りょうに でる',
         theme: { intro: 'いわしの むれが やってきた!', prompt: 'なみに あわせて、いい ところで あみを ひこう!', stopBtn: 'あみを ひく!', marker: '🐟', success: 'たいりょうだ!', stages: ['⛵', '🌊', '🐟'] } } },
     { id: 'm10', name: 'なし', emoji: '🍐', origins: ['chiba', 'tochigi'], rarity: 'local',
       gather: { type: 'plant', verb: 'なえを うえる', growSec: 1500,
-        harvest: { engine: 'pluck', target: '🍐', prompt: 'おもたい なしを もぎとろう!' },
+        harvest: { engine: 'shake', target: '🍐', prompt: 'きを ゆさぶって なしを おとそう!' },
         care: { target: '🐝', label: 'はちが みに あつまってる! タップで はらおう!' } } },
     { id: 'm11', name: 'いちご', emoji: '🍓', origins: ['tochigi', 'ibaraki'], rarity: 'local',
       gather: { type: 'plant', verb: 'たねを まく', growSec: 300,
-        harvest: { engine: 'pluck', target: '🍓', prompt: 'まっかな いちごを ぜんぶ つもう!' },
+        harvest: { engine: 'swipe', target: '🍓', prompt: 'いちごを なぞって つみとろう!' },
         care: { target: '🐦', label: 'とりが いちごを ねらってる! タップで おいはらえ!' } } },
     { id: 'm12', name: 'ゆうがお', emoji: '🥒', origins: ['tochigi'], rarity: 'unique',
       gather: { type: 'plant', verb: 'たねを まく', growSec: 420,
-        harvest: { engine: 'pluck', target: '🥒', prompt: 'おおきな みを ざくざく とろう!' },
+        harvest: { engine: 'roll', target: '🥒', prompt: 'おおきな みを かごまで ころがそう!' },
         care: { target: '🌀', label: 'つるが あばれてる! タップで しちゅうに とめよう!' } } },
   ],
 

@@ -111,21 +111,66 @@ export function makeDriver(page, shotsDir) {
     throw new Error(`scrollAndClick failed: ${label} nth=${nth}`);
   }
 
-  /** dig×N+クイズ を最後まで(正解マスは __mq.cell から) */
-  async function digAllSteps() {
-    for (;;) {
-      await page.waitForFunction(() => window.__mq?.kind === 'dig' || window.__mq?.kind === 'quiz', null, {
-        timeout: 8000,
-      });
+  /** 掘り進めゲーム(dig): 土山の中心を連続タップして掘り進める。N回分(生成のたび hits は0に戻る)+クイズ */
+  async function digMoundSteps(maxIter = 60) {
+    const cx = 240; // GAME_W/2
+    const cy = 400; // GAME_AREA_Y(210) + mound cy(190)
+    for (let i = 0; i < maxIter; i++) {
       const hook = await page.evaluate(() => window.__mq);
-      if (hook.kind === 'quiz') break;
-      await page.waitForTimeout(1100); // ✨ヒントが消えるまで
-      const cx = 134 + (hook.cell % 3) * 106;
-      const cy = 330 + Math.floor(hook.cell / 3) * 106;
+      if (hook?.kind === 'quiz') break;
       await page.mouse.click(cx, cy);
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(150);
     }
     await answerQuiz();
+  }
+
+  /** なぞり収穫(swipe/reap)・ゆさぶり収穫の集めフェーズ: 対象の絵文字を見つけて叩き続ける */
+  async function tapCollect(emoji, maxIter = 40) {
+    for (let i = 0; i < maxIter; i++) {
+      const hook = await page.evaluate(() => window.__mq);
+      if (hook?.kind !== 'pluck' || hook.remaining === 0) break;
+      const targets = await findTexts(emoji);
+      if (targets.length) await page.mouse.click(targets[0].x, targets[0].y);
+      await page.waitForTimeout(130);
+    }
+  }
+
+  /** ゆさぶり収穫(shake)の前半: ドラッグを繰り返して ゆらす→落とす。その後 tapCollect で集める */
+  async function shakeUntilDropped(maxIter = 25) {
+    const cx = 240;
+    const cy = 340; // GAME_AREA_Y(210) + tree付近。グローバルpointermove判定なので厳密な位置は不問
+    for (let i = 0; i < maxIter; i++) {
+      const hook = await page.evaluate(() => window.__mq);
+      if (hook?.kind !== 'shake') break;
+      await page.mouse.move(cx - 60, cy);
+      await page.mouse.down();
+      for (let j = 0; j < 6; j++) {
+        await page.mouse.move(cx + (j % 2 === 0 ? 60 : -60), cy, { steps: 3 });
+        await page.waitForTimeout(15);
+      }
+      await page.mouse.up();
+      await page.waitForTimeout(60);
+    }
+  }
+
+  /** ころがし収穫(roll): 対象を見つけてかごまでドラッグする(かご中心は概ね x=240,y=510) */
+  async function rollAllToBasket(emoji, basketX = 240, basketY = 510, maxIter = 10) {
+    for (let i = 0; i < maxIter; i++) {
+      const hook = await page.evaluate(() => window.__mq);
+      if (hook?.kind !== 'pluck' || hook.remaining === 0) break;
+      const targets = await findTexts(emoji, true);
+      if (!targets.length) {
+        await page.waitForTimeout(150);
+        continue;
+      }
+      const { x, y } = targets[0];
+      await page.mouse.move(x, y);
+      await page.mouse.down();
+      await page.mouse.move((x + basketX) / 2, (y + basketY) / 2, { steps: 4 });
+      await page.mouse.move(basketX, basketY, { steps: 4 });
+      await page.mouse.up();
+      await page.waitForTimeout(250);
+    }
   }
 
   /** timing×N+クイズ: __mq.pos が中央帯に入った瞬間に止める。
@@ -171,7 +216,10 @@ export function makeDriver(page, shotsDir) {
     dismissTrivia,
     scrollList,
     scrollAndClick,
-    digAllSteps,
+    digMoundSteps,
+    tapCollect,
+    shakeUntilDropped,
+    rollAllToBasket,
     timingAllSteps,
   };
 }
