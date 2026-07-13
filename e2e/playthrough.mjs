@@ -1,5 +1,6 @@
-/* M2 受け入れテスト: 開拓→たねまき→⏩→収穫→レシピ→クラフト→うめまつり の一周を
+/* 受け入れテスト: 開拓→たねまき→⏩→アーケード収穫→レシピ→クラフト→うめまつり の一周を
    実ブラウザのUIクリックでプレイし、セーブ状態を検証する。
+   ゲームは fastMode(時間1/8)で回し、全エンジンの完走と成功保証(★1の床)を確認する。
    実行: npm run test:e2e(ビルド+preview サーバー起動込み) */
 import { mkdirSync } from 'node:fs';
 import { chromium } from 'playwright';
@@ -16,13 +17,23 @@ page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
 const d = makeDriver(page, SHOTS);
 const log = (s) => console.log('✔ ' + s);
 
-/* ---- セーブをリセットして開始 ---- */
+/* ---- セーブをリセット・fastMode で開始 ---- */
 await page.goto(BASE_URL);
 await page.waitForSelector('canvas');
 await page.evaluate(() => localStorage.clear());
 await page.reload();
 await page.waitForSelector('canvas');
 await page.waitForTimeout(1500);
+await page.evaluate(() => window.__mqAdmin.fastMode());
+
+/** 収穫一連(しゅうかく!→アーケード→クイズ正解→もどる→トリビア) */
+async function harvestFlow(interact = null) {
+  await d.playArcade(interact);
+  await d.answerQuiz();
+  await d.waitText('もどる');
+  await d.clickText('もどる');
+  await d.dismissTrivia();
+}
 
 /* 1. いばらき開拓(形/位置+知識クイズ) */
 // 地図クリック座標: MapScene の scale=min(460/364,560/407)≈1.263, offX≈10, offY=80
@@ -34,72 +45,58 @@ await d.waitText('かいたく せいこう!');
 await d.clickText('いばらきけんに いく!');
 log('いばらき開拓');
 
-/* 2. こめ(いねかり=reap): いねを うえる → ⏩ → なぞって かりとる。
-   米が最初からストックだった不具合の修正確認(いまは他の作物と同じく育てて収穫する) */
+/* 2. こめ(reap): いねを うえる → ⏩ → チェーンなぞり。米はもう infra ストックではない */
 await d.waitText('いねを うえる');
 await d.clickText('いねを うえる');
 await page.evaluate(() => window.__mqAdmin.boostAll());
 await page.waitForTimeout(1600);
 await d.clickText('しゅうかく!');
-await page.waitForFunction(() => window.__mq?.kind === 'pluck', null, { timeout: 8000 });
-await d.tapCollect('🌾');
-await d.answerQuiz();
-await d.waitText('もどる');
-await d.clickText('もどる');
-await d.dismissTrivia();
-log('こめ(いねかり=reap)収穫 → もう infra ストックではない');
+await harvestFlow(async () => {
+  // 熟した🌾をなぞる(タップでも収穫できる)
+  const t = await d.findTexts('🌾');
+  if (t.length) await page.mouse.click(t[0].x, t[0].y);
+});
+log('こめ(いねかり=reap アーケード)');
 
-/* 3. だいず(なぞり収穫=swipe) */
-await d.scrollAndClick('たねを まく', 0); // だいず, [メロン], いちご
+/* 3. うめ(catch): 落ちてくる実をかごでキャッチ */
+await d.scrollAndClick('なえを うえる');
 await page.evaluate(() => window.__mqAdmin.boostAll());
 await page.waitForTimeout(1600);
 await d.scrollAndClick('しゅうかく!');
-await page.waitForFunction(() => window.__mq?.kind === 'pluck', null, { timeout: 8000 });
-await d.tapCollect('🫘');
+await harvestFlow(async () => {
+  // 落下中の実の真下へかごを動かす
+  const t = await d.findTexts('🫒');
+  if (t.length) await page.mouse.move(t[0].x, 700);
+});
+log('うめ(キャッチ アーケード)');
+
+/* 4. ねんど(mine): 採掘。上の列から掘る */
+await d.scrollAndClick('ほりに いく');
+await d.playArcade(async () => {
+  // 上の列(y≈216+52)を順にタップして掘り進める
+  for (let col = 0; col < 5; col++) {
+    await page.mouse.click(52 + col * 92 + 43, 268);
+  }
+});
 await d.answerQuiz();
 await d.waitText('もどる');
 await d.clickText('もどる');
 await d.dismissTrivia();
-log('だいず(なぞり収穫=swipe)');
+log('ねんど(採掘 アーケード)');
 
-/* 4. さつまいも(掘り進め=dig の新デザイン確認) */
-await d.scrollAndClick('たねいもを うえる');
-await page.evaluate(() => window.__mqAdmin.boostAll());
-await page.waitForTimeout(1600);
-await d.scrollAndClick('しゅうかく!');
-await d.digMoundSteps();
-await d.waitText('もどる');
-await d.clickText('もどる');
-await d.dismissTrivia();
-log('さつまいも(掘り進め=dig、記憶ゲームではなく連続タップに変更)');
-
-/* 5. うめ: なえを うえる → ⏩ → ゆさぶり収穫(shake)★3 */
-await d.waitText('なえを うえる');
-await d.clickText('なえを うえる');
-await page.evaluate(() => window.__mqAdmin.boostAll());
-await page.waitForTimeout(1600); // 1秒ティッカーの再描画待ち
-await d.clickText('しゅうかく!');
-await page.waitForFunction(() => window.__mq?.kind === 'shake', null, { timeout: 8000 });
-await d.shakeUntilDropped();
-await d.tapCollect('🫒');
-await d.answerQuiz();
-await d.waitText('もどる');
-await d.clickText('もどる');
-await d.dismissTrivia();
-log('うめ収穫(ゆさぶり=shake+クイズ=★3×2)');
-
-/* 6. いど回収 → 7. ねんど(掘り進め=dig) */
-await d.clickText('くみあげる');
+/* 5. いど回収(みず: 唯一の infra) */
+await d.scrollAndClick('くみあげる');
 await d.dismissTrivia();
 log('いど回収(みず×3 ★2)');
-await d.clickText('ほりに いく');
-await d.digMoundSteps();
-await d.waitText('もどる');
-await d.clickText('もどる');
-await d.dismissTrivia();
-log('ねんど 掘り進め(dig×3+クイズ=★3×2)');
 
-/* 5. うめジュース: レシピ取得 → クラフト */
+/* 6. うめジュース: レシピ取得 → クラフト(うめが★1×1でも うめ2個必要 → もう1回収穫) */
+await d.scrollAndClick('なえを うえる');
+await page.evaluate(() => window.__mqAdmin.boostAll());
+await page.waitForTimeout(1600);
+await d.scrollAndClick('しゅうかく!');
+await harvestFlow();
+log('うめ 2回目(ノー操作でも★1保証で完走)');
+
 await d.scrollAndClick('レシピを さがす', 2); // r01,r02,[r03]
 await d.clickText('クイズに ちょうせん!');
 await d.answerQuiz();
@@ -112,7 +109,15 @@ await d.clickText('やったー!');
 await d.dismissTrivia();
 log('うめジュース(レシピ探索→クラフト)');
 
-/* 6. かさまやき(いばらき産ねんど 産地指定) */
+/* 7. かさまやき: ねんどをもう1回掘って2個確保 → クラフト */
+await d.scrollAndClick('ほりに いく');
+await d.playArcade(async () => {
+  for (let col = 0; col < 5; col++) await page.mouse.click(52 + col * 92 + 43, 268);
+});
+await d.answerQuiz();
+await d.waitText('もどる');
+await d.clickText('もどる');
+await d.dismissTrivia();
 await d.scrollAndClick('レシピを さがす', 3); // r01,r02,r04,[r05]
 await d.clickText('クイズに ちょうせん!');
 await d.answerQuiz();
@@ -125,7 +130,7 @@ await d.clickText('やったー!');
 await d.dismissTrivia();
 log('かさまやき(産地指定クラフト)');
 
-/* 7. うめまつり(だんどりパズル) */
+/* 8. うめまつり(だんどりパズル) */
 await d.scrollAndClick('ひらく!');
 await d.clickText('じゅんびスタート!');
 for (const step of ['かいじょうを おそうじ', 'うめのきを かざる', 'ちょうちんを つける', 'おきゃくさんを おむかえ']) {
@@ -140,7 +145,7 @@ await page.waitForTimeout(1200);
 await page.screenshot({ path: `${SHOTS}/map-after-festival.png` });
 log('うめまつり開催 → 地図に🏮');
 
-/* 8. ちば: いわし(timing) — 県またぎでミニゲーム3種目を網羅 */
+/* 9. ちば: いわし(fish)。泳ぐ魚をタップ */
 await page.mouse.click(10 + 260 * 1.263, 80 + 290 * 1.263);
 await d.clickText('ちょうせん する!');
 await d.answerQuiz();
@@ -148,13 +153,13 @@ await d.answerQuiz();
 await d.waitText('かいたく せいこう!');
 await d.clickText('ちばけんに いく!');
 await d.scrollAndClick('りょうに でる');
-await d.timingAllSteps();
-await d.waitText('もどる');
-await d.clickText('もどる');
-await d.dismissTrivia();
-log('ちば開拓 → いわし漁(timing)');
+await harvestFlow(async () => {
+  const t = await d.findTexts('🐟');
+  if (t.length) await page.mouse.click(t[0].x, t[0].y);
+});
+log('ちば開拓 → いわし(フィッシング アーケード)');
 
-/* 9. おせわチャンス: メロン50%成長 → whack → 収穫(クイズをわざと間違えても★保険で★3) */
+/* 10. おせわ(defense): メロン50%成長 → 害虫防衛 → careDone 記録 */
 await d.clickText('← ちず');
 await page.waitForTimeout(600);
 await page.mouse.click(10 + 276 * 1.263, 80 + 155 * 1.263); // いばらき(開拓済み)
@@ -163,31 +168,27 @@ await d.scrollAndClick('たねを まく', 1); // だいず, [メロン], いち
 await page.evaluate(() => window.__mqAdmin.halfGrow());
 await page.waitForTimeout(1600);
 await d.scrollAndClick('おせわに いく!');
-// whack: 5回スポーンする敵をタップし続ける(care 対象=🌀)
-for (let i = 0; i < 40; i++) {
-  const done = await page.evaluate(() => window.__mq?.kind === 'done');
-  if (done) break;
-  const targets = await d.findTexts('🌀', true);
-  if (targets.length) await page.mouse.click(targets[0].x, targets[0].y);
-  await page.waitForTimeout(280);
-}
+await d.playArcade(async () => {
+  const t = await d.findTexts('🌀');
+  if (t.length) await page.mouse.click(t[0].x, t[0].y);
+});
 await d.waitText('くみあげる', 12000); // おせわ完了 → 県画面へ戻る
-let mid = await page.evaluate(() => JSON.parse(localStorage.getItem('meisanquest-save-v1')));
+const mid = await page.evaluate(() => JSON.parse(localStorage.getItem('meisanquest-save-v1')));
 if (!mid.plots['ibaraki|m05']?.careDone) throw new Error('careDone flag expected');
-log('おせわチャンス(whack)→ careDone 記録');
+log('おせわチャンス(ディフェンス)→ careDone 記録');
 
+/* 11. メロン(flick): クイズをわざと間違えても最低★1で完走 */
 await page.evaluate(() => window.__mqAdmin.boostAll());
 await page.waitForTimeout(1600);
 await d.scrollAndClick('しゅうかく!');
-await page.waitForFunction(() => window.__mq?.kind === 'pluck', null, { timeout: 8000 });
-await d.rollAllToBasket('🍈'); // ころがし収穫(roll): かごまでドラッグ
-await d.answerQuizWrong(); // わざと間違える → roll2pt+保険1=3pt=★3 のはず
+await d.playArcade();
+await d.answerQuizWrong();
 await d.waitText('もどる');
 await d.clickText('もどる');
 await d.dismissTrivia();
-log('メロン収穫(ころがし=roll。クイズ不正解でも おせわ保険で★3)');
+log('メロン(フリック アーケード。クイズ不正解でも★1保証)');
 
-/* 10. セーブ検証 */
+/* 12. セーブ検証 */
 const save = await page.evaluate(() => JSON.parse(localStorage.getItem('meisanquest-save-v1')));
 const assert = (cond, msg) => {
   if (!cond) throw new Error('assert failed: ' + msg);
@@ -196,10 +197,12 @@ assert(save.unlocked.includes('ibaraki') && save.unlocked.includes('chiba'), 'un
 assert(save.fest.includes('rf1'), 'rf1 held');
 assert(save.zukanProd.r03 && save.zukanProd.r05, 'crafted r03/r05');
 assert(save.zukanProd.r05.jimoto === true, 'r05 jimoto medal');
-assert(save.zukanMat.m06.ibaraki === 3, 'ume ★3');
-assert(save.zukanMat.m01.ibaraki === 2, 'mizu ★2');
-assert(save.zukanMat.m09?.chiba >= 1, 'iwashi obtained');
-assert(save.zukanMat.m05?.ibaraki === 3, 'melon ★3 (care insurance)');
+assert(save.zukanMat.m02?.ibaraki >= 1, 'kome harvested (not infra)');
+assert(save.zukanMat.m06?.ibaraki >= 1, 'ume harvested');
+assert(save.zukanMat.m07?.ibaraki >= 1, 'clay mined');
+assert(save.zukanMat.m01?.ibaraki === 2, 'mizu ★2 (infra)');
+assert(save.zukanMat.m09?.chiba >= 1, 'iwashi fished');
+assert(save.zukanMat.m05?.ibaraki >= 1, 'melon obtained');
 assert(!save.plots['ibaraki|m05'], 'melon plot cleared');
 log('セーブ検証 OK');
 

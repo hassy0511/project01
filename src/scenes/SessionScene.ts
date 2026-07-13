@@ -1,22 +1,14 @@
-/* そざい入手セッション: swipe / shake / roll / reap / dig / timing / whack / quiz のステップ実行。
-   各ミニゲームの実体は scenes/minigames/ に分離。このシーンは
-   進行(ステップ・ドット・スコア集計・★判定)の指揮役に専念する。
-   どのエンジンを使うかはデータ(harvest.engine)が決め、シーン側に品種分岐は書かない。
-   せいこうは常に保証。できばえで★1〜3(core/stars.ts) */
+/* そざい入手セッション: アーケードゲーム(45〜60秒)+ものしりクイズの2ステップ。
+   どのゲームを使うかはデータ(harvest.engine 等)が決め、シーン側に品種分岐は書かない。
+   ★はスコアの実力制(core/stars.ts)。ただし最低★1は保証 */
 import Phaser from 'phaser';
 import { findMaterial, findPref, GAME_DATA, type Material } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';
+import { ARCADE_TUNING, type ArcadeEngine } from '../data/arcadeTuning';
 import { clearPlot, markCareDone, plotKey } from '../core/plots';
 import { pickSessionQuiz } from '../core/quiz';
-import {
-  calcStars,
-  harvestYield,
-  sessionMaxBase,
-  sessionPoints,
-  type SessionStep,
-} from '../core/stars';
+import { calcStars, harvestYield, totalScore } from '../core/stars';
 import { markSanchiCompleteOnce, registerMaterial } from '../core/state';
-import type { Quiz } from '../data/gameData';
 import { store } from '../game/store';
 import { setHook } from '../game/testHooks';
 import { SFX } from '../audio/sfx';
@@ -25,45 +17,28 @@ import { showTriviaOnce } from '../ui/trivia';
 import { COLORS, DEPTH, FONT, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { makeStarRow, Modal, showToast } from '../ui/widgets';
 import { confetti, screenFlash } from '../ui/effects';
-import { renderSwipe } from './minigames/swipeGame';
-import { renderShake } from './minigames/shakeGame';
-import { renderRoll } from './minigames/rollGame';
-import { renderDig } from './minigames/digGame';
-import { renderTiming } from './minigames/timingGame';
-import { renderWhack } from './minigames/whackGame';
+import { renderCatch } from './minigames/catchGame';
+import { renderChain } from './minigames/chainGame';
+import { renderMine } from './minigames/mineGame';
+import { renderFish } from './minigames/fishGame';
+import { renderFlick } from './minigames/flickGame';
+import { renderDefense } from './minigames/defenseGame';
 import type { MinigameApi } from './minigames/types';
 
 export type SessionMode = 'instant' | 'harvest' | 'care';
 
-interface QuizStep extends SessionStep {
-  kind: 'quiz';
-  quiz: Quiz;
-}
-
 const TOP_H = 48;
-const STAGE_Y = 130;
-const GAME_AREA_Y = 210;
-const GAME_AREA_H = 420;
-/** 素材の性質に応じた収穫個数(データではなくエンジンの見せ方に紐づく値なのでここで定数化) */
-const HARVEST_COUNT: Record<'swipe' | 'shake' | 'roll' | 'reap', number> = {
-  swipe: 6,
-  shake: 5,
-  roll: 3,
-  reap: 8,
-};
+const GAME_AREA_Y = TOP_H + 4;
 
 export class SessionScene extends Phaser.Scene {
   private matId = '';
   private prefId = '';
   private mode: SessionMode = 'instant';
   private material!: Material;
-  private steps: SessionStep[] = [];
-  private idx = 0;
-  private score = 0;
-  private maxBase = 0;
+  private gameScore = 0;
+  private quizCorrect = false;
+  private phase: 'game' | 'quiz' | 'done' = 'game';
   private area?: Phaser.GameObjects.Container;
-  private dots: Phaser.GameObjects.Text[] = [];
-  private stage?: Phaser.GameObjects.Text;
 
   constructor() {
     super('SessionScene');
@@ -84,10 +59,9 @@ export class SessionScene extends Phaser.Scene {
     }
     this.material = m;
     this.cameras.main.setBackgroundColor(COLORS.ground);
-    this.idx = 0;
-    this.score = 0;
-    this.steps = this.buildSteps();
-    this.maxBase = sessionMaxBase(this.steps);
+    this.gameScore = 0;
+    this.quizCorrect = false;
+    this.phase = 'game';
 
     // ヘッダー
     const g = m.gather;
@@ -121,148 +95,121 @@ export class SessionScene extends Phaser.Scene {
         .setOrigin(0.5),
     );
 
-    // 進行ドット+ステージ絵文字
-    this.stage = this.add.text(GAME_W / 2, STAGE_Y, '', { fontSize: '64px' }).setOrigin(0.5);
-    this.dots = [];
-    for (let i = 0; i < this.steps.length; i++) {
-      this.dots.push(
-        this.add
-          .text(GAME_W / 2 + (i - (this.steps.length - 1) / 2) * 26, STAGE_Y + 56, '●', {
-            fontSize: '14px',
-            color: '#ddd5c2',
-          })
-          .setOrigin(0.5),
-      );
-    }
-    this.renderStep();
+    this.renderGame();
   }
 
-  private buildSteps(): SessionStep[] {
-    const g = this.material.gather;
-    if (this.mode === 'care') return [{ kind: 'whack' }];
-    if (this.mode === 'harvest' && g.type === 'plant') {
-      const engine = g.harvest.engine;
-      return engine === 'dig'
-        ? [{ kind: 'dig' }, { kind: 'dig' }, this.makeQuizStep()]
-        : [{ kind: engine }, this.makeQuizStep()];
-    }
-    if (g.type === 'timing' || g.type === 'dig') {
-      return [{ kind: g.type }, { kind: g.type }, { kind: g.type }, this.makeQuizStep()];
-    }
-    return [this.makeQuizStep()];
-  }
-
-  private makeQuizStep(): QuizStep {
-    const quiz = pickSessionQuiz(GAME_DATA.quizzes, this.matId);
-    if (!quiz) throw new Error(`quiz pool empty: ${this.matId}`);
-    return { kind: 'quiz', quiz };
-  }
-
-  private stepAdvance(delayMs: number): void {
-    this.time.delayedCall(delayMs, () => {
-      this.idx++;
-      this.renderStep();
-    });
-  }
-
-  /** ミニゲーム側に渡す足場(スコア加算・進行・演出はここに集約) */
+  /** ミニゲーム側に渡す足場 */
   private minigameApi(): MinigameApi {
     return {
       scene: this,
       area: this.area!,
       areaY: GAME_AREA_Y,
       addScore: (n) => {
-        this.score += n;
+        this.gameScore += n;
       },
-      advance: (delayMs) => this.stepAdvance(delayMs),
-      feedback: (text, good) => this.feedback(text, good),
+      advance: (delayMs) => {
+        this.time.delayedCall(delayMs, () => {
+          if (this.phase === 'game') {
+            this.phase = 'quiz';
+            this.renderQuiz();
+          } else {
+            this.phase = 'done';
+            this.finish();
+          }
+        });
+      },
+      feedback: () => undefined, // アーケード側が自前で演出するため未使用
       sign: (text) => this.sign(text),
     };
   }
 
-  private renderStep(): void {
+  /** 素材からアーケード種別を導出(データ駆動) */
+  private engineOf(): ArcadeEngine {
+    const g = this.material.gather;
+    if (this.mode === 'care') return 'care';
+    if (g.type === 'plant') return g.harvest.engine;
+    if (g.type === 'dig') return 'mine';
+    return 'fish'; // timing
+  }
+
+  private renderGame(): void {
     this.area?.destroy();
     this.area = this.add.container(0, GAME_AREA_Y);
-    const total = this.steps.length;
-    const g = this.material.gather;
-    const themeStages =
-      g.type === 'timing' || g.type === 'dig'
-        ? g.theme.stages
-        : this.mode === 'harvest'
-          ? ['🧺', '🧺', '✨']
-          : ['🌿', '🌿', '🌿'];
-    const stageIdx = Math.min(2, Math.floor((this.idx / total) * 3));
-    this.stage?.setText(this.idx >= total ? this.material.emoji : themeStages[stageIdx]);
-    this.dots.forEach((d, i) =>
-      d.setColor(i < this.idx ? '#6fbf44' : i === this.idx ? '#ff9f40' : '#ddd5c2'),
-    );
-
-    if (this.idx >= total) {
-      this.finish();
-      return;
-    }
-    const st = this.steps[this.idx];
     const api = this.minigameApi();
-    if (st.kind === 'quiz') this.renderQuizStep(st as QuizStep);
-    else if (st.kind === 'timing' && g.type === 'timing') renderTiming(api, g.theme);
-    else if (st.kind === 'dig') {
-      const prompt = g.type === 'dig' ? g.theme.prompt : g.type === 'plant' ? g.harvest.prompt : '';
-      renderDig(api, prompt, this.material.emoji);
-    } else if (st.kind === 'whack' && g.type === 'plant') {
-      renderWhack(api, g.care);
-    } else if (g.type === 'plant' && (st.kind === 'swipe' || st.kind === 'reap')) {
-      renderSwipe(api, {
-        target: g.harvest.target ?? this.material.emoji,
-        prompt: g.harvest.prompt,
-        count: HARVEST_COUNT[st.kind],
-        layout: st.kind === 'reap' ? 'rows' : 'cluster',
-        cursor: st.kind === 'reap' ? '🌾' : undefined,
-      });
-    } else if (st.kind === 'shake' && g.type === 'plant') {
-      renderShake(api, g.harvest.target ?? this.material.emoji, g.harvest.prompt, HARVEST_COUNT.shake);
-    } else if (st.kind === 'roll' && g.type === 'plant') {
-      renderRoll(api, g.harvest.target ?? this.material.emoji, g.harvest.prompt, HARVEST_COUNT.roll);
+    const g = this.material.gather;
+    const engine = this.engineOf();
+    const targetEmoji = (g.type === 'plant' ? g.harvest.target : undefined) ?? this.material.emoji;
+    const prompt =
+      g.type === 'plant' ? g.harvest.prompt : g.type === 'dig' || g.type === 'timing' ? g.theme.prompt : '';
+
+    if (engine === 'care' && g.type === 'plant') {
+      renderDefense(api, this.material.emoji, g.care.target, g.care.label, () => undefined);
+    } else if (engine === 'catch') {
+      renderCatch(api, targetEmoji, prompt);
+    } else if (engine === 'chain' || engine === 'reap') {
+      renderChain(api, targetEmoji, prompt, engine === 'reap');
+    } else if (engine === 'mine') {
+      renderMine(api, prompt, this.material.emoji);
+    } else if (engine === 'flick') {
+      renderFlick(api, targetEmoji, prompt);
+    } else {
+      renderFish(api, prompt);
     }
   }
 
   private sign(text: string): void {
     if (!this.area) return;
     const t = this.add
-      .text(GAME_W / 2, 0, text, {
+      .text(GAME_W / 2, 54, text, {
+        fontFamily: FONT,
+        fontSize: '14px',
+        color: TEXT_COLORS.main,
+        align: 'center',
+        wordWrap: { width: 400 },
+        backgroundColor: '#fff8e7',
+        padding: { x: 12, y: 6 },
+      })
+      .setOrigin(0.5, 0)
+      .setAlpha(0.95);
+    this.area.add(t);
+    // 最初の数秒だけ見せて、じゃまにならないよう薄くする
+    this.tweens.add({ targets: t, alpha: 0.25, delay: 4000, duration: 500 });
+  }
+
+  /* ---------- クイズステップ(スコアボーナス) ---------- */
+  private renderQuiz(): void {
+    if (this.mode === 'care') {
+      this.finish();
+      return;
+    }
+    this.area?.destroy();
+    this.area = this.add.container(0, GAME_AREA_Y);
+    this.cameras.main.setBackgroundColor(COLORS.ground);
+    const quiz = pickSessionQuiz(GAME_DATA.quizzes, this.matId);
+    if (!quiz) {
+      this.finish();
+      return;
+    }
+    const signText = this.add
+      .text(GAME_W / 2, 20, UI_TEXT.session.quizSign, {
         fontFamily: FONT,
         fontSize: '15px',
         color: TEXT_COLORS.main,
         align: 'center',
-        wordWrap: { width: 380 },
         backgroundColor: '#fff8e7',
         padding: { x: 14, y: 8 },
       })
       .setOrigin(0.5, 0);
-    this.area.add(t);
-  }
-
-  private feedback(text: string, good: boolean): void {
-    if (!this.area) return;
-    const t = this.add
-      .text(GAME_W / 2, GAME_AREA_H - 30, text, {
-        fontFamily: FONT,
-        fontSize: '17px',
-        color: good ? TEXT_COLORS.good : TEXT_COLORS.accent,
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5);
-    this.area.add(t);
-  }
-
-  /* ---------- クイズステップ ---------- */
-  private renderQuizStep(st: QuizStep): void {
-    this.sign(UI_TEXT.session.quizSign);
-    const view = buildQuizView(this, st.quiz, (ok, delay) => {
-      if (ok) this.score++;
-      this.stepAdvance(delay);
+    this.area.add(signText);
+    const view = buildQuizView(this, quiz, (ok, delay) => {
+      this.quizCorrect = ok;
+      this.time.delayedCall(delay, () => {
+        this.phase = 'done';
+        this.finish();
+      });
     });
-    view.container.setPosition(GAME_W / 2, 60);
-    this.area?.add(view.container);
+    view.container.setPosition(GAME_W / 2, 90);
+    this.area.add(view.container);
   }
 
   /* ---------- セッション終了 ---------- */
@@ -282,8 +229,9 @@ export class SessionScene extends Phaser.Scene {
       careDone = s.plots[plotKey(this.prefId, this.matId)]?.careDone ?? false;
       clearPlot(s, this.matId, this.prefId);
     }
-    const pts = sessionPoints(this.score, careDone);
-    const stars = calcStars(pts, this.maxBase);
+    const t = ARCADE_TUNING[this.engineOf()];
+    const score = totalScore(this.gameScore, t, { quizCorrect: this.quizCorrect, careDone });
+    const stars = calcStars(score, t);
     const yieldN = harvestYield(stars);
     registerMaterial(s, this.matId, this.prefId, stars, yieldN);
     const compNow = markSanchiCompleteOnce(s, this.material);
@@ -312,6 +260,7 @@ export class SessionScene extends Phaser.Scene {
     modal.add(this.add.text(0, 0, this.material.emoji, { fontSize: '56px' }).setOrigin(0.5), 62);
     modal.addText(successWord, 18);
     modal.add(makeStarRow(this, stars), 48);
+    modal.addText(UI_TEXT.session.scoreLine(score), 16, TEXT_COLORS.accent);
     modal.addText(`${UI_TEXT.session.gotItems(this.material.name, yieldN)}\n${note}`, 15, TEXT_COLORS.sub);
     modal.addButton(UI_TEXT.session.backBtn, COLORS.primary, () => {
       modal.close();

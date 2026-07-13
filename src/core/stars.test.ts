@@ -1,71 +1,68 @@
 import { describe, expect, it } from 'vitest';
 import {
   calcStars,
-  CARE_BONUS,
-  harvestSpeedPoints,
+  CARE_BONUS_RATIO,
+  comboMultiplier,
   harvestYield,
-  sessionMaxBase,
-  sessionPoints,
+  QUIZ_BONUS_RATIO,
+  totalScore,
 } from './stars';
 
-describe('sessionMaxBase(セッション満点)', () => {
-  it('なぞり収穫: swipe(2) + quiz(1) = 3', () => {
-    expect(sessionMaxBase([{ kind: 'swipe' }, { kind: 'quiz' }])).toBe(3);
+const T = { star2: 150, star3: 320 };
+
+describe('calcStars(スコア実力制)', () => {
+  it('★3 = star3 以上', () => {
+    expect(calcStars(320, T)).toBe(3);
+    expect(calcStars(999, T)).toBe(3);
   });
 
-  it('ゆさぶり/ころがし収穫も同様に2pt扱い', () => {
-    expect(sessionMaxBase([{ kind: 'shake' }, { kind: 'quiz' }])).toBe(3);
-    expect(sessionMaxBase([{ kind: 'roll' }, { kind: 'quiz' }])).toBe(3);
-    expect(sessionMaxBase([{ kind: 'reap' }, { kind: 'quiz' }])).toBe(3);
+  it('★2 = star2 以上 star3 未満', () => {
+    expect(calcStars(150, T)).toBe(2);
+    expect(calcStars(319, T)).toBe(2);
   });
 
-  it('掘り進め収穫: dig×2 + quiz = 5', () => {
-    expect(sessionMaxBase([{ kind: 'dig' }, { kind: 'dig' }, { kind: 'quiz' }])).toBe(5);
-  });
-
-  it('待ちなし(timing): timing×3 + quiz = 4', () => {
-    expect(sessionMaxBase([{ kind: 'timing' }, { kind: 'timing' }, { kind: 'timing' }, { kind: 'quiz' }])).toBe(4);
-  });
-});
-
-describe('calcStars(★変換)', () => {
-  it('満点以上で★3', () => {
-    expect(calcStars(3, 3)).toBe(3);
-    expect(calcStars(4, 3)).toBe(3);
-  });
-
-  it('2pt以上で★2', () => {
-    expect(calcStars(2, 3)).toBe(2);
-  });
-
-  it('0〜1ptでも★1(失敗・全損なし=成功保証)', () => {
-    expect(calcStars(1, 3)).toBe(1);
-    expect(calcStars(0, 3)).toBe(1);
-  });
-
-  it('おせわ保険: 満点-1でも careDone なら★3に届く', () => {
-    const maxBase = 3;
-    const score = 2;
-    expect(calcStars(sessionPoints(score, false), maxBase)).toBe(2);
-    expect(calcStars(sessionPoints(score, true), maxBase)).toBe(3);
-    expect(CARE_BONUS).toBe(1);
+  it('0点でも★1(失敗・全損なし=成功保証の床)', () => {
+    expect(calcStars(0, T)).toBe(1);
+    expect(calcStars(149, T)).toBe(1);
   });
 });
 
-describe('harvestYield / harvestSpeedPoints', () => {
+describe('totalScore(ボーナス加算)', () => {
+  it('クイズ正解 = ★3しきい値の15%を加算', () => {
+    expect(totalScore(100, T, { quizCorrect: true })).toBe(100 + Math.round(320 * QUIZ_BONUS_RATIO));
+  });
+
+  it('おせわ保険 = ★3しきい値の20%を加算', () => {
+    expect(totalScore(100, T, { careDone: true })).toBe(100 + Math.round(320 * CARE_BONUS_RATIO));
+  });
+
+  it('両方あれば両方加算・無指定なら素点のまま', () => {
+    expect(totalScore(100, T)).toBe(100);
+    expect(totalScore(100, T, { quizCorrect: true, careDone: true })).toBe(
+      100 + Math.round(320 * QUIZ_BONUS_RATIO) + Math.round(320 * CARE_BONUS_RATIO),
+    );
+  });
+
+  it('保険+クイズで★の境界を越えられる(あと一歩を救済する保険の役割)', () => {
+    const nearMiss = T.star3 - Math.round(T.star3 * QUIZ_BONUS_RATIO);
+    expect(calcStars(totalScore(nearMiss, T), T)).toBe(2);
+    expect(calcStars(totalScore(nearMiss, T, { quizCorrect: true }), T)).toBe(3);
+  });
+});
+
+describe('harvestYield / comboMultiplier', () => {
   it('★3は おまけつきで2個、★2/★1は1個', () => {
     expect(harvestYield(3)).toBe(2);
     expect(harvestYield(2)).toBe(1);
     expect(harvestYield(1)).toBe(1);
   });
 
-  it('既定9秒以内=2pt、超過=1pt', () => {
-    expect(harvestSpeedPoints(9000)).toBe(2);
-    expect(harvestSpeedPoints(9001)).toBe(1);
-  });
-
-  it('しきい値を指定できる(掘り進めは6秒基準など)', () => {
-    expect(harvestSpeedPoints(6000, 6000)).toBe(2);
-    expect(harvestSpeedPoints(6001, 6000)).toBe(1);
+  it('コンボ倍率: 5ごとに+1、最大×4', () => {
+    expect(comboMultiplier(0)).toBe(1);
+    expect(comboMultiplier(4)).toBe(1);
+    expect(comboMultiplier(5)).toBe(2);
+    expect(comboMultiplier(10)).toBe(3);
+    expect(comboMultiplier(15)).toBe(4);
+    expect(comboMultiplier(99)).toBe(4);
   });
 });
