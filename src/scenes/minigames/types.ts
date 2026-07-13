@@ -13,4 +13,6 @@ export interface MinigameApi {
   advance: (delayMs: number) => void;
   feedback: (text: string, good: boolean) => void;
   sign: (text: string) => void;
+  /** ゲーム固有の★3条件(例: フィッシングの「ぬし」)を満たしていない時に true を渡す */
+  lockStar3: (locked: boolean) => void;
 }

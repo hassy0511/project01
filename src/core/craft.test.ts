@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GAME_DATA, findRecipe, type Recipe } from '../data/gameData';
-import { applyCraft, applyFestival, craftable, isJimoto, matchItems, pickConsume } from './craft';
+import { applyCraft, applyFestival, craftable, isJimoto, matchItems, pickConsume, updateFestBest } from './craft';
 import { defaultState, type InvItem } from './state';
 
 const recipe = (id: string): Recipe => {
@@ -137,5 +137,37 @@ describe('applyFestival', () => {
     expect(state.fest).toContain('rf1');
     expect(state.inv).toHaveLength(0);
     expect(state.zukanProd['rf1']).toBeUndefined();
+  });
+
+  it('なんどでも開催できる: 2回目も消費するが fest は重複しない', () => {
+    const state = defaultState();
+    state.inv = [
+      item('r03', 'ibaraki', null),
+      item('r05', 'ibaraki', null),
+      item('r03', 'ibaraki', null),
+      item('r05', 'ibaraki', null),
+    ];
+    applyFestival(state, recipe('rf1'));
+    applyFestival(state, recipe('rf1'));
+    expect(state.inv).toHaveLength(0);
+    expect(state.fest.filter((id) => id === 'rf1')).toHaveLength(1);
+  });
+});
+
+describe('updateFestBest', () => {
+  it('きろく更新のときだけ true を返し、スコアを保存する', () => {
+    const state = defaultState();
+    expect(updateFestBest(state, 'rf1', 300)).toBe(true);
+    expect(state.festBest['rf1']).toBe(300);
+    expect(updateFestBest(state, 'rf1', 200)).toBe(false);
+    expect(state.festBest['rf1']).toBe(300);
+    expect(updateFestBest(state, 'rf1', 350)).toBe(true);
+    expect(state.festBest['rf1']).toBe(350);
+  });
+
+  it('同点は こうしんに ならない', () => {
+    const state = defaultState();
+    updateFestBest(state, 'rf1', 300);
+    expect(updateFestBest(state, 'rf1', 300)).toBe(false);
   });
 });

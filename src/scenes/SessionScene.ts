@@ -38,6 +38,7 @@ export class SessionScene extends Phaser.Scene {
   private material!: Material;
   private gameScore = 0;
   private quizCorrect = false;
+  private star3Locked = false;
   private phase: 'game' | 'quiz' | 'done' = 'game';
   private area?: Phaser.GameObjects.Container;
 
@@ -62,6 +63,7 @@ export class SessionScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(COLORS.ground);
     this.gameScore = 0;
     this.quizCorrect = false;
+    this.star3Locked = false;
     this.phase = 'game';
 
     // ヘッダー
@@ -121,6 +123,9 @@ export class SessionScene extends Phaser.Scene {
       },
       feedback: () => undefined, // アーケード側が自前で演出するため未使用
       sign: (text) => this.sign(text),
+      lockStar3: (locked) => {
+        this.star3Locked = locked;
+      },
     };
   }
 
@@ -234,7 +239,9 @@ export class SessionScene extends Phaser.Scene {
     }
     const t = ARCADE_TUNING[this.engineOf()];
     const score = totalScore(this.gameScore, t, { quizCorrect: this.quizCorrect, careDone });
-    const stars = calcStars(score, t);
+    let stars = calcStars(score, t);
+    const bossBlocked = this.star3Locked && stars === 3;
+    if (bossBlocked) stars = 2; // ★3はゲーム固有条件(ぬし等)を満たさないと取れない
     const yieldN = harvestYield(stars);
     registerMaterial(s, this.matId, this.prefId, stars, yieldN);
     const compNow = markSanchiCompleteOnce(s, this.material);
@@ -252,8 +259,13 @@ export class SessionScene extends Phaser.Scene {
       (g.type === 'timing' || g.type === 'dig' ? g.theme.success : undefined) ??
       (g.type === 'plant' ? g.harvest.success : undefined) ??
       UI_TEXT.session.harvestSuccess;
-    const note =
-      stars === 3 ? UI_TEXT.session.star3Note : stars === 2 ? UI_TEXT.session.star2Note : UI_TEXT.session.star1Note;
+    const note = bossBlocked
+      ? UI_TEXT.session.bossNote
+      : stars === 3
+        ? UI_TEXT.session.star3Note
+        : stars === 2
+          ? UI_TEXT.session.star2Note
+          : UI_TEXT.session.star1Note;
 
     if (stars === 3) {
       screenFlash(this, 0xfff2c4, 0.35);

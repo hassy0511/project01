@@ -2,9 +2,10 @@
    クイズ出題プール選択(kaitaku / sozai / bunka の使い分け)
    GAME_SPEC「クイズ設計」の規律を実装:
    - 産地を問う問題(kaitaku)は開拓専用。育成・レシピには混ぜない
-   - 育成中のセッションクイズ = sozai のみ
-   - レシピ探索 = sozai + bunka のみ
-   - プール不足時に無関係カテゴリで補充しない(形・位置は決して漏らさない)
+   - 出題は必ず「タップしたもの」に関係する問題のみ。
+     無関係な問題での補充(フォールバック)はしない — プールが空なら出題自体をスキップする
+   - 育成中のセッションクイズ = その素材にタグ一致する sozai のみ
+   - レシピ探索 = そのレシピ or 材料にタグ一致する sozai/bunka のみ
    乱数は rng を注入できる(テスト・リプレイ用)。
    ===================================================== */
 import type { Quiz, Recipe } from '../data/gameData';
@@ -36,49 +37,38 @@ export function kaitakuKnowledgePool(quizzes: Quiz[], prefId: string): Quiz[] {
   return quizzes.filter((q) => q.kind === 'kaitaku' && !q.type && q.tags.includes(prefId));
 }
 
-/** 開拓時の出題: 形/位置1問 + 知識1問(プールが空なら該当分は出さない) */
-export function pickKaitakuQuizzes(quizzes: Quiz[], prefId: string, rng: Rng = Math.random): Quiz[] {
-  const idQ = pickRandom(kaitakuIdPool(quizzes, prefId), rng);
-  const knowQ = pickRandom(kaitakuKnowledgePool(quizzes, prefId), rng);
-  return [idQ, knowQ].filter((q): q is Quiz => q !== undefined);
-}
-
 /**
- * 育成セッション用プール: sozai のみ(形・位置・開拓は決して混ぜない)。
- * その素材にタグ一致するものを優先し、無ければ sozai 全体から。
+ * 開拓の出題: 形/位置クイズを1問だけ(県名を直接当てる。
+ * 不正解なら開拓失敗 → 何度でも再挑戦できる)
  */
-export function sessionQuizPool(quizzes: Quiz[], matId: string): Quiz[] {
-  const isSozai = (q: Quiz): boolean => !q.type && q.kind === 'sozai';
-  const tagged = quizzes.filter((q) => isSozai(q) && q.tags.includes(matId));
-  return tagged.length ? tagged : quizzes.filter(isSozai);
+export function pickKaitakuQuiz(quizzes: Quiz[], prefId: string, rng: Rng = Math.random): Quiz | undefined {
+  return pickRandom(kaitakuIdPool(quizzes, prefId), rng);
 }
 
+/** 育成セッション用プール: その素材にタグ一致する sozai のみ(無関係な補充はしない) */
+export function sessionQuizPool(quizzes: Quiz[], matId: string): Quiz[] {
+  return quizzes.filter((q) => !q.type && q.kind === 'sozai' && q.tags.includes(matId));
+}
+
+/** 出題1問。プールが空なら undefined(呼び出し側はクイズをスキップする) */
 export function pickSessionQuiz(quizzes: Quiz[], matId: string, rng: Rng = Math.random): Quiz | undefined {
   return pickRandom(sessionQuizPool(quizzes, matId), rng);
 }
 
 /**
- * レシピ探索用プール: sozai + bunka のみ。県タグ一致 or
- * 材料・レシピ自身の ref にタグ一致するものを優先し、
- * 2問に満たなければ sozai 全体から補充(bunka や kaitaku では補充しない)。
+ * レシピ探索用プール: そのレシピ自身 or 材料の ref にタグ一致する sozai/bunka のみ。
+ * 県タグだけの一致や、足りない時の無関係な補充はしない
  */
-export function recipeQuizPool(quizzes: Quiz[], recipe: Recipe, prefId: string): Quiz[] {
-  const refs = recipe.ingredients.map((g) => g.ref).concat([recipe.id]);
-  let pool = quizzes.filter(
-    (q) =>
-      !q.type &&
-      (q.kind === 'sozai' || q.kind === 'bunka') &&
-      (q.tags.includes(prefId) || q.tags.some((t) => refs.includes(t))),
+export function recipeQuizPool(quizzes: Quiz[], recipe: Recipe): Quiz[] {
+  const refs = new Set<string>(recipe.ingredients.map((g) => g.ref).concat([recipe.id]));
+  return quizzes.filter(
+    (q) => !q.type && (q.kind === 'sozai' || q.kind === 'bunka') && q.tags.some((t) => refs.has(t)),
   );
-  if (pool.length < 2) {
-    pool = pool.concat(quizzes.filter((q) => q.kind === 'sozai' && !pool.includes(q)));
-  }
-  return pool;
 }
 
-/** レシピ探索の出題: プールから2問 */
-export function pickRecipeQuizzes(quizzes: Quiz[], recipe: Recipe, prefId: string, rng: Rng = Math.random): Quiz[] {
-  return shuffle(recipeQuizPool(quizzes, recipe, prefId), rng).slice(0, 2);
+/** レシピ探索の出題: 関係する問題から最大2問(1問しか無ければ1問) */
+export function pickRecipeQuizzes(quizzes: Quiz[], recipe: Recipe, rng: Rng = Math.random): Quiz[] {
+  return shuffle(recipeQuizPool(quizzes, recipe), rng).slice(0, 2);
 }
 
 /** 選択肢の表示順を毎回シャッフルする(answer は元 index のまま)。表示用の並び順 index 配列を返す */

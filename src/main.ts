@@ -3,10 +3,12 @@ import { BootScene } from './scenes/BootScene';
 import { MapScene } from './scenes/MapScene';
 import { PrefScene } from './scenes/PrefScene';
 import { SessionScene } from './scenes/SessionScene';
+import { FestivalScene } from './scenes/FestivalScene';
 import { ZukanScene } from './scenes/ZukanScene';
 import { InvScene } from './scenes/InvScene';
 import { GAME_H, GAME_W } from './ui/theme';
 import { resumeAudio } from './audio/sfx';
+import { startBgm } from './audio/bgm';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -18,7 +20,7 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, MapScene, PrefScene, SessionScene, ZukanScene, InvScene],
+  scene: [BootScene, MapScene, PrefScene, SessionScene, FestivalScene, ZukanScene, InvScene],
 };
 
 const game = new Phaser.Game(config);
@@ -31,5 +33,12 @@ declare global {
 }
 window.__game = game;
 
-// iOS Safari の AudioContext 制約: 初回タップで resume する
-document.addEventListener('pointerdown', () => resumeAudio(), { once: true });
+// iOS Safari の AudioContext 制約: 初回タップで resume し、BGM も始める
+document.addEventListener(
+  'pointerdown',
+  () => {
+    resumeAudio();
+    startBgm();
+  },
+  { once: true },
+);

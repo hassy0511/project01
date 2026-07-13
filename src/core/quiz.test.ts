@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { GAME_DATA, findRecipe } from '../data/gameData';
 import {
   kaitakuKnowledgePool,
-  pickKaitakuQuizzes,
+  pickKaitakuQuiz,
   pickRecipeQuizzes,
   recipeQuizPool,
   sessionQuizPool,
@@ -22,56 +22,59 @@ const seededRng = (seed: number): (() => number) => {
   };
 };
 
-describe('クイズプール分離(v0.4 で確定した規律)', () => {
+describe('クイズプール分離(文脈規律)', () => {
   it('「さんち」カテゴリは廃止済み', () => {
     expect(quizzes.some((q) => (q.kind as string) === 'sanchi')).toBe(false);
   });
 
-  it('育成プール: 全そざいで空にならず、形・位置・開拓が混入しない', () => {
+  it('育成プール: 収穫セッションのある全そざいに「その素材にタグ一致する」問題だけがある', () => {
     for (const m of GAME_DATA.materials) {
+      if (m.gather.type === 'infra') continue; // 育成セッションが無い
       const pool = sessionQuizPool(quizzes, m.id);
-      expect(pool.length, `empty quiz pool for ${m.id}`).toBeGreaterThan(0);
-      expect(
-        pool.some((q) => q.type || q.kind === 'kaitaku' || q.kind === 'bunka'),
-        `wrong quiz leaked for ${m.id}`,
-      ).toBe(false);
+      expect(pool.length, `no tagged quiz for ${m.id}`).toBeGreaterThan(0);
+      for (const q of pool) {
+        expect(q.kind).toBe('sozai');
+        expect(q.type).toBeUndefined();
+        expect(q.tags, `${q.id} must be tagged with ${m.id}`).toContain(m.id);
+      }
     }
   });
 
-  it('開拓の知識クイズが各アクティブ県に3問以上ある', () => {
+  it('開拓の知識クイズプールは維持されている(各アクティブ県に3問以上)', () => {
     for (const pid of activePrefs) {
       expect(kaitakuKnowledgePool(quizzes, pid).length, pid).toBeGreaterThanOrEqual(3);
     }
   });
 
-  it('開拓出題: 形/位置1問 + 知識1問(タグは対象県)', () => {
+  it('開拓出題: 形/位置クイズを1問だけ(県名を直接当てる)', () => {
     for (const pid of activePrefs) {
-      const qs = pickKaitakuQuizzes(quizzes, pid, seededRng(42));
-      expect(qs).toHaveLength(2);
-      expect(qs[0].type === 'shape' || qs[0].type === 'position').toBe(true);
-      expect(qs[1].kind).toBe('kaitaku');
-      expect(qs[1].type).toBeUndefined();
-      for (const q of qs) expect(q.tags).toContain(pid);
+      const q = pickKaitakuQuiz(quizzes, pid, seededRng(42));
+      expect(q).toBeDefined();
+      expect(q!.type === 'shape' || q!.type === 'position').toBe(true);
+      expect(q!.tags).toContain(pid);
     }
   });
 
-  it('レシピ探索プール: sozai/bunka のみで形・位置・開拓が混入しない', () => {
+  it('レシピ探索プール: レシピ自身か材料に関係する問題のみ(県タグだけの一致や補充はしない)', () => {
     for (const r of GAME_DATA.recipes) {
-      const pool = recipeQuizPool(quizzes, r, r.pref);
-      expect(pool.length, `pool for ${r.id}`).toBeGreaterThanOrEqual(2);
-      expect(
-        pool.some((q) => q.type || q.kind === 'kaitaku'),
-        `wrong quiz leaked for ${r.id}`,
-      ).toBe(false);
+      const refs = new Set(r.ingredients.map((g) => g.ref).concat([r.id]));
+      const pool = recipeQuizPool(quizzes, r);
+      expect(pool.length, `no related quiz for ${r.id}`).toBeGreaterThanOrEqual(1);
+      for (const q of pool) {
+        expect(q.type, q.id).toBeUndefined();
+        expect(q.kind === 'sozai' || q.kind === 'bunka', q.id).toBe(true);
+        expect(q.tags.some((t) => refs.has(t)), `${q.id} is unrelated to ${r.id}`).toBe(true);
+      }
     }
   });
 
-  it('レシピ探索の出題は2問', () => {
+  it('レシピ探索の出題は最大2問・重複なし', () => {
     const recipe = findRecipe(GAME_DATA, 'r01');
     if (!recipe) throw new Error('r01 not found');
-    const qs = pickRecipeQuizzes(quizzes, recipe, 'ibaraki', seededRng(7));
-    expect(qs).toHaveLength(2);
-    expect(new Set(qs.map((q) => q.id)).size).toBe(2);
+    const qs = pickRecipeQuizzes(quizzes, recipe, seededRng(7));
+    expect(qs.length).toBeGreaterThanOrEqual(1);
+    expect(qs.length).toBeLessThanOrEqual(2);
+    expect(new Set(qs.map((q) => q.id)).size).toBe(qs.length);
   });
 });
 

@@ -1,9 +1,11 @@
-/* いねかり(こめ): たんぼの列を横になぞって刈る。
+/* いねかり(こめ): たんぼの列をなぞって刈る。
    1列を一筆(指を離さず)で刈りきると「ひとふでがり!」ボーナス。
+   列には🐸カエルが座っていることがある: なぞりで触れると一筆が途切れてコンボ切れ。
+   先にタップで逃がしてから刈る、の判断が入る(まっすぐ引くだけにならない)。
    刈った列は少しずつ生えてくるので、45秒間 刈りつづける */
 import Phaser from 'phaser';
 import { SFX } from '../../audio/sfx';
-import { burst, floatUp } from '../../ui/effects';
+import { burst, floatUp, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
@@ -18,11 +20,18 @@ const CUT_RADIUS = 34;
 const STALK_PTS = 3;
 const ROW_BONUS = 20;
 const REGROW_MS = 1600;
+/** カエルが列に座っている確率(時間経過で少し上がる) */
+const FROG_BASE_CHANCE = 0.55;
 
 interface Stalk {
   obj: Phaser.GameObjects.Text;
   alive: boolean;
   strokeId: number; // どの一筆で刈られたか
+}
+
+interface Frog {
+  obj: Phaser.GameObjects.Text;
+  row: number;
 }
 
 export function renderReap(api: MinigameApi, prompt: string): void {
@@ -53,7 +62,46 @@ export function renderReap(api: MinigameApi, prompt: string): void {
   });
 
   const rows: Stalk[][] = [];
+  const frogs: Frog[] = [];
   const stalkX = (c: number): number => 62 + c * ((GAME_W - 124) / (STALKS_PER_ROW - 1));
+
+  const removeFrog = (f: Frog, jumpDx: number): void => {
+    const idx = frogs.indexOf(f);
+    if (idx >= 0) frogs.splice(idx, 1);
+    f.obj.disableInteractive();
+    // ぴょんと放物線でにげる
+    scene.tweens.add({ targets: f.obj, x: f.obj.x + jumpDx, duration: 500, ease: 'Sine.easeOut' });
+    scene.tweens.add({
+      targets: f.obj,
+      y: f.obj.y - 70,
+      duration: 250,
+      ease: 'Quad.easeOut',
+      yoyo: true,
+      onComplete: () => scene.tweens.add({ targets: f.obj, alpha: 0, duration: 200, onComplete: () => f.obj.destroy() }),
+    });
+    SFX.pop();
+  };
+
+  const placeFrog = (r: number): void => {
+    const chance = FROG_BASE_CHANCE + session.progress() * 0.25;
+    if (Math.random() > chance) return;
+    const c = 1 + Math.floor(Math.random() * (STALKS_PER_ROW - 2));
+    const y = ROW_Y0 + r * ROW_GAP;
+    const obj = scene.add
+      .text(stalkX(c), y - 34, '🐸', { fontSize: '30px' })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
+    area.add(obj);
+    scene.tweens.add({ targets: obj, y: y - 40, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    const frog: Frog = { obj, row: r };
+    frogs.push(frog);
+    // タップで先に逃がせる(ペナルティなし)
+    obj.on('pointerdown', () => {
+      if (session.isEnded() || !obj.active) return;
+      scene.tweens.killTweensOf(obj);
+      removeFrog(frog, (Math.random() < 0.5 ? -1 : 1) * 120);
+    });
+  };
 
   const plantRow = (r: number, animate: boolean): void => {
     const y = ROW_Y0 + r * ROW_GAP;
@@ -75,15 +123,34 @@ export function renderReap(api: MinigameApi, prompt: string): void {
       });
       rows[r].push({ obj, alive: true, strokeId: -1 });
     }
+    placeFrog(r);
   };
   for (let r = 0; r < ROWS; r++) plantRow(r, false);
 
   let strokeId = 0;
   let strokeActive = false;
 
+  let stunnedUntil = 0;
+
   const cutAt = (px: number, py: number): void => {
-    if (session.isEnded()) return;
+    if (session.isEnded() || Date.now() < stunnedUntil) return;
     const y = py - api.areaY;
+    // なぞりの途中でカエルに触れた: びっくりして一筆が途切れる
+    if (strokeActive) {
+      for (const f of frogs) {
+        if (!f.obj.active) continue;
+        if (Math.hypot(px - f.obj.x, y - f.obj.y) < 34) {
+          strokeActive = false;
+          stunnedUntil = Date.now() + 450;
+          session.resetCombo();
+          missShake(scene);
+          SFX.bad();
+          scene.tweens.killTweensOf(f.obj);
+          removeFrog(f, (Math.random() < 0.5 ? -1 : 1) * 140);
+          return;
+        }
+      }
+    }
     for (let r = 0; r < ROWS; r++) {
       const rowY = ROW_Y0 + r * ROW_GAP;
       if (Math.abs(y - rowY + 12) > 44) continue;

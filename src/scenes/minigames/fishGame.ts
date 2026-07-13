@@ -1,9 +1,10 @@
-/* フィッシング(いわし): 泳ぐ魚をタップで釣り上げる。小さい魚ほど速い。
-   大物は2回タップ(掛ける→引き上げる)で、逃すとコンボが切れる。
-   時間経過で魚が速く・多くなる */
+/* フィッシング(いわし): 泳ぐ魚をタップで釣り上げる。
+   小=1タップ / 中=2タップ / 大=3タップ / ぬし=4タップ(セッション中1〜2回だけ出現)。
+   一度タップされた魚は「回遊」を始める(画面内で折り返す)が、タップのたびに加速し、
+   次のタップが遅れると逃げる。★3は ぬしを つりあげないと取れない */
 import Phaser from 'phaser';
 import { SFX } from '../../audio/sfx';
-import { burst, impactRing, missShake } from '../../ui/effects';
+import { burst, impactRing, missShake, screenFlash } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { FONT, GAME_W } from '../../ui/theme';
 import { drawSea } from '../../ui/scenery';
@@ -13,21 +14,29 @@ import type { MinigameApi } from './types';
 const AREA_H = 660;
 const SEA_TOP = 190;
 const BOAT_Y = 168;
+/** タップ間の猶予(これを過ぎると逃げる) */
+const TAP_WINDOW_MS = 1500;
+/** タップごとの加速率 */
+const TAP_SPEEDUP = 1.32;
+/** ぬしが現れるタイミング(経過率) */
+const BOSS_TIMES = [0.28, 0.66] as const;
 
 interface FishSpec {
   emoji: string;
   pts: number;
+  taps: number;
   speed: [number, number];
   size: number;
-  big: boolean;
   weight: number;
 }
 
 const FISH_TYPES: FishSpec[] = [
-  { emoji: '🐟', pts: 10, speed: [95, 150], size: 30, big: false, weight: 0.62 },
-  { emoji: '🐠', pts: 20, speed: [65, 100], size: 36, big: false, weight: 0.3 },
-  { emoji: '🐡', pts: 50, speed: [42, 60], size: 46, big: true, weight: 0.08 },
+  { emoji: '🐟', pts: 10, taps: 1, speed: [95, 150], size: 30, weight: 0.55 },
+  { emoji: '🐠', pts: 25, taps: 2, speed: [70, 110], size: 38, weight: 0.32 },
+  { emoji: '🐡', pts: 50, taps: 3, speed: [55, 85], size: 46, weight: 0.13 },
 ];
+
+const BOSS: FishSpec = { emoji: '🐋', pts: 120, taps: 4, speed: [60, 90], size: 64, weight: 0 };
 
 export function renderFish(api: MinigameApi, prompt: string): void {
   const { scene, area } = api;
@@ -59,17 +68,23 @@ export function renderFish(api: MinigameApi, prompt: string): void {
     obj: Phaser.GameObjects.Text;
     spec: FishSpec;
     vx: number;
-    hooked: boolean;
-    hookedAt: number;
+    tapsLeft: number;
+    /** タップ済み=回遊モード(画面内で折り返す) */
+    patrol: boolean;
+    lastTapAt: number;
+    isBoss: boolean;
     hint?: Phaser.GameObjects.Text;
   }
   const fishes: Swimmer[] = [];
   let spawnTimer: Phaser.Time.TimerEvent | undefined;
+  let bossCaught = false;
+  const bossSpawned = [false, false];
 
   const session = new ArcadeSession(api, {
     engine: 'fish',
     onEnd: () => {
       cleanup();
+      api.lockStar3(!bossCaught);
       api.addScore(session.score);
       api.advance(400);
     },
@@ -85,39 +100,47 @@ export function renderFish(api: MinigameApi, prompt: string): void {
     return FISH_TYPES[0];
   };
 
-  const spawn = (): void => {
-    if (session.isEnded()) return;
-    const spec = pickSpec();
+  const makeSwimmer = (spec: FishSpec, isBoss: boolean): void => {
     const fromLeft = Math.random() < 0.5;
     const depth = SEA_TOP + 60 + Math.random() * (AREA_H - SEA_TOP - 110);
-    const speedBoost = Phaser.Math.Linear(1, 1.55, session.progress());
-    const speed = Phaser.Math.Between(spec.speed[0], spec.speed[1]) * speedBoost;
+    const speedBoost = Phaser.Math.Linear(1, 1.5, session.progress());
+    const speed = Phaser.Math.Between(spec.speed[0], spec.speed[1]) * (isBoss ? 1 : speedBoost);
     const obj = scene.add
-      .text(fromLeft ? -30 : GAME_W + 30, depth, spec.emoji, { fontSize: `${spec.size}px` })
+      .text(fromLeft ? -40 : GAME_W + 40, depth, spec.emoji, { fontSize: `${spec.size}px` })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
-    obj.setFlipX(!fromLeft); // 進行方向を向く(🐟は左向き絵文字)
-    if (fromLeft) obj.setFlipX(true);
+    obj.setFlipX(fromLeft);
     area.add(obj);
-    const swimmer: Swimmer = { obj, spec, vx: fromLeft ? speed : -speed, hooked: false, hookedAt: 0 };
+    const swimmer: Swimmer = {
+      obj,
+      spec,
+      vx: fromLeft ? speed : -speed,
+      tapsLeft: spec.taps,
+      patrol: false,
+      lastTapAt: 0,
+      isBoss,
+    };
     fishes.push(swimmer);
 
     obj.on('pointerdown', () => {
       if (session.isEnded() || !obj.active) return;
-      if (!swimmer.spec.big) {
+      swimmer.tapsLeft--;
+      if (swimmer.tapsLeft <= 0) {
         land(swimmer);
         return;
       }
-      if (!swimmer.hooked) {
-        // 大物: 1回目のタップで「掛かった!」→ 暴れ出す。1.2秒以内にもう1回で釣り上げ
-        swimmer.hooked = true;
-        swimmer.hookedAt = Date.now();
-        SFX.hint();
-        impactRing(scene, obj.x, obj.y + api.areaY, 0xffd34d, 14);
+      // まだ釣り上がらない: 回遊モードに入り、暴れて加速+反転
+      swimmer.patrol = true;
+      swimmer.lastTapAt = Date.now();
+      swimmer.vx = -swimmer.vx * TAP_SPEEDUP;
+      SFX.hint();
+      impactRing(scene, obj.x, obj.y + api.areaY, swimmer.isBoss ? 0xffd34d : 0xffffff, 12);
+      scene.tweens.add({ targets: obj, angle: { from: -12, to: 12 }, duration: 60, yoyo: true, repeat: 2 });
+      if (!swimmer.hint) {
         swimmer.hint = scene.add
-          .text(obj.x, obj.y - 34, UI_TEXT.arcade.again, {
+          .text(obj.x, obj.y - spec.size / 2 - 16, '', {
             fontFamily: FONT,
-            fontSize: '16px',
+            fontSize: '17px',
             color: '#e0812a',
             fontStyle: 'bold',
             stroke: '#ffffff',
@@ -125,34 +148,83 @@ export function renderFish(api: MinigameApi, prompt: string): void {
           })
           .setOrigin(0.5);
         area.add(swimmer.hint);
-        swimmer.vx *= 2.4; // 暴れて加速
-      } else {
-        land(swimmer);
       }
+      swimmer.hint.setText(UI_TEXT.arcade.tapsLeft(swimmer.tapsLeft));
     });
+  };
 
+  const spawn = (): void => {
+    if (session.isEnded()) return;
+    makeSwimmer(pickSpec(), false);
     const interval = Phaser.Math.Linear(1000, 480, session.progress());
     spawnTimer = scene.time.delayedCall(interval, spawn);
+  };
+
+  const spawnBoss = (): void => {
+    SFX.fanfare();
+    const banner = scene.add
+      .text(GAME_W / 2, 260, UI_TEXT.arcade.bossAppear, {
+        fontFamily: FONT,
+        fontSize: '26px',
+        color: '#e0812a',
+        fontStyle: 'bold',
+        stroke: '#ffffff',
+        strokeThickness: 6,
+      })
+      .setOrigin(0.5)
+      .setScale(0);
+    area.add(banner);
+    scene.tweens.add({
+      targets: banner,
+      scale: 1,
+      ease: 'Back.easeOut',
+      duration: 300,
+      onComplete: () =>
+        scene.tweens.add({ targets: banner, alpha: 0, delay: 900, duration: 300, onComplete: () => banner.destroy() }),
+    });
+    makeSwimmer(BOSS, true);
   };
 
   const land = (s: Swimmer): void => {
     if (!s.obj.active) return;
     s.hint?.destroy();
     SFX.good();
-    burst(scene, s.obj.x, s.obj.y + api.areaY, s.spec.big ? 16 : 8, [0x8ed4e8, 0xffffff, 0x6fc4e0]);
+    burst(scene, s.obj.x, s.obj.y + api.areaY, s.isBoss ? 22 : 8, [0x8ed4e8, 0xffffff, 0x6fc4e0]);
+    if (s.isBoss) {
+      bossCaught = true;
+      screenFlash(scene, 0xfff2c4, 0.45);
+      const caught = scene.add
+        .text(GAME_W / 2, 300, UI_TEXT.arcade.bossCaught, {
+          fontFamily: FONT,
+          fontSize: '26px',
+          color: '#3f7d2c',
+          fontStyle: 'bold',
+          stroke: '#ffffff',
+          strokeThickness: 6,
+        })
+        .setOrigin(0.5)
+        .setScale(0);
+      area.add(caught);
+      scene.tweens.add({
+        targets: caught,
+        scale: 1,
+        ease: 'Back.easeOut',
+        duration: 300,
+        onComplete: () =>
+          scene.tweens.add({ targets: caught, alpha: 0, delay: 800, duration: 300, onComplete: () => caught.destroy() }),
+      });
+    }
     session.addPoints(s.spec.pts, s.obj.x, s.obj.y + api.areaY - 20);
     s.obj.disableInteractive();
     // 釣り糸で舟まで引き上げる
     const line = scene.add.graphics();
     area.add(line);
-    line.lineStyle(2, 0xffffff, 0.8);
-    line.lineBetween(boat.x, boat.y, s.obj.x, s.obj.y);
     scene.tweens.add({
       targets: s.obj,
       x: boat.x,
       y: boat.y + 6,
       scale: 0.4,
-      duration: 300,
+      duration: 320,
       ease: 'Cubic.easeIn',
       onUpdate: () => {
         line.clear();
@@ -167,8 +239,9 @@ export function renderFish(api: MinigameApi, prompt: string): void {
   };
 
   const escape = (s: Swimmer): void => {
+    if (!s.obj.active) return;
     s.hint?.destroy();
-    s.hooked = false;
+    s.hint = undefined;
     session.resetCombo();
     missShake(scene);
     SFX.bad();
@@ -184,11 +257,20 @@ export function renderFish(api: MinigameApi, prompt: string): void {
       .setOrigin(0.5);
     area.add(splash);
     scene.tweens.add({ targets: splash, y: splash.y - 26, alpha: 0, duration: 600, onComplete: () => splash.destroy() });
-    s.vx *= 1.4;
+    s.obj.disableInteractive();
+    scene.tweens.add({ targets: s.obj, alpha: 0, y: s.obj.y + 30, duration: 400, onComplete: () => s.obj.destroy() });
   };
 
   const onUpdate = (_t: number, dtMs: number): void => {
-    const dt = dtMs / 1000;
+    const dt = Math.min(dtMs, 33) / 1000;
+    // ぬしの出現スケジュール(1〜2回)
+    BOSS_TIMES.forEach((t, i) => {
+      if (!bossSpawned[i] && session.progress() >= t && !session.isEnded()) {
+        bossSpawned[i] = true;
+        // 2回目は、まだ釣れていない時だけ現れる
+        if (i === 0 || !bossCaught) spawnBoss();
+      }
+    });
     for (let i = fishes.length - 1; i >= 0; i--) {
       const s = fishes[i];
       if (!s.obj.active) {
@@ -197,10 +279,20 @@ export function renderFish(api: MinigameApi, prompt: string): void {
       }
       s.obj.x += s.vx * dt;
       s.obj.y += Math.sin(Date.now() / 300 + i) * 0.3;
-      if (s.hint) s.hint.setPosition(s.obj.x, s.obj.y - 34);
-      if (s.hooked && Date.now() - s.hookedAt > 1200) escape(s);
-      if (s.obj.x < -50 || s.obj.x > GAME_W + 50) {
-        s.hint?.destroy();
+      s.obj.setFlipX(s.vx > 0);
+      if (s.hint) s.hint.setPosition(s.obj.x, s.obj.y - s.spec.size / 2 - 16);
+      if (s.patrol) {
+        // 回遊: 画面内で折り返す(逃さないかわりに、タップ猶予がある)
+        if (s.obj.x < 40) {
+          s.obj.x = 40;
+          s.vx = Math.abs(s.vx);
+        } else if (s.obj.x > GAME_W - 40) {
+          s.obj.x = GAME_W - 40;
+          s.vx = -Math.abs(s.vx);
+        }
+        if (Date.now() - s.lastTapAt > TAP_WINDOW_MS) escape(s);
+      } else if (s.obj.x < -60 || s.obj.x > GAME_W + 60) {
+        // 未タップの魚はそのまま泳ぎ去る
         s.obj.destroy();
         fishes.splice(i, 1);
       }

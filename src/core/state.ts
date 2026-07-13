@@ -36,6 +36,8 @@ export interface SaveState {
   zukanMat: Record<MaterialId, Record<PrefectureId, number>>;
   zukanProd: Record<RecipeId, ZukanProdRecord>;
   fest: RecipeId[];
+  /** おまつりごとの さいこうスコア(おまつりは なんどでも 開催できる) */
+  festBest: Record<RecipeId, number>;
   seenTrivia: Record<string, boolean>;
   /** キーは "prefId|matId"(core/plots.ts の plotKey) */
   plots: Record<string, PlotRecord>;
@@ -57,6 +59,7 @@ export function defaultState(): SaveState {
     zukanMat: {},
     zukanProd: {},
     fest: [],
+    festBest: {},
     seenTrivia: {},
     plots: {},
     infra: {},

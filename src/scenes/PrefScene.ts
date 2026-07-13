@@ -12,7 +12,7 @@ import {
   type Recipe,
 } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';
-import { applyCraft, applyFestival, craftable, matchItems, pickConsume } from '../core/craft';
+import { applyCraft, craftable, matchItems, pickConsume } from '../core/craft';
 import { ensureInfra, collectInfra, infraNextSec, infraStock, plantSeed, plotKey, plotState } from '../core/plots';
 import { pickRecipeQuizzes } from '../core/quiz';
 import { store } from '../game/store';
@@ -384,7 +384,7 @@ export class PrefScene extends Phaser.Scene {
 
   /* ---------- レシピ探索(ものしりクイズ2問) ---------- */
   private startRecipeGet(r: Recipe): void {
-    const quizzes = pickRecipeQuizzes(GAME_DATA.quizzes, r, this.prefId);
+    const quizzes = pickRecipeQuizzes(GAME_DATA.quizzes, r);
     const modal = new Modal(this, UI_TEXT.recipe.searchTitle, true);
     const guide = makeGuideRow(this, UI_TEXT.recipe.searchGuide, 'normal');
     modal.add(guide.container, guide.height);
@@ -455,23 +455,20 @@ export class PrefScene extends Phaser.Scene {
     modal.show();
   }
 
-  /* ---------- おまつり(Tier4) ---------- */
+  /* ---------- おまつり(Tier4): なんどでも 開催できる ---------- */
   private buildFestivalCard(r: Recipe, y: number): Phaser.GameObjects.Container {
     const s = store.state;
-    const done = s.fest.includes(r.id);
-    const c = this.cardBase(y, done);
+    const held = s.fest.includes(r.id);
+    const c = this.cardBase(y, held);
     if (!r.implemented) {
       this.cardTexts(c, r.emoji, `${r.name}〔${TIER_LABEL[4]}〕`, UI_TEXT.fest.preparing);
       return c;
     }
-    if (done) {
-      this.cardTexts(c, r.emoji, `${r.name} ${UI_TEXT.fest.held}`, UI_TEXT.fest.heldSub(this.pref.name));
-      return c;
-    }
+    // まつり名は長いのでタイトルは名前だけにし、開催ずみバッジは下段に置く(ボタンと重ねない)
     const ings = r.ingredients.map((ing) => this.ingChipText(ing)).join('  ');
-    this.cardTexts(c, r.emoji, `${r.name}〔${TIER_LABEL[4]}〕`, ings);
+    this.cardTexts(c, r.emoji, r.name, held ? `${UI_TEXT.fest.held}  ${ings}` : ings);
     const ok = craftable(s.inv, r);
-    this.cardButton(c, UI_TEXT.fest.openBtn, ok ? COLORS.orange : COLORS.gray, () => {
+    this.cardButton(c, held ? UI_TEXT.fest.againBtn : UI_TEXT.fest.openBtn, ok ? COLORS.orange : COLORS.gray, () => {
       if (craftable(store.state.inv, r)) this.startFestival(r);
       else showToast(this, UI_TEXT.fest.needMeibutsu);
     });
@@ -481,87 +478,13 @@ export class PrefScene extends Phaser.Scene {
   private startFestival(r: Recipe): void {
     const modal = new Modal(this, r.name, true);
     modal.add(this.add.text(0, 0, r.emoji, { fontSize: '54px' }).setOrigin(0.5), 60);
-    modal.addText(UI_TEXT.fest.introBody, 16);
+    modal.addText(UI_TEXT.fest.introBody, 15);
+    const best = store.state.festBest[r.id];
+    if (best) modal.addText(UI_TEXT.fest.bestScore(best), 14, TEXT_COLORS.accent);
     modal.addButton(UI_TEXT.fest.startBtn, COLORS.orange, () => {
       modal.close();
-      this.festivalPuzzle(r);
+      this.scene.start('FestivalScene', { recipeId: r.id, prefId: this.prefId });
     });
     modal.show();
-  }
-
-  private festivalPuzzle(r: Recipe): void {
-    const order = r.steps ?? [];
-    let next = 0;
-    const modal = new Modal(this, UI_TEXT.fest.puzzleTitle);
-    modal.addText(UI_TEXT.fest.puzzleGuide, 15, TEXT_COLORS.sub);
-    const doneRow = this.add
-      .text(0, 0, '', { fontFamily: FONT, fontSize: '13px', color: TEXT_COLORS.accent, align: 'center' })
-      .setOrigin(0.5);
-    modal.add(doneRow, 40);
-    const shuffled = order.map((step, i) => ({ step, i })).sort(() => Math.random() - 0.5);
-    for (const { step, i } of shuffled) {
-      const btn = modal.addButton(
-        step,
-        COLORS.panel,
-        () => {
-          if (btn.getData('done')) return;
-          if (i === next) {
-            SFX.good();
-            btn.setData('done', true);
-            btn.setAlpha(0.45);
-            next++;
-            doneRow.setText(order.slice(0, next).map((s2, j) => `🏮${j + 1}. ${s2}`).join('  '));
-            if (next >= order.length) {
-              this.time.delayedCall(700, () => this.finishFestival(r, modal));
-            }
-          } else {
-            SFX.bad();
-            showToast(this, UI_TEXT.fest.wrongOrder);
-          }
-        },
-        360,
-        46,
-      );
-      (btn.list[1] as Phaser.GameObjects.Text).setColor(TEXT_COLORS.main);
-      const bg = btn.list[0] as Phaser.GameObjects.Graphics;
-      bg.lineStyle(2, COLORS.panelLine, 1);
-      bg.strokeRoundedRect(-180, -23, 360, 46, 14);
-    }
-    modal.show();
-  }
-
-  private finishFestival(r: Recipe, puzzle: Modal): void {
-    applyFestival(store.state, r);
-    store.save();
-    puzzle.close();
-    SFX.fest();
-    confetti(this);
-    this.time.delayedCall(500, () => confetti(this));
-    // ちょうちん演出(暫定): 数個の🏮がふわっと昇る
-    for (let i = 0; i < 8; i++) {
-      const l = this.add
-        .text(40 + Math.random() * (GAME_W - 80), GAME_H + 30, '🏮', { fontSize: '30px' })
-        .setDepth(DEPTH.overlay);
-      this.tweens.add({
-        targets: l,
-        y: -40,
-        duration: 2200 + Math.random() * 800,
-        delay: Math.random() * 900,
-        ease: 'Sine.easeIn',
-        onComplete: () => l.destroy(),
-      });
-    }
-    this.time.delayedCall(1600, () => {
-      const done = new Modal(this, UI_TEXT.fest.doneTitle);
-      done.add(this.add.text(0, 0, '🏮🎆🏮', { fontSize: '44px' }).setOrigin(0.5), 52);
-      done.addText(UI_TEXT.fest.doneBody(r.name), 18);
-      const guide = makeGuideRow(this, UI_TEXT.fest.doneGuide(this.pref.name), 'happy');
-      done.add(guide.container, guide.height);
-      done.addButton(UI_TEXT.fest.goMap, COLORS.orange, () => {
-        done.close();
-        showTriviaOnce(this, r.id, () => this.scene.start('MapScene'));
-      });
-      done.show();
-    });
   }
 }

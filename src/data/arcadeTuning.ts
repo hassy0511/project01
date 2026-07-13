@@ -5,11 +5,12 @@
      reap:  いね1本 3pt ×コンボ + ひとふでがり 20pt。上手いと 800pt 前後
      catch: 実1個 10pt ×コンボ、金の実 30pt。終盤ラッシュを取り切ると 800pt 超
      mine:  お宝 30pt ×5個/盤 + シャベル残ボーナス。1盤クリア ≈ 170pt
-     fish:  小 10 / 中 20 / 大 50pt ×コンボ
+     fish:  小10(1タップ)/中25(2タップ)/大50(3タップ)/ぬし120(4タップ)×コンボ。★3はぬし必須
      flick: ゴール 25pt + ど真ん中 10pt(コンボなし)
+     fest:  おきゃくさん12pt×コンボ + はやわざ6pt、とくべつな客30pt。★なし(さいこうスコア制)
 */
 
-export type ArcadeEngine = 'chain' | 'reap' | 'catch' | 'flick' | 'mine' | 'fish' | 'care';
+export type ArcadeEngine = 'chain' | 'reap' | 'catch' | 'flick' | 'mine' | 'fish' | 'care' | 'fest';
 
 export interface ArcadeTuning {
   /** 制限時間(秒) */
@@ -26,8 +27,9 @@ export const ARCADE_TUNING: Record<ArcadeEngine, ArcadeTuning> = {
   catch: { durationSec: 45, star2: 320, star3: 800 },
   flick: { durationSec: 40, star2: 75, star3: 160 },
   mine: { durationSec: 50, star2: 170, star3: 330 },
-  fish: { durationSec: 45, star2: 260, star3: 620 },
+  fish: { durationSec: 45, star2: 300, star3: 650 },
   care: { durationSec: 25, star2: 0, star3: 0 }, // おせわは★なし(careDone のみ)
+  fest: { durationSec: 60, star2: 0, star3: 0 }, // おまつりは★なし(さいこうスコア制)。集大成なので最長
 };
 
 /** 実行時チューニング: E2E テストは timeScale を上げて時間を短縮する(__mqAdmin.fastMode) */

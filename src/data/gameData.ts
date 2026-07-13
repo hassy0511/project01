@@ -119,8 +119,10 @@ export interface Recipe {
   ingredients: Ingredient[];
   /** tier4のみ: false は「じゅんびちゅう」表示 */
   implemented?: boolean;
-  /** tier4のみ: だんどりパズルの正順 */
+  /** tier4のみ: (旧)だんどりパズルの正順。屋台ラッシュ移行後は未使用 */
   steps?: string[];
+  /** tier4のみ: 屋台ラッシュに並ぶ しなもの(未指定なら ingredients の ref)。その県のめいぶつを並べる */
+  menu?: (MaterialId | RecipeId)[];
 }
 
 export interface Trivia {
@@ -186,11 +188,11 @@ export const GAME_DATA: GameData = {
       gather: { type: 'plant', verb: 'たねを まく', growSec: 600,
         harvest: { engine: 'flick', target: '🍈', prompt: 'メロンを ひっぱって はなして、かごに ころがしこもう!' },
         care: { target: '🌀', label: 'つるが のびすぎ! タップで ととのえよう!' } } },
-    { id: 'm06', name: 'うめ', emoji: '🌸', origins: ['ibaraki'], rarity: 'unique',
+    { id: 'm06', name: 'うめ', emoji: '🫒', origins: ['ibaraki'], rarity: 'unique',
       gather: { type: 'plant', verb: 'なえを うえる', growSec: 1200,
         harvest: { engine: 'catch', target: '🫒', prompt: 'おちてくる うめを かごで キャッチ! えだは よけてね' },
         care: { target: '🐛', label: 'むしが えだに ついてる! タップで とろう!' } } },
-    { id: 'm07', name: 'ねんど', emoji: '🧱', origins: ['ibaraki', 'tochigi'], rarity: 'local',
+    { id: 'm07', name: 'ねんど', emoji: '🟤', origins: ['ibaraki', 'tochigi'], rarity: 'local',
       gather: { type: 'dig', verb: 'ほりに いく',
         theme: { intro: 'いい ねんどが ねむる つちばを みつけた!', prompt: 'すうじは「まわりに ねんどが いくつ あるか」の ヒント! すいりして ほろう', success: 'ほりあて せいこう!', stages: ['⛰️', '⛏️', '✨'] } } },
     { id: 'm08', name: 'らっかせい', emoji: '🥜', origins: ['chiba'], rarity: 'unique',
@@ -199,7 +201,7 @@ export const GAME_DATA: GameData = {
         care: { target: '🐜', label: 'ありが あつまってきた! タップで はらおう!' } } },
     { id: 'm09', name: 'いわし', emoji: '🐟', origins: ['chiba'], rarity: 'local',
       gather: { type: 'timing', verb: 'りょうに でる',
-        theme: { intro: 'いわしの むれが やってきた!', prompt: 'およいでいる さかなを タップして つりあげよう! おおものは 2かい タップ!', stopBtn: 'あみを ひく!', marker: '🐟', success: 'たいりょうだ!', stages: ['⛵', '🌊', '🐟'] } } },
+        theme: { intro: 'いわしの むれが やってきた!', prompt: 'さかなを タップして つりあげよう! おおきい さかなほど なんかいも タップ! ぬしを つると ★3!', stopBtn: 'あみを ひく!', marker: '🐟', success: 'たいりょうだ!', stages: ['⛵', '🌊', '🐟'] } } },
     { id: 'm10', name: 'なし', emoji: '🍐', origins: ['chiba', 'tochigi'], rarity: 'local',
       gather: { type: 'plant', verb: 'なえを うえる', growSec: 1500,
         harvest: { engine: 'catch', target: '🍐', prompt: 'おちてくる なしを かごで キャッチ! えだは よけてね' },
@@ -232,7 +234,7 @@ export const GAME_DATA: GameData = {
     { id: 'rf1', name: 'かいらくえん うめまつり', emoji: '🏮', tier: 4, type: 'matsuri', pref: 'ibaraki',
       implemented: true,
       ingredients: [{ ref: 'r03', count: 1 }, { ref: 'r05', count: 1 }],
-      steps: ['かいじょうを おそうじ', 'うめのきを かざる', 'ちょうちんを つける', 'おきゃくさんを おむかえ'] },
+      menu: ['r03', 'r05', 'r02'] },
 
     /* --- ちば --- */
     { id: 'r07', name: 'しょうゆ', emoji: '🍶', tier: 2, type: 'kakou', pref: 'chiba',
@@ -336,7 +338,7 @@ export const GAME_DATA: GameData = {
     { id: 'q22', kind: 'sozai', tags: ['m12', 'r12'], q: 'かんぴょうは なにから できる?', choices: ['ゆうがお', 'きゅうり', 'かぼちゃ'], answer: 0 },
     { id: 'q23', kind: 'sozai', tags: ['m04', 'r02'], q: 'ほしいもは なにから できる?', choices: ['さつまいも', 'じゃがいも', 'かぼちゃ'], answer: 0 },
     { id: 'q24', kind: 'sozai', tags: ['m06', 'r03'], q: 'うめジュースは なにから つくる?', choices: ['うめ', 'もも', 'ぶどう'], answer: 0 },
-    { id: 'q25', kind: 'sozai', tags: ['m02', 'm03', 'r08'], q: 'みそは だいずと なにから つくる?', choices: ['こめ', 'さとう', 'しお'], answer: 0 },
+    { id: 'q25', kind: 'sozai', tags: ['m02', 'm03', 'r08'], q: 'みそは だいずと しお、あと なにから つくる?', choices: ['こめ', 'さとう', 'バター'], answer: 0 },
     { id: 'q26', kind: 'sozai', tags: ['m07', 'r05', 'r15'], q: 'やきものは なにから つくる?', choices: ['ねんど', 'すな', 'いし'], answer: 0 },
     { id: 'q27', kind: 'sozai', tags: ['m11', 'r13'], q: 'いちごジャムは なにから つくる?', choices: ['いちご', 'りんご', 'みかん'], answer: 0 },
     { id: 'q28', kind: 'sozai', tags: ['m09', 'r10'], q: 'なめろうに つかう さかなは?', choices: ['いわし', 'さけ', 'まぐろ'], answer: 0 },
@@ -346,13 +348,13 @@ export const GAME_DATA: GameData = {
     { id: 'qs3', kind: 'sozai', tags: ['m09', 'r10'], q: 'いわしは どこに すんでいる?', choices: ['うみ', 'かわ', 'みずうみ'], answer: 0 },
     { id: 'qs4', kind: 'sozai', tags: ['m02'], q: 'おこめを そだてる ばしょは どこ?', choices: ['たんぼ', 'すなば', 'もり'], answer: 0 },
     { id: 'qs5', kind: 'sozai', tags: ['m06', 'r03', 'rf1'], q: 'うめの はなが さくのは いつごろ?', choices: ['はるの はじめごろ', 'まなつ', 'あき'], answer: 0 },
+    { id: 'qs6', kind: 'sozai', tags: ['m05', 'r06'], q: 'メロンは どこに できる?', choices: ['つるの うえ', 'きの うえ', 'つちの なか'], answer: 0 },
+    { id: 'qs7', kind: 'sozai', tags: ['m04', 'r02'], q: 'ほしいもは さつまいもを どうやって つくる?', choices: ['おひさまに ほす', 'こおらせる', 'あぶらで あげる'], answer: 0 },
 
     /* --- レシピ: ぶんか --- */
     { id: 'q30', kind: 'bunka', tags: ['ibaraki', 'rf1', 'm06'], q: 'かいらくえんで ゆうめいな はなは?', choices: ['うめ', 'さくら', 'ひまわり'], answer: 0 },
     { id: 'q31', kind: 'bunka', tags: ['tochigi', 'rf3'], q: 'ましこで ひらかれる いちは?', choices: ['とうきいち', 'さかないち', 'はないち'], answer: 0 },
     { id: 'q32', kind: 'bunka', tags: ['chiba', 'r10', 'm09'], q: 'なめろうは だれの りょうりと いわれている?', choices: ['りょうしさん', 'おとのさま', 'おいしゃさん'], answer: 0 },
-    { id: 'q33', kind: 'bunka', tags: ['ibaraki', 'rf1'], q: 'おまつりの ちょうちんに ともすのは?', choices: ['あかり', 'みず', 'すな'], answer: 0 },
-    { id: 'qb1', kind: 'bunka', tags: ['ibaraki', 'chiba', 'tochigi', 'rf1', 'rf2', 'rf3'], q: 'おまつりで ドンドン ならす がっきは?', choices: ['たいこ', 'ピアノ', 'リコーダー'], answer: 0 },
     { id: 'qb2', kind: 'bunka', tags: ['m07', 'r05', 'r15', 'rf3'], q: 'やきものを やく ばしょを なんと いう?', choices: ['かま', 'れいぞうこ', 'おふろ'], answer: 0 },
     { id: 'qb3', kind: 'bunka', tags: ['m03', 'r01'], q: 'なっとうの ねばねばは なにの ちから?', choices: ['はっこう', 'こおり', 'かぜ'], answer: 0 },
     { id: 'qb4', kind: 'bunka', tags: ['r07', 'm03'], q: 'しょうゆの いろは どんな いろ?', choices: ['こい ちゃいろ', 'みずいろ', 'みどり'], answer: 0 },

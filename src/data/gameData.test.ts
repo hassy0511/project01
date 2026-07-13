@@ -133,10 +133,26 @@ describe('クイズデータ', () => {
 });
 
 describe('おまつり(tier4)', () => {
-  it('implemented なら だんどり steps がある(未実装は空)', () => {
+  it('implemented なら 屋台メニューが2品以上で、ref が全て解決できる', () => {
     for (const r of D.recipes.filter((x) => x.tier === 4)) {
       expect(r.implemented, `${r.id} implemented undefined`).toBeDefined();
-      if (r.implemented) expect(r.steps?.length ?? 0, r.id).toBeGreaterThan(0);
+      if (!r.implemented) continue;
+      const refs = r.menu ?? r.ingredients.map((i) => i.ref);
+      expect(refs.length, `${r.id}: 屋台が少なすぎる`).toBeGreaterThanOrEqual(2);
+      for (const ref of refs) {
+        expect(findEntity(D, ref), `${r.id} menu → ${ref}`).toBeDefined();
+      }
+    }
+  });
+
+  it('menu の しなものは その県の めいぶつ・そざい(よその県のものを 屋台に 並べない)', () => {
+    for (const r of D.recipes.filter((x) => x.tier === 4 && x.menu)) {
+      for (const ref of r.menu!) {
+        const rec = findRecipe(D, ref);
+        const mat = findMaterial(D, ref);
+        const ok = rec ? rec.pref === r.pref : (mat?.origins.includes(r.pref) ?? false);
+        expect(ok, `${r.id} menu → ${ref} は ${r.pref} の しなものではない`).toBe(true);
+      }
     }
   });
 });

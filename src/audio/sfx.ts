@@ -15,6 +15,13 @@ export function isMuted(): boolean {
   return muted;
 }
 
+/** ミュート切替を購読する(BGM の停止/再開などに使う) */
+type MuteListener = (muted: boolean) => void;
+const muteListeners: MuteListener[] = [];
+export function onMuteChange(cb: MuteListener): void {
+  muteListeners.push(cb);
+}
+
 export function setMuted(value: boolean): void {
   muted = value;
   try {
@@ -22,14 +29,15 @@ export function setMuted(value: boolean): void {
   } catch {
     /* noop */
   }
+  for (const cb of muteListeners) cb(value);
 }
 
 export function resumeAudio(): void {
-  ac();
+  sharedAudioContext();
 }
 
-function ac(): AudioContext | null {
-  if (muted) return null;
+/** SFX/BGM で共有する AudioContext(ミュート中でも取得・resume は行う) */
+export function sharedAudioContext(): AudioContext | null {
   if (typeof AudioContext === 'undefined') return null;
   if (!audioCtx) {
     try {
@@ -42,6 +50,11 @@ function ac(): AudioContext | null {
     audioCtx.resume().catch(() => undefined);
   }
   return audioCtx;
+}
+
+function ac(): AudioContext | null {
+  if (muted) return null;
+  return sharedAudioContext();
 }
 
 function tone(freq: number, dur: number, type: OscillatorType, vol: number, when = 0, slide?: number): void {

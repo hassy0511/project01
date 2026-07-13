@@ -2,7 +2,7 @@
 import Phaser from 'phaser';
 import { GAME_DATA, type Prefecture } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';
-import { pickKaitakuQuizzes } from '../core/quiz';
+import { pickKaitakuQuiz } from '../core/quiz';
 import { infraStock, plotState, matIdOfKey } from '../core/plots';
 import { findMaterial } from '../data/gameData';
 import { store } from '../game/store';
@@ -42,10 +42,59 @@ export class MapScene extends Phaser.Scene {
   }
 
   private drawSea(): void {
-    // うみの かざり(暫定): 太陽と波
-    this.add.text(GAME_W - 60, HEADER_H + 26, '☀️', { fontSize: '34px' }).setOrigin(0.5);
-    for (const [x, y] of [[40, 620], [420, 480], [60, 200], [430, 250]]) {
-      this.add.text(x, y, '🌊', { fontSize: '20px' }).setOrigin(0.5).setAlpha(0.7);
+    // 海: グラデーション+ゆらめく波線+描画の太陽・雲(絵文字は使わない)
+    const bg = this.add.graphics();
+    bg.fillGradientStyle(0xbfe9f7, 0xbfe9f7, 0x8fd0e0, 0x8fd0e0, 1);
+    bg.fillRect(0, HEADER_H, GAME_W, GAME_H - HEADER_H);
+    for (let i = 0; i < 5; i++) {
+      const wave = this.add.graphics();
+      wave.lineStyle(2.5, 0xffffff, 0.28);
+      const y = HEADER_H + 90 + i * 130;
+      wave.beginPath();
+      for (let x = -20; x <= GAME_W + 20; x += 8) {
+        const wy = y + Math.sin(x / 30 + i * 1.7) * 4;
+        if (x === -20) wave.moveTo(x, wy);
+        else wave.lineTo(x, wy);
+      }
+      wave.strokePath();
+      this.tweens.add({
+        targets: wave,
+        x: { from: -14, to: 14 },
+        duration: 2600 + i * 400,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+    }
+    // 太陽(光条つき)
+    const sun = this.add.container(GAME_W - 54, HEADER_H + 40);
+    const sg = this.add.graphics();
+    sg.fillStyle(0xffd34d, 1);
+    sg.fillCircle(0, 0, 17);
+    sg.lineStyle(3, 0xf0b429, 1);
+    for (let a = 0; a < 8; a++) {
+      const rad = (a * Math.PI) / 4;
+      sg.lineBetween(Math.cos(rad) * 23, Math.sin(rad) * 23, Math.cos(rad) * 29, Math.sin(rad) * 29);
+    }
+    sun.add(sg);
+    this.tweens.add({ targets: sun, angle: 360, duration: 60000, repeat: -1 });
+    // 流れる雲
+    for (const [cx, cy, sc] of [[90, HEADER_H + 60, 0.9], [350, GAME_H - 150, 0.7]] as const) {
+      const cloud = this.add.container(cx, cy).setAlpha(0.8).setScale(sc);
+      const cg = this.add.graphics();
+      cg.fillStyle(0xffffff, 1);
+      cg.fillEllipse(0, 0, 70, 26);
+      cg.fillEllipse(-20, 6, 42, 20);
+      cg.fillEllipse(22, 6, 44, 22);
+      cloud.add(cg);
+      this.tweens.add({
+        targets: cloud,
+        x: cx + 36,
+        duration: 10000 + Math.random() * 4000,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
     }
   }
 
@@ -91,8 +140,23 @@ export class MapScene extends Phaser.Scene {
       root.add(label);
 
       if (p.active && !unlocked) {
-        for (const [dx, dy] of [[-22, -16], [12, 14]]) {
-          root.add(this.add.text(lx + dx, ly + dy, '☁️', { fontSize: `${16 / scale}px` }).setOrigin(0.5));
+        for (const [dx, dy, cs] of [[-24, -18, 1], [14, 14, 0.8]] as const) {
+          const cloud = this.add.container(lx + dx, ly + dy).setAlpha(0.9).setScale(cs / scale);
+          const cg = this.add.graphics();
+          cg.fillStyle(0xffffff, 1);
+          cg.fillEllipse(0, 0, 40, 16);
+          cg.fillEllipse(-12, 4, 24, 12);
+          cg.fillEllipse(13, 4, 26, 13);
+          cloud.add(cg);
+          root.add(cloud);
+          this.tweens.add({
+            targets: cloud,
+            x: lx + dx + 6 / scale,
+            duration: 2400 + Math.random() * 1200,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut',
+          });
         }
       }
       if (done) {
@@ -111,15 +175,28 @@ export class MapScene extends Phaser.Scene {
     else this.scene.start('PrefScene', { prefId: p.id });
   }
 
-  /* ---------- 開拓フロー: クイズ2問 → 解放 ---------- */
+  /* ---------- 開拓フロー: 県名は明かさず、形/位置クイズで名前を当てる。
+     不正解 = 開拓失敗(何度でも再挑戦できる。その過程で県名を覚える) ---------- */
   private startKaitaku(p: Prefecture): void {
-    const quizzes = pickKaitakuQuizzes(GAME_DATA.quizzes, p.id);
+    const quiz = pickKaitakuQuiz(GAME_DATA.quizzes, p.id);
+    if (!quiz) return;
     const modal = new Modal(this, UI_TEXT.kaitaku.modalTitle, true);
-    const guide = makeGuideRow(this, UI_TEXT.kaitaku.intro(p.name), 'wow');
+    const guide = makeGuideRow(this, UI_TEXT.kaitaku.intro, 'wow');
     modal.add(guide.container, guide.height);
     modal.addButton(UI_TEXT.kaitaku.challenge, COLORS.primary, () => {
       Modal.closeCurrent();
-      runQuizModal(this, quizzes, UI_TEXT.kaitaku.quizTitle(p.name), () => {
+      runQuizModal(this, [quiz], UI_TEXT.kaitaku.quizTitle, (correct) => {
+        if (correct < 1) {
+          const fail = new Modal(this, UI_TEXT.kaitaku.failTitle);
+          const g3 = makeGuideRow(this, UI_TEXT.kaitaku.failGuide, 'normal');
+          fail.add(g3.container, g3.height);
+          fail.addButton(UI_TEXT.kaitaku.retry, COLORS.orange, () => {
+            fail.close();
+            this.startKaitaku(p);
+          });
+          fail.show();
+          return;
+        }
         store.state.unlocked.push(p.id);
         store.save();
         SFX.fanfare();

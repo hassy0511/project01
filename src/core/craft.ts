@@ -3,7 +3,7 @@
    jimoto判定 / クラフト・おまつりの状態適用
    reference/app.js の同名関数の移植。Phaser 非依存。
    ===================================================== */
-import type { Ingredient, Recipe } from '../data/gameData';
+import type { Ingredient, Recipe, RecipeId } from '../data/gameData';
 import type { InvItem, SaveState } from './state';
 
 /** ref の命名規則: そざい="m〜" / レシピ="r〜"(じもと判定は そざいのみ対象) */
@@ -63,10 +63,19 @@ export function applyCraft(state: SaveState, recipe: Recipe): { used: InvItem[];
   return { used, jimoto };
 }
 
-/** おまつり(tier4)開催をセーブ状態に適用: めいぶつを消費し fest に登録(産物は生まれない) */
+/** おまつり(tier4)開催をセーブ状態に適用: めいぶつを消費し fest に登録(産物は生まれない)。
+    なんどでも開催できるので、fest への登録は初回だけ(重複させない) */
 export function applyFestival(state: SaveState, recipe: Recipe): InvItem[] {
   const used = pickConsume(state.inv, recipe);
   for (const it of used) state.inv.splice(state.inv.indexOf(it), 1);
-  state.fest.push(recipe.id);
+  if (!state.fest.includes(recipe.id)) state.fest.push(recipe.id);
   return used;
+}
+
+/** おまつりのさいこうスコアを更新する。きろくを こうしんしたら true */
+export function updateFestBest(state: SaveState, recipeId: RecipeId, score: number): boolean {
+  const prev = state.festBest[recipeId] ?? 0;
+  if (score <= prev) return false;
+  state.festBest[recipeId] = score;
+  return true;
 }

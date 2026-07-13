@@ -60,15 +60,26 @@ export function makeDriver(page, shotsDir) {
     await page.waitForTimeout(1000);
   }
 
-  /** わざと不正解を選ぶ(★のおせわ保険の検証用) */
+  /** わざと不正解を選ぶ(★のおせわ保険・開拓失敗の検証用) */
   async function answerQuizWrong() {
     await page.waitForFunction(() => window.__mq?.kind === 'quiz', null, { timeout: 8000 });
-    const wrong = await page.evaluate(() => {
+    const { correctText, choices } = await page.evaluate(() => {
       const { correctText, choices } = window.__mq;
       window.__mq = { kind: 'done' };
-      return choices.find((c) => c !== correctText);
+      return { correctText, choices };
     });
-    await clickText(wrong);
+    // 画面上に1箇所しか現れない選択肢を優先(開拓クイズの県名は地図ラベルと重複しうる)
+    const wrongs = choices.filter((c) => c !== correctText);
+    let target = wrongs[0];
+    for (const w of wrongs) {
+      if ((await findTexts(w)).length === 1) {
+        target = w;
+        break;
+      }
+    }
+    const found = await waitText(target);
+    const hit = found[found.length - 1]; // 重複時はモーダル側(下)を叩く
+    await page.mouse.click(hit.x, hit.y);
     await page.waitForTimeout(1800); // 不正解時は遷移が長い
   }
 

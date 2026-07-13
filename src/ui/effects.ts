@@ -113,6 +113,40 @@ export function confetti(scene: Phaser.Scene, count = 34): void {
   }
 }
 
+/** 打ち上げ花火: 光が昇っていき、頂点で放射状にひらく(おまつり用) */
+export function firework(scene: Phaser.Scene, x: number, topY: number, color?: number): void {
+  const c = color ?? CONF_COLORS[Math.floor(Math.random() * CONF_COLORS.length)];
+  const rocket = scene.add.circle(x, topY + 260, 4, 0xfff2c4, 1).setDepth(DEPTH.overlay);
+  scene.tweens.add({
+    targets: rocket,
+    y: topY,
+    duration: 460,
+    ease: 'Quad.easeOut',
+    onComplete: () => {
+      rocket.destroy();
+      impactRing(scene, x, topY, c, 10);
+      const sparks = 16;
+      for (let i = 0; i < sparks; i++) {
+        const ang = (Math.PI * 2 * i) / sparks + Math.random() * 0.2;
+        const dist = 52 + Math.random() * 42;
+        const p = scene.add
+          .circle(x, topY, 2.5 + Math.random() * 2.5, i % 3 === 0 ? 0xfff2c4 : c, 1)
+          .setDepth(DEPTH.overlay);
+        scene.tweens.add({
+          targets: p,
+          x: x + Math.cos(ang) * dist,
+          y: topY + Math.sin(ang) * dist + 28,
+          alpha: 0,
+          scale: 0.4,
+          duration: 720 + Math.random() * 320,
+          ease: 'Quad.easeOut',
+          onComplete: () => p.destroy(),
+        });
+      }
+    },
+  });
+}
+
 /** 画面いっぱいのフラッシュ(でっかい成功の一瞬を強調) */
 export function screenFlash(scene: Phaser.Scene, color = 0xffffff, peakAlpha = 0.55): void {
   const flash = scene.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, color, peakAlpha).setDepth(DEPTH.overlay);

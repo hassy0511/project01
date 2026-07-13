@@ -35,15 +35,14 @@ async function harvestFlow(interact = null) {
   await d.dismissTrivia();
 }
 
-/* 1. いばらき開拓(形/位置+知識クイズ) */
+/* 1. いばらき開拓(県名を当てる1問。名前は事前に明かされない) */
 // 地図クリック座標: MapScene の scale=min(460/364,560/407)≈1.263, offX≈10, offY=80
 await page.mouse.click(10 + 276 * 1.263, 80 + 155 * 1.263);
 await d.clickText('ちょうせん する!');
 await d.answerQuiz();
-await d.answerQuiz();
 await d.waitText('かいたく せいこう!');
 await d.clickText('いばらきけんに いく!');
-log('いばらき開拓');
+log('いばらき開拓(1問制)');
 
 /* 2. こめ(reap): いねを うえる → ⏩ → チェーンなぞり。米はもう infra ストックではない */
 await d.waitText('いねを うえる');
@@ -130,25 +129,29 @@ await d.clickText('やったー!');
 await d.dismissTrivia();
 log('かさまやき(産地指定クラフト)');
 
-/* 8. うめまつり(だんどりパズル) */
+/* 8. うめまつり(やたいラッシュ アーケード) */
 await d.scrollAndClick('ひらく!');
-await d.clickText('じゅんびスタート!');
-for (const step of ['かいじょうを おそうじ', 'うめのきを かざる', 'ちょうちんを つける', 'おきゃくさんを おむかえ']) {
-  await d.clickText(step);
-  await page.waitForTimeout(200);
-}
+await d.clickText('おまつり スタート!');
+await d.playArcade(async () => {
+  // 3つの屋台(x=110/240/370, y=572+52)を順にタップ。
+  // ほしがっている客がいれば得点、いなければコンボが切れるだけ
+  for (const x of [110, 240, 370]) await page.mouse.click(x, 624);
+});
 await d.waitText('ちずを みる!', 10000);
 await page.screenshot({ path: `${SHOTS}/festival-done.png` });
 await d.clickText('ちずを みる!');
 await d.dismissTrivia();
 await page.waitForTimeout(1200);
 await page.screenshot({ path: `${SHOTS}/map-after-festival.png` });
-log('うめまつり開催 → 地図に🏮');
+log('うめまつり開催(やたいラッシュ)→ 地図に🏮');
 
-/* 9. ちば: いわし(fish)。泳ぐ魚をタップ */
+/* 9. ちば開拓: わざと間違えて失敗 → 再挑戦で成功(失敗しても何度でも挑める) */
 await page.mouse.click(10 + 260 * 1.263, 80 + 290 * 1.263);
 await d.clickText('ちょうせん する!');
-await d.answerQuiz();
+await d.answerQuizWrong();
+await d.waitText('かいたく しっぱい…');
+await d.clickText('もういちど ちょうせん!');
+await d.clickText('ちょうせん する!');
 await d.answerQuiz();
 await d.waitText('かいたく せいこう!');
 await d.clickText('ちばけんに いく!');
@@ -206,6 +209,7 @@ const assert = (cond, msg) => {
 };
 assert(save.unlocked.includes('ibaraki') && save.unlocked.includes('chiba'), 'unlocked');
 assert(save.fest.includes('rf1'), 'rf1 held');
+assert(save.festBest?.rf1 >= 12, 'festival best score recorded');
 assert(save.zukanProd.r03 && save.zukanProd.r05, 'crafted r03/r05');
 assert(save.zukanProd.r05.jimoto === true, 'r05 jimoto medal');
 assert(save.zukanMat.m02?.ibaraki >= 1, 'kome harvested (not infra)');
