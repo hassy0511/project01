@@ -12,6 +12,18 @@ export const UI_TEXT = {
   map: {
     inactivePref: 'ここは じゅんびちゅう! おたのしみに🚧',
     aria: 'かんとうの ちず',
+    japanBtn: '🗾 にっぽん',
+  },
+
+  region: {
+    title: 'にっぽん ぜんこく',
+    back: '← ちずへ',
+    guide: 'にっぽんは 8つの エリアに わかれているよ。\nまずは かんとうから ぼうけんだ!',
+    lockedToast: 'ここは まだ じゅんびちゅう! まずは かんとうを ぼうけんしよう🚧',
+    preparing: 'じゅんびちゅう',
+    prog: (got: number, total: number) => `かいたく ${got}/${total}`,
+    festCount: (n: number) => `🏮×${n}`,
+    go: 'いってみよう!',
   },
 
   kaitaku: {

@@ -2,7 +2,7 @@
 import Phaser from 'phaser';
 import { GAME_DATA, type Prefecture } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';
-import { pickKaitakuQuiz } from '../core/quiz';
+import { pickKaitakuQuiz, recordQuizAsked } from '../core/quiz';
 import { infraStock, plotState, matIdOfKey } from '../core/plots';
 import { findMaterial } from '../data/gameData';
 import { store } from '../game/store';
@@ -31,6 +31,7 @@ export class MapScene extends Phaser.Scene {
     this.drawMap();
     buildHeader(this);
     buildNav(this, 'map');
+    this.buildJapanButton();
     this.updateGuide();
     this.time.addEvent({ delay: GUIDE_UPDATE_MS, loop: true, callback: () => this.updateGuide() });
 
@@ -39,6 +40,29 @@ export class MapScene extends Phaser.Scene {
     };
     this.game.events.on('mq-refresh', refresh);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.game.events.off('mq-refresh', refresh));
+  }
+
+  /** にほんぜんこく画面への入り口(左上のチップ) */
+  private buildJapanButton(): void {
+    const c = this.add.container(12, HEADER_H + 12);
+    const g = this.add.graphics();
+    g.fillStyle(0xffffff, 0.92);
+    g.lineStyle(2, COLORS.panelLine, 1);
+    g.fillRoundedRect(0, 0, 118, 32, 16);
+    g.strokeRoundedRect(0, 0, 118, 32, 16);
+    c.add(g);
+    c.add(
+      this.add
+        .text(59, 16, UI_TEXT.map.japanBtn, {
+          fontFamily: FONT,
+          fontSize: '13px',
+          color: TEXT_COLORS.main,
+          fontStyle: 'bold',
+        })
+        .setOrigin(0.5),
+    );
+    c.setInteractive(new Phaser.Geom.Rectangle(0, 0, 118, 32), Phaser.Geom.Rectangle.Contains);
+    c.on('pointerup', () => this.scene.start('RegionScene'));
   }
 
   private drawSea(): void {
@@ -178,8 +202,10 @@ export class MapScene extends Phaser.Scene {
   /* ---------- 開拓フロー: 県名は明かさず、形/位置クイズで名前を当てる。
      不正解 = 開拓失敗(何度でも再挑戦できる。その過程で県名を覚える) ---------- */
   private startKaitaku(p: Prefecture): void {
-    const quiz = pickKaitakuQuiz(GAME_DATA.quizzes, p.id);
+    const quiz = pickKaitakuQuiz(GAME_DATA.quizzes, p.id, store.state.quizRecent);
     if (!quiz) return;
+    recordQuizAsked(store.state.quizRecent, quiz.id);
+    store.save();
     const modal = new Modal(this, UI_TEXT.kaitaku.modalTitle, true);
     const guide = makeGuideRow(this, UI_TEXT.kaitaku.intro, 'wow');
     modal.add(guide.container, guide.height);

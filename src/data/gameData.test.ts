@@ -49,6 +49,14 @@ describe('参照整合性', () => {
     }
   });
 
+  it('県の region が実在の地方を指し、アクティブ県の地方もアクティブ', () => {
+    for (const p of D.prefectures) {
+      const region = D.regions.find((r) => r.id === p.region);
+      expect(region, `${p.id} region ${p.region}`).toBeDefined();
+      if (p.active) expect(region!.active, `${p.id} は active だが地方 ${p.region} が inactive`).toBe(true);
+    }
+  });
+
   it('そざいの origins が全て実在の県', () => {
     for (const m of D.materials) {
       expect(m.origins.length, m.id).toBeGreaterThan(0);

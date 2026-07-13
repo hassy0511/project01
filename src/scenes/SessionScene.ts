@@ -6,7 +6,7 @@ import { findMaterial, findPref, GAME_DATA, type Material } from '../data/gameDa
 import { UI_TEXT } from '../data/uiText';
 import { ARCADE_TUNING, type ArcadeEngine } from '../data/arcadeTuning';
 import { clearPlot, markCareDone, plotKey } from '../core/plots';
-import { pickSessionQuiz } from '../core/quiz';
+import { pickSessionQuiz, recordQuizAsked } from '../core/quiz';
 import { calcStars, harvestYield, totalScore } from '../core/stars';
 import { markSanchiCompleteOnce, registerMaterial } from '../core/state';
 import { store } from '../game/store';
@@ -155,7 +155,7 @@ export class SessionScene extends Phaser.Scene {
     } else if (engine === 'chain') {
       renderChain(api, targetEmoji, prompt);
     } else if (engine === 'reap') {
-      renderReap(api, prompt);
+      renderReap(api, targetEmoji, prompt);
     } else if (engine === 'mine') {
       renderMine(api, prompt, this.material.emoji);
     } else if (engine === 'flick') {
@@ -193,11 +193,13 @@ export class SessionScene extends Phaser.Scene {
     this.area?.destroy();
     this.area = this.add.container(0, GAME_AREA_Y);
     this.cameras.main.setBackgroundColor(COLORS.ground);
-    const quiz = pickSessionQuiz(GAME_DATA.quizzes, this.matId);
+    const quiz = pickSessionQuiz(GAME_DATA.quizzes, this.matId, store.state.quizRecent);
     if (!quiz) {
       this.finish();
       return;
     }
+    recordQuizAsked(store.state.quizRecent, quiz.id);
+    store.save();
     const signText = this.add
       .text(GAME_W / 2, 20, UI_TEXT.session.quizSign, {
         fontFamily: FONT,

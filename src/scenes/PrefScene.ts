@@ -14,7 +14,7 @@ import {
 import { UI_TEXT } from '../data/uiText';
 import { applyCraft, craftable, matchItems, pickConsume } from '../core/craft';
 import { ensureInfra, collectInfra, infraNextSec, infraStock, plantSeed, plotKey, plotState } from '../core/plots';
-import { pickRecipeQuizzes } from '../core/quiz';
+import { pickRecipeQuizzes, recordQuizAsked } from '../core/quiz';
 import { store } from '../game/store';
 import { SFX } from '../audio/sfx';
 import { buildNav } from '../ui/nav';
@@ -384,7 +384,9 @@ export class PrefScene extends Phaser.Scene {
 
   /* ---------- レシピ探索(ものしりクイズ2問) ---------- */
   private startRecipeGet(r: Recipe): void {
-    const quizzes = pickRecipeQuizzes(GAME_DATA.quizzes, r);
+    const quizzes = pickRecipeQuizzes(GAME_DATA.quizzes, r, store.state.quizRecent);
+    for (const q of quizzes) recordQuizAsked(store.state.quizRecent, q.id);
+    store.save();
     const modal = new Modal(this, UI_TEXT.recipe.searchTitle, true);
     const guide = makeGuideRow(this, UI_TEXT.recipe.searchGuide, 'normal');
     modal.add(guide.container, guide.height);

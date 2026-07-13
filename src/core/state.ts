@@ -38,6 +38,8 @@ export interface SaveState {
   fest: RecipeId[];
   /** おまつりごとの さいこうスコア(おまつりは なんどでも 開催できる) */
   festBest: Record<RecipeId, number>;
+  /** 最近出題したクイズID(古い順)。同じ問題ばかり出さないためのローテーション用 */
+  quizRecent: string[];
   seenTrivia: Record<string, boolean>;
   /** キーは "prefId|matId"(core/plots.ts の plotKey) */
   plots: Record<string, PlotRecord>;
@@ -60,6 +62,7 @@ export function defaultState(): SaveState {
     zukanProd: {},
     fest: [],
     festBest: {},
+    quizRecent: [],
     seenTrivia: {},
     plots: {},
     infra: {},

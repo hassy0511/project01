@@ -202,14 +202,41 @@ await harvestFlow(async () => {
 });
 log('いちご(色づき判定 アーケード)');
 
+/* 12b. にほんぜんこく画面: ロック中エリアはトースト、かんとうから地図へ戻れる */
+await d.clickText('← ちず');
+await page.waitForTimeout(600);
+await d.clickText('🗾 にっぽん');
+await d.waitText('🗾 にっぽん ぜんこく');
+await d.clickText('ほっかいどう'); // じゅんびちゅう(トーストのみ、遷移しない)
+await d.waitText('🗾 にっぽん ぜんこく');
+await page.screenshot({ path: `${SHOTS}/region-select.png` });
+await d.clickText('かんとう');
+await page.waitForTimeout(600);
+await d.waitText('🗾 にっぽん'); // 地図に戻った(にっぽんボタンが見える)
+log('にほんぜんこく画面(エリア選択UI)');
+
+/* 12c. 新県: ぐんま開拓(クイズローテーションで再挑戦時は別問題が出る) */
+await page.mouse.click(10 + 92 * 1.263, 80 + 122 * 1.263); // ぐんま
+await d.clickText('ちょうせん する!');
+await d.answerQuiz();
+await d.waitText('かいたく せいこう!');
+await d.clickText('ぐんまけんに いく!');
+await d.waitText('くみあげる'); // ぐんまにも いど(みず)がある
+await page.screenshot({ path: `${SHOTS}/gunma-pref.png` });
+await d.clickText('← ちず');
+await page.waitForTimeout(600);
+log('ぐんま開拓(新関東エリア)');
+
 /* 13. セーブ検証 */
 const save = await page.evaluate(() => JSON.parse(localStorage.getItem('meisanquest-save-v1')));
 const assert = (cond, msg) => {
   if (!cond) throw new Error('assert failed: ' + msg);
 };
 assert(save.unlocked.includes('ibaraki') && save.unlocked.includes('chiba'), 'unlocked');
+assert(save.unlocked.includes('gunma'), 'gunma unlocked (新関東エリア)');
 assert(save.fest.includes('rf1'), 'rf1 held');
 assert(save.festBest?.rf1 >= 12, 'festival best score recorded');
+assert(Array.isArray(save.quizRecent) && save.quizRecent.length > 0, 'quiz rotation history recorded');
 assert(save.zukanProd.r03 && save.zukanProd.r05, 'crafted r03/r05');
 assert(save.zukanProd.r05.jimoto === true, 'r05 jimoto medal');
 assert(save.zukanMat.m02?.ibaraki >= 1, 'kome harvested (not infra)');

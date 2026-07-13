@@ -34,7 +34,7 @@ interface Frog {
   row: number;
 }
 
-export function renderReap(api: MinigameApi, prompt: string): void {
+export function renderReap(api: MinigameApi, targetEmoji: string, prompt: string): void {
   const { scene, area } = api;
   // たんぼ背景: 空+水を張った田(横縞)
   const g = scene.add.graphics();
@@ -107,7 +107,7 @@ export function renderReap(api: MinigameApi, prompt: string): void {
     const y = ROW_Y0 + r * ROW_GAP;
     rows[r] = [];
     for (let c = 0; c < STALKS_PER_ROW; c++) {
-      const obj = scene.add.text(stalkX(c), y, '🌾', { fontSize: '36px' }).setOrigin(0.5, 0.8);
+      const obj = scene.add.text(stalkX(c), y, targetEmoji, { fontSize: '36px' }).setOrigin(0.5, 0.8);
       area.add(obj);
       if (animate) {
         obj.setScale(0);
