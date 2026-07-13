@@ -138,6 +138,10 @@ export const UI_TEXT = {
     center: 'どまんなか!',
     stopped: 'とまった…',
     timeBonus: (n: number) => `タイムボーナス +${n}!`,
+    cleanRow: 'ひとふでがり!',
+    shovels: (n: number) => `シャベル ⛏️×${n}`,
+    noShovels: 'シャベルが きれた… あたらしい ほりばへ!',
+    shovelBonus: (n: number) => `シャベルのこり ×${n} ボーナス!`,
     careResult: (bopped: number, leaked: number) => `おいはらった: ${bopped}ひき\nたべられた: ${leaked}かい`,
   },
 

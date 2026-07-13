@@ -21,12 +21,12 @@ export interface Prefecture {
 export type Rarity = 'common' | 'local' | 'unique';
 
 /**
- * 収穫アーケードの種別(素材の実在の性質に合わせて選ぶ。コード側に品種分岐は書かない):
- *   chain = 熟した実だけを一筆書きでつなぐ(まめ・べりーなど群生するもの)
- *   reap  = chain の列レイアウト版(いね)
- *   catch = 木から降ってくる実をかごでキャッチ(木の実)
- *   flick = 実をはじいて岩を避けてかごに入れる(重い実)
- *   mine  = 地下断面を掘り進めてお宝を探す(いも・ねんど)
+ * 収穫アーケードの種別。実在の植物の性質に合わせて選ぶ(コード側に品種分岐は書かない):
+ *   chain = 畑の実が緑→色づく→食べごろ と変化。食べごろだけ摘む(いちご・だいず等の畑もの)
+ *   reap  = 列をなぞって刈る。一筆で1列刈るとボーナス(いね)
+ *   catch = 木から降ってくる実をかごでキャッチ(うめ・なし等の木の実)
+ *   flick = 実をはじいて岩を避けてかごに入れる(メロン等の重い実)
+ *   mine  = シャベル回数制限+数字ヒントの推理掘り(さつまいも・らっかせい等の土中もの・ねんど)
  */
 export interface HarvestSpec {
   engine: 'chain' | 'reap' | 'catch' | 'flick' | 'mine';
@@ -172,15 +172,15 @@ export const GAME_DATA: GameData = {
       gather: { type: 'infra', building: 'いど', bEmoji: '⛲', rateSec: 120, max: 3, collectVerb: 'くみあげる' } },
     { id: 'm02', name: 'こめ', emoji: '🌾', origins: ['ibaraki', 'tochigi', 'chiba'], rarity: 'common',
       gather: { type: 'plant', verb: 'いねを うえる', growSec: 240, fieldLabel: 'たんぼ',
-        harvest: { engine: 'reap', target: '🌾', prompt: 'みのった いねだけ なぞって かりとろう! はっぱに さわると チェーンが きれるよ' },
+        harvest: { engine: 'reap', target: '🌾', prompt: 'よこに なぞって いねを かろう! 1れつを ひとふでで かると ボーナス!' },
         care: { target: '🦗', label: 'いなごが きた! タップで おいはらえ!' } } },
     { id: 'm03', name: 'だいず', emoji: '🫘', origins: ['ibaraki', 'tochigi'], rarity: 'local',
       gather: { type: 'plant', verb: 'たねを まく', growSec: 300,
-        harvest: { engine: 'chain', target: '🫘', prompt: 'じゅくした まめだけ なぞって つなごう!' },
+        harvest: { engine: 'chain', target: '🫘', prompt: 'ちゃいろに じゅくした まめだけ つもう! みどりは まだ はやいよ' },
         care: { target: '🐛', label: 'むしが ついてる! タップで とろう!' } } },
     { id: 'm04', name: 'さつまいも', emoji: '🍠', origins: ['ibaraki', 'chiba'], rarity: 'local',
       gather: { type: 'plant', verb: 'たねいもを うえる', growSec: 420,
-        harvest: { engine: 'mine', prompt: 'つちを ほりすすんで いもを さがそう! いわは ほれないよ', success: 'いもほり せいこう!' },
+        harvest: { engine: 'mine', prompt: 'すうじは「まわりに いもが いくつ あるか」の ヒント! すいりして ほろう', success: 'いもほり せいこう!' },
         care: { target: '🐗', label: 'いのししが きた! タップで おいはらえ!' } } },
     { id: 'm05', name: 'メロン', emoji: '🍈', origins: ['ibaraki'], rarity: 'local',
       gather: { type: 'plant', verb: 'たねを まく', growSec: 600,
@@ -192,10 +192,10 @@ export const GAME_DATA: GameData = {
         care: { target: '🐛', label: 'むしが えだに ついてる! タップで とろう!' } } },
     { id: 'm07', name: 'ねんど', emoji: '🧱', origins: ['ibaraki', 'tochigi'], rarity: 'local',
       gather: { type: 'dig', verb: 'ほりに いく',
-        theme: { intro: 'いい ねんどが ねむる つちばを みつけた!', prompt: 'つちを ほりすすんで ねんどを さがそう! いわは ほれないよ', success: 'ほりあて せいこう!', stages: ['⛰️', '⛏️', '✨'] } } },
+        theme: { intro: 'いい ねんどが ねむる つちばを みつけた!', prompt: 'すうじは「まわりに ねんどが いくつ あるか」の ヒント! すいりして ほろう', success: 'ほりあて せいこう!', stages: ['⛰️', '⛏️', '✨'] } } },
     { id: 'm08', name: 'らっかせい', emoji: '🥜', origins: ['chiba'], rarity: 'unique',
       gather: { type: 'plant', verb: 'たねを まく', growSec: 360,
-        harvest: { engine: 'chain', target: '🥜', prompt: 'じゅくした まめだけ なぞって ひろおう!' },
+        harvest: { engine: 'mine', prompt: 'らっかせいは つちのなかに できるよ。ヒントの すうじで ばしょを すいりして ほろう!' },
         care: { target: '🐜', label: 'ありが あつまってきた! タップで はらおう!' } } },
     { id: 'm09', name: 'いわし', emoji: '🐟', origins: ['chiba'], rarity: 'local',
       gather: { type: 'timing', verb: 'りょうに でる',
@@ -206,7 +206,7 @@ export const GAME_DATA: GameData = {
         care: { target: '🐝', label: 'はちが みに あつまってる! タップで はらおう!' } } },
     { id: 'm11', name: 'いちご', emoji: '🍓', origins: ['tochigi', 'ibaraki'], rarity: 'local',
       gather: { type: 'plant', verb: 'たねを まく', growSec: 300,
-        harvest: { engine: 'chain', target: '🍓', prompt: 'まっかな いちごだけ なぞって つもう!' },
+        harvest: { engine: 'chain', target: '🍓', prompt: 'まっかに いろづいた いちごだけ つもう! みどりは まだ はやいよ' },
         care: { target: '🐦', label: 'とりが いちごを ねらってる! タップで おいはらえ!' } } },
     { id: 'm12', name: 'ゆうがお', emoji: '🥒', origins: ['tochigi'], rarity: 'unique',
       gather: { type: 'plant', verb: 'たねを まく', growSec: 420,

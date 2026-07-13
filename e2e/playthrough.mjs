@@ -188,7 +188,18 @@ await d.clickText('もどる');
 await d.dismissTrivia();
 log('メロン(フリック アーケード。クイズ不正解でも★1保証)');
 
-/* 12. セーブ検証 */
+/* 12. いちご(chain=色づき判定): 青い実を触ってもペナルティは無く完走できる */
+await d.scrollAndClick('たねを まく', 2); // だいず, メロン, [いちご]
+await page.evaluate(() => window.__mqAdmin.boostAll());
+await page.waitForTimeout(1600);
+await d.scrollAndClick('しゅうかく!');
+await harvestFlow(async () => {
+  const t = await d.findTexts('🍓');
+  if (t.length) await page.mouse.click(t[0].x, t[0].y);
+});
+log('いちご(色づき判定 アーケード)');
+
+/* 13. セーブ検証 */
 const save = await page.evaluate(() => JSON.parse(localStorage.getItem('meisanquest-save-v1')));
 const assert = (cond, msg) => {
   if (!cond) throw new Error('assert failed: ' + msg);
@@ -203,6 +214,7 @@ assert(save.zukanMat.m07?.ibaraki >= 1, 'clay mined');
 assert(save.zukanMat.m01?.ibaraki === 2, 'mizu ★2 (infra)');
 assert(save.zukanMat.m09?.chiba >= 1, 'iwashi fished');
 assert(save.zukanMat.m05?.ibaraki >= 1, 'melon obtained');
+assert(save.zukanMat.m11?.ibaraki >= 1, 'strawberry obtained');
 assert(!save.plots['ibaraki|m05'], 'melon plot cleared');
 log('セーブ検証 OK');
 

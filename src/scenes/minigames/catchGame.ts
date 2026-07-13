@@ -91,7 +91,7 @@ export function renderCatch(api: MinigameApi, target: string, prompt: string): v
     // 木がぷるっと揺れて実を落とす
     scene.tweens.add({ targets: tree, angle: { from: -1.6, to: 1.6 }, duration: 80, yoyo: true });
 
-    const fallMs = Phaser.Math.Linear(2400, 1250, session.progress());
+    const fallMs = Phaser.Math.Linear(2400, 950, session.progress());
     const sway = (Math.random() - 0.5) * 90;
     let resolved = false;
     scene.tweens.add({ targets: item, x: x + sway, duration: fallMs, ease: 'Sine.easeInOut' });
@@ -147,8 +147,21 @@ export function renderCatch(api: MinigameApi, target: string, prompt: string): v
       },
     });
 
-    const interval = Phaser.Math.Linear(1050, 430, session.progress());
+    const interval = Phaser.Math.Linear(1050, 260, session.progress());
     spawnTimer = scene.time.delayedCall(interval, dropOne);
+    // 終盤は2個同時に落ちてくる(取りきれないラッシュ)
+    if (session.progress() > 0.55 && Math.random() < 0.35) {
+      scene.time.delayedCall(interval / 2, () => {
+        if (!session.isEnded()) dropOneExtra();
+      });
+    }
+  };
+  /** spawnTimer を触らない追加ドロップ(ラッシュ用) */
+  const dropOneExtra = (): void => {
+    const saved = spawnTimer;
+    dropOne();
+    spawnTimer?.remove();
+    spawnTimer = saved;
   };
   dropOne();
 }

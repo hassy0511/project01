@@ -19,6 +19,7 @@ import { makeStarRow, Modal, showToast } from '../ui/widgets';
 import { confetti, screenFlash } from '../ui/effects';
 import { renderCatch } from './minigames/catchGame';
 import { renderChain } from './minigames/chainGame';
+import { renderReap } from './minigames/reapGame';
 import { renderMine } from './minigames/mineGame';
 import { renderFish } from './minigames/fishGame';
 import { renderFlick } from './minigames/flickGame';
@@ -146,8 +147,10 @@ export class SessionScene extends Phaser.Scene {
       renderDefense(api, this.material.emoji, g.care.target, g.care.label, () => undefined);
     } else if (engine === 'catch') {
       renderCatch(api, targetEmoji, prompt);
-    } else if (engine === 'chain' || engine === 'reap') {
-      renderChain(api, targetEmoji, prompt, engine === 'reap');
+    } else if (engine === 'chain') {
+      renderChain(api, targetEmoji, prompt);
+    } else if (engine === 'reap') {
+      renderReap(api, prompt);
     } else if (engine === 'mine') {
       renderMine(api, prompt, this.material.emoji);
     } else if (engine === 'flick') {

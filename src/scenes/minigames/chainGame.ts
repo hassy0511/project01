@@ -1,38 +1,39 @@
-/* チェーンなぞりゲーム(だいず・いちご・らっかせい / こめ=列レイアウト):
-   熟した実だけを一筆書きでつないで集める。葉っぱ(ハズレ)に触れるとコンボが切れる。
-   ウェーブ制で数と混ざり具合が増えていく */
+/* 色づき収穫(いちご・だいず): 畑の実が 緑 → だんだん色づく → 食べごろ → しおれる
+   と変化していく。「食べごろ」の実だけを素早く摘む。青いうちに触るとコンボが切れる。
+   同じ形の実を色で見分けるのが本体(時間経過で食べごろの窓が短くなる) */
 import Phaser from 'phaser';
 import { SFX } from '../../audio/sfx';
-import { burst, missShake } from '../../ui/effects';
-import { UI_TEXT } from '../../data/uiText';
-import { FONT, GAME_W, TEXT_COLORS } from '../../ui/theme';
+import { burst, impactRing, missShake } from '../../ui/effects';
+import { GAME_W } from '../../ui/theme';
 import { drawMeadow } from '../../ui/scenery';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
 
 const AREA_H = 660;
-const PLAY_TOP = 130;
-const PLAY_BOTTOM = 600;
-const HIT_RADIUS = 32;
-const RIPE_PTS = 5;
+const HIT_RADIUS = 36;
+const RIPE_PTS = 8;
+/** 未熟(緑)→ 色づき(中間)→ 食べごろ の tint 段階 */
+const TINT_UNRIPE = 0x86c26a;
+const TINT_TURNING = 0xd9c26a;
 
-interface Target {
-  obj: Phaser.GameObjects.Text;
-  ripe: boolean;
-  got: boolean;
+type Stage = 'empty' | 'unripe' | 'turning' | 'ripe' | 'wilt';
+
+interface Spot {
+  x: number;
+  y: number;
+  stage: Stage;
+  obj?: Phaser.GameObjects.Text;
+  ring?: Phaser.GameObjects.Arc;
+  timer?: Phaser.Time.TimerEvent;
 }
 
-export function renderChain(api: MinigameApi, target: string, prompt: string, rows: boolean): void {
+export function renderChain(api: MinigameApi, target: string, prompt: string): void {
   const { scene, area } = api;
   drawMeadow(scene, area, AREA_H);
   api.sign(prompt);
 
-  let targets: Target[] = [];
-  let wave = 0;
-  let spawning = false;
-
   const session = new ArcadeSession(api, {
-    engine: rows ? 'reap' : 'chain',
+    engine: 'chain',
     onEnd: () => {
       cleanupInput();
       api.addScore(session.score);
@@ -40,143 +41,131 @@ export function renderChain(api: MinigameApi, target: string, prompt: string, ro
     },
   });
 
-  const spawnWave = (): void => {
-    wave++;
-    spawning = true;
-    targets.forEach((t) => t.obj.destroy());
-    targets = [];
-    const ripeCount = Math.min(12, 5 + wave);
-    const junkCount = Math.min(8, 1 + wave);
-
-    const positions: { x: number; y: number }[] = [];
-    const total = ripeCount + junkCount;
-    if (rows) {
-      const cols = 4;
-      for (let i = 0; i < total; i++) {
-        positions.push({
-          x: 70 + (i % cols) * ((GAME_W - 140) / (cols - 1)),
-          y: PLAY_TOP + 40 + Math.floor(i / cols) * 86 + ((i % cols) % 2) * 18,
-        });
-      }
-    } else {
-      for (let i = 0; i < total; i++) {
-        // 適度にバラす(既存と近すぎたら少しずらす)
-        let x = 56 + Math.random() * (GAME_W - 112);
-        let y = PLAY_TOP + 30 + Math.random() * (PLAY_BOTTOM - PLAY_TOP - 60);
-        for (const p of positions) {
-          if (Math.hypot(p.x - x, p.y - y) < 62) {
-            x = Phaser.Math.Clamp(x + 70, 56, GAME_W - 56);
-            y = Phaser.Math.Clamp(y + 46, PLAY_TOP + 30, PLAY_BOTTOM - 30);
-          }
-        }
-        positions.push({ x, y });
-      }
+  // うね(畝)と株の配置: 4列×3株のゆるいグリッド
+  const spots: Spot[] = [];
+  const rowsG = scene.add.graphics();
+  for (let r = 0; r < 4; r++) {
+    const y = 170 + r * 118;
+    rowsG.fillStyle(0xa8895c, 0.55);
+    rowsG.fillRoundedRect(30, y + 24, GAME_W - 60, 20, 10);
+    for (let c = 0; c < 3; c++) {
+      const x = 100 + c * 140 + (r % 2) * 24;
+      // 株(緑のしげみ)
+      rowsG.fillStyle(0x5e9c43, 1);
+      rowsG.fillEllipse(x, y + 18, 64, 30);
+      rowsG.fillStyle(0x7bbf5a, 1);
+      rowsG.fillEllipse(x - 14, y + 10, 40, 24);
+      rowsG.fillEllipse(x + 16, y + 12, 38, 22);
+      spots.push({ x, y, stage: 'empty' });
     }
-    Phaser.Utils.Array.Shuffle(positions);
+  }
+  area.add(rowsG);
 
-    positions.forEach((pos, i) => {
-      const ripe = i < ripeCount;
-      const obj = scene.add
-        .text(pos.x, pos.y, ripe ? target : '🌿', { fontSize: ripe ? '34px' : '30px' })
-        .setOrigin(0.5)
-        .setScale(0);
-      if (!ripe) obj.setAlpha(0.9);
-      area.add(obj);
-      scene.tweens.add({
-        targets: obj,
-        scale: 1,
-        duration: 240,
-        delay: i * 40,
-        ease: 'Back.easeOut',
-        onComplete: () => {
-          if (ripe && obj.active) {
-            scene.tweens.add({
-              targets: obj,
-              scale: { from: 0.94, to: 1.1 },
-              yoyo: true,
-              repeat: -1,
-              duration: 460 + Math.random() * 200,
-            });
-          }
-        },
-      });
-      targets.push({ obj, ripe, got: false });
-    });
-    scene.time.delayedCall(positions.length * 40 + 260, () => {
-      spawning = false;
+  const clearSpot = (s: Spot): void => {
+    s.timer?.remove();
+    s.ring?.destroy();
+    s.obj?.destroy();
+    s.obj = undefined;
+    s.ring = undefined;
+    s.stage = 'empty';
+  };
+
+  const schedule = (s: Spot, delayMs: number, fn: () => void): void => {
+    s.timer = scene.time.delayedCall(delayMs, () => {
+      if (!session.isEnded()) fn();
     });
   };
 
-  const waveCleared = (): void => {
-    const banner = scene.add
-      .text(GAME_W / 2, 300, UI_TEXT.arcade.wave(wave + 1), {
-        fontFamily: FONT,
-        fontSize: '28px',
-        color: TEXT_COLORS.good,
-        fontStyle: 'bold',
-        stroke: '#ffffff',
-        strokeThickness: 5,
-      })
-      .setOrigin(0.5)
-      .setScale(0);
-    area.add(banner);
+  const sprout = (s: Spot): void => {
+    if (session.isEnded()) return;
+    s.stage = 'unripe';
+    s.obj = scene.add.text(s.x, s.y, target, { fontSize: '34px' }).setOrigin(0.5).setScale(0);
+    s.obj.setTint(TINT_UNRIPE);
+    area.add(s.obj);
+    scene.tweens.add({ targets: s.obj, scale: 0.8, ease: 'Back.easeOut', duration: 260 });
+    schedule(s, 1200 + Math.random() * 1400, () => turn(s));
+  };
+
+  const turn = (s: Spot): void => {
+    if (!s.obj) return;
+    s.stage = 'turning';
+    s.obj.setTint(TINT_TURNING);
+    scene.tweens.add({ targets: s.obj, scale: 0.92, duration: 300 });
+    schedule(s, 900 + Math.random() * 900, () => ripen(s));
+  };
+
+  const ripen = (s: Spot): void => {
+    if (!s.obj) return;
+    s.stage = 'ripe';
+    s.obj.clearTint();
+    scene.tweens.add({ targets: s.obj, scale: { from: 1.15, to: 1 }, ease: 'Back.easeOut', duration: 220 });
+    // 「いま食べごろ!」の合図リング
+    s.ring = scene.add.circle(s.x, s.y, 30).setStrokeStyle(3, 0xffffff, 0.8);
+    area.add(s.ring);
+    scene.tweens.add({ targets: s.ring, radius: 40, alpha: 0, duration: 500, onComplete: () => s.ring?.destroy() });
+    // 食べごろの窓は時間とともに短くなる(45秒かけて 3.2s → 1.5s)
+    const window = Phaser.Math.Linear(3200, 1500, session.progress());
+    schedule(s, window, () => wilt(s));
+  };
+
+  const wilt = (s: Spot): void => {
+    if (!s.obj) return;
+    s.stage = 'wilt';
+    s.obj.setTint(0x9a9a8a);
     scene.tweens.add({
-      targets: banner,
-      scale: 1,
-      duration: 260,
-      ease: 'Back.easeOut',
-      onComplete: () =>
-        scene.tweens.add({ targets: banner, alpha: 0, delay: 400, duration: 250, onComplete: () => banner.destroy() }),
+      targets: s.obj,
+      alpha: 0,
+      y: s.y + 12,
+      scaleY: 0.6,
+      duration: 600,
+      onComplete: () => {
+        clearSpot(s);
+        schedule(s, 400 + Math.random() * 900, () => sprout(s));
+      },
     });
-    spawnWave();
   };
 
   let stunnedUntil = 0;
   const touch = (px: number, py: number): void => {
-    if (session.isEnded() || spawning || Date.now() < stunnedUntil) return;
-    for (const t of targets) {
-      if (t.got || !t.obj.active) continue;
-      if (Math.hypot(px - t.obj.x, py - api.areaY - t.obj.y) > HIT_RADIUS) continue;
-      if (t.ripe) {
-        t.got = true;
+    if (session.isEnded() || Date.now() < stunnedUntil) return;
+    for (const s of spots) {
+      if (!s.obj || s.stage === 'empty' || s.stage === 'wilt') continue;
+      if (Math.hypot(px - s.x, py - api.areaY - s.y) > HIT_RADIUS) continue;
+      if (s.stage === 'ripe') {
         SFX.pop();
-        burst(scene, t.obj.x, t.obj.y + api.areaY, 6);
-        session.addPoints(RIPE_PTS, t.obj.x, t.obj.y + api.areaY - 16);
-        scene.tweens.killTweensOf(t.obj);
-        scene.tweens.add({ targets: t.obj, scale: 0, alpha: 0, duration: 160, onComplete: () => t.obj.destroy() });
-        if (targets.every((x) => !x.ripe || x.got)) waveCleared();
+        impactRing(scene, s.x, s.y + api.areaY, 0xffffff, 10);
+        burst(scene, s.x, s.y + api.areaY, 7);
+        session.addPoints(RIPE_PTS, s.x, s.y + api.areaY - 18);
+        const obj = s.obj;
+        s.timer?.remove();
+        s.obj = undefined;
+        s.stage = 'empty';
+        scene.tweens.add({ targets: obj, y: obj.y - 30, scale: 0.3, alpha: 0, duration: 200, onComplete: () => obj.destroy() });
+        schedule(s, 700 + Math.random() * 1200, () => sprout(s));
       } else {
-        // 葉っぱに触れた: チェーンが切れて一瞬だけ手が止まる
-        stunnedUntil = Date.now() + 450;
+        // まだ青い! コンボが切れて一瞬手が止まる
+        stunnedUntil = Date.now() + 500;
         session.resetCombo();
         missShake(scene);
         SFX.bad();
-        scene.tweens.add({ targets: t.obj, angle: { from: -16, to: 16 }, duration: 60, yoyo: true, repeat: 3 });
+        scene.tweens.add({ targets: s.obj, angle: { from: -14, to: 14 }, duration: 60, yoyo: true, repeat: 3 });
       }
       return;
     }
   };
 
-  // なぞり軌跡(小さな残像)
-  let lastTrailAt = 0;
-  const onMove = (p: Phaser.Input.Pointer): void => {
-    if (!p.isDown) return;
-    touch(p.x, p.y);
-    if (Date.now() - lastTrailAt > 40) {
-      lastTrailAt = Date.now();
-      const dot = scene.add.circle(p.x, p.y - api.areaY, 7, 0xffffff, 0.55);
-      area.add(dot);
-      scene.tweens.add({ targets: dot, scale: 0.2, alpha: 0, duration: 300, onComplete: () => dot.destroy() });
-    }
-  };
   const onDown = (p: Phaser.Input.Pointer): void => touch(p.x, p.y);
-  scene.input.on('pointermove', onMove);
+  const onMove = (p: Phaser.Input.Pointer): void => {
+    if (p.isDown) touch(p.x, p.y);
+  };
   scene.input.on('pointerdown', onDown);
+  scene.input.on('pointermove', onMove);
   const cleanupInput = (): void => {
-    scene.input.off('pointermove', onMove);
     scene.input.off('pointerdown', onDown);
+    scene.input.off('pointermove', onMove);
   };
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, cleanupInput);
 
-  spawnWave();
+  // 開始: 時間差で芽吹かせる(最初から2つは食べごろ寸前に)
+  spots.forEach((s, i) => schedule(s, i * 260 + Math.random() * 400, () => sprout(s)));
 }
