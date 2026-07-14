@@ -41,3 +41,10 @@ document.addEventListener('pointerdown', () => {
   resumeAudio();
   startBgm();
 });
+
+// オフライン対応: 一度開けば、電波が無い場所でもホーム画面から起動できるようにする
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => undefined);
+  });
+}

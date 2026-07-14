@@ -2,9 +2,28 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐤</text></svg>" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover: iPhone/iPad のノッチ・ホームバー領域まで背景を敷き、
+         セーフエリア分は下記CSSの env(safe-area-inset-*) で除ける(PWA/ホーム画面起動時に必須) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>めいさんクエスト(仮)</title>
+
+    <!-- PWA: ホーム画面に追加してアプリのように起動する -->
+    <link rel="manifest" href="manifest.webmanifest" />
+    <meta name="theme-color" content="#fff8e7" />
+
+    <!-- favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png" />
+
+    <!-- iOS: ホーム画面追加時にブラウザUIなしでフルスクリーン起動 -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="めいさんクエスト" />
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-167.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="icons/icon-120.png" />
+
     <style>
       html,
       body {
@@ -14,10 +33,17 @@
         background: #dfeef4;
         overflow: hidden;
         touch-action: manipulation; /* ダブルタップズーム抑止 */
+        overscroll-behavior: none; /* iOSのゴムスクロール・引っ張り更新を抑止(アプリらしさ) */
       }
       #app {
         width: 100%;
         height: 100%;
+        /* セーフエリア(ノッチ・ホームバー)ぶんの余白。ゲーム画面は#appの中で
+           GAME_W×GAME_H を Phaser.Scale.FIT するので、この余白がレターボックス色と
+           馴染むよう #dfeef4 に合わせてある */
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+          env(safe-area-inset-left);
+        box-sizing: border-box;
       }
       canvas {
         display: block;

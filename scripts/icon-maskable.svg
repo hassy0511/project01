@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#cfeffb"/>
+      <stop offset="100%" stop-color="#8fd0e0"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#sky)"/>
+  <!-- Android maskable safe zone = inner 80% (padding 10% each side). Scale content ~0.72 to be safe. -->
+  <g transform="translate(256 256) scale(0.72) translate(-256 -256)">
+    <circle cx="400" cy="112" r="46" fill="#ffd34d"/>
+    <g stroke="#f0b429" stroke-width="10" stroke-linecap="round">
+      <line x1="400" y1="40" x2="400" y2="14"/>
+      <line x1="400" y1="184" x2="400" y2="210"/>
+      <line x1="328" y1="112" x2="302" y2="112"/>
+      <line x1="472" y1="112" x2="498" y2="112"/>
+      <line x1="349" y1="61" x2="331" y2="43"/>
+      <line x1="451" y1="163" x2="469" y2="181"/>
+      <line x1="349" y1="163" x2="331" y2="181"/>
+      <line x1="451" y1="61" x2="469" y2="43"/>
+    </g>
+    <ellipse cx="256" cy="430" rx="260" ry="110" fill="#6fbf44"/>
+    <ellipse cx="130" cy="410" rx="120" ry="70" fill="#5e9c43" opacity="0.55"/>
+    <ellipse cx="380" cy="400" rx="130" ry="72" fill="#7dcf55" opacity="0.55"/>
+    <ellipse cx="256" cy="300" rx="150" ry="58" fill="#ffffff" opacity="0.9"/>
+    <g transform="translate(256 292)">
+      <ellipse cx="0" cy="42" rx="86" ry="30" fill="#e0812a"/>
+      <circle cx="0" cy="-8" r="92" fill="#ffd34d"/>
+      <circle cx="-32" cy="-18" r="9" fill="#4a3b2a"/>
+      <circle cx="32" cy="-18" r="9" fill="#4a3b2a"/>
+      <path d="M -14 8 Q 0 26 14 8 Q 0 4 -14 8 Z" fill="#e0812a"/>
+      <ellipse cx="-70" cy="16" rx="24" ry="14" fill="#ffd34d" transform="rotate(-24 -70 16)"/>
+      <ellipse cx="70" cy="16" rx="24" ry="14" fill="#ffd34d" transform="rotate(24 70 16)"/>
+    </g>
+  </g>
+</svg>
