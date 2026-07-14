@@ -15,8 +15,10 @@
     "phaser": "^3.90.0"
   },
   "devDependencies": {
+    "@svg-maps/japan": "^2.0.0",
     "@types/node": "^26.1.1",
     "playwright": "^1.61.1",
+    "topojson-client": "^3.1.0",
     "typescript": "^7.0.2",
     "vite": "^8.1.4",
     "vitest": "^4.1.10"

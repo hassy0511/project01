@@ -10,7 +10,7 @@ export type MaterialId = string;
 export type RecipeId = string;
 export type RegionId = string;
 
-/** 地方(エリア)。にほんぜんこく画面の島チップとして表示する */
+/** 地方(エリア)。にほんぜんこく画面に実形シルエット(regions-gen.json)で表示する */
 export interface Region {
   id: RegionId;
   name: string;
@@ -19,9 +19,6 @@ export interface Region {
   /** true のエリアだけ地図に入れる(フリーミアム/開発順の線引きに使う) */
   active: boolean;
   color: string;
-  /** にほんぜんこく画面での島チップのだいたいの位置(0..1 の相対座標)と大きさ */
-  pos: [number, number];
-  size: number;
 }
 
 export interface Prefecture {
@@ -32,6 +29,8 @@ export interface Prefecture {
   active: boolean;
   color?: string;
   festivalId?: RecipeId;
+  /** 「けん」以外の よびかた(とうきょう=と / おおさか・きょうと=ふ / ほっかいどうは suffix なし)。省略時は けん */
+  suffix?: string;
 }
 
 export type Rarity = 'common' | 'local' | 'unique';
@@ -175,17 +174,17 @@ export const GAME_DATA: GameData = {
   meta: { version: '0.4.0', title: 'めいさんクエスト', subtitle: 'にっぽん かいたく!' },
 
   /* ---------- 地方マスタ(にほんぜんこく画面) ----------
-     pos は画面上の相対位置(にほんれっとうの ならびを ざっくり再現)。
+     実形シルエットは public/assets/regions-gen.json(scripts/gen-region-map.mjs で生成)。
      active な地方だけ地図に入れる。今は かんとう のみ */
   regions: [
-    { id: 'hokkaido', name: 'ほっかいどう', kanji: '北海道', emoji: '❄️', active: false, color: '#B3E5FC', pos: [0.82, 0.05], size: 1.1 },
-    { id: 'tohoku', name: 'とうほく', kanji: '東北', emoji: '🍎', active: false, color: '#C5E1A5', pos: [0.74, 0.25], size: 1.0 },
-    { id: 'kanto', name: 'かんとう', kanji: '関東', emoji: '🗼', active: true, color: '#A9DC76', pos: [0.78, 0.48], size: 1.0 },
-    { id: 'chubu', name: 'ちゅうぶ', kanji: '中部', emoji: '🗻', active: false, color: '#FFE0B2', pos: [0.42, 0.40], size: 1.0 },
-    { id: 'kinki', name: 'きんき', kanji: '近畿', emoji: '🦌', active: false, color: '#F8BBD0', pos: [0.30, 0.62], size: 0.9 },
-    { id: 'chugoku', name: 'ちゅうごく', kanji: '中国', emoji: '⛩️', active: false, color: '#FFF59D', pos: [0.10, 0.50], size: 0.9 },
-    { id: 'shikoku', name: 'しこく', kanji: '四国', emoji: '🍊', active: false, color: '#B2DFDB', pos: [0.40, 0.84], size: 0.75 },
-    { id: 'kyushu', name: 'きゅうしゅう・おきなわ', kanji: '九州・沖縄', emoji: '🌺', active: false, color: '#FFCC80', pos: [0.09, 0.82], size: 0.95 },
+    { id: 'hokkaido', name: 'ほっかいどう', kanji: '北海道', emoji: '❄️', active: false, color: '#B3E5FC' },
+    { id: 'tohoku', name: 'とうほく', kanji: '東北', emoji: '🍎', active: false, color: '#C5E1A5' },
+    { id: 'kanto', name: 'かんとう', kanji: '関東', emoji: '🗼', active: true, color: '#A9DC76' },
+    { id: 'chubu', name: 'ちゅうぶ', kanji: '中部', emoji: '🗻', active: false, color: '#FFE0B2' },
+    { id: 'kinki', name: 'きんき', kanji: '近畿', emoji: '🦌', active: false, color: '#F8BBD0' },
+    { id: 'chugoku', name: 'ちゅうごく', kanji: '中国', emoji: '⛩️', active: false, color: '#FFF59D' },
+    { id: 'shikoku', name: 'しこく', kanji: '四国', emoji: '🍊', active: false, color: '#B2DFDB' },
+    { id: 'kyushu', name: 'きゅうしゅう・おきなわ', kanji: '九州・沖縄', emoji: '🌺', active: false, color: '#FFCC80' },
   ],
 
   /* ---------- 県マスタ ---------- */
@@ -195,7 +194,7 @@ export const GAME_DATA: GameData = {
     { id: 'chiba', name: 'ちば', kanji: '千葉', region: 'kanto', active: true, color: '#FFD166', festivalId: 'rf2' },
     { id: 'gunma', name: 'ぐんま', kanji: '群馬', region: 'kanto', active: true, color: '#B39DDB', festivalId: 'rf4' },
     { id: 'saitama', name: 'さいたま', kanji: '埼玉', region: 'kanto', active: true, color: '#80CBC4', festivalId: 'rf5' },
-    { id: 'tokyo', name: 'とうきょう', kanji: '東京', region: 'kanto', active: true, color: '#FFAB91', festivalId: 'rf6' },
+    { id: 'tokyo', name: 'とうきょう', kanji: '東京', region: 'kanto', active: true, color: '#FFAB91', festivalId: 'rf6', suffix: 'と' },
     { id: 'kanagawa', name: 'かながわ', kanji: '神奈川', region: 'kanto', active: true, color: '#81D4FA', festivalId: 'rf7' },
   ],
 
@@ -444,7 +443,7 @@ export const GAME_DATA: GameData = {
     { id: 'q03', kind: 'kaitaku', type: 'shape', tags: ['chiba'], q: 'この かたちの けんは どこ?', choices: ['ちば', 'いばらき', 'とちぎ'], answer: 0 },
     { id: 'q07', kind: 'kaitaku', type: 'shape', tags: ['gunma'], q: 'この かたちの けんは どこ?', choices: ['ぐんま', 'とちぎ', 'さいたま'], answer: 0 },
     { id: 'q08', kind: 'kaitaku', type: 'shape', tags: ['saitama'], q: 'この かたちの けんは どこ?', choices: ['さいたま', 'ぐんま', 'とうきょう'], answer: 0 },
-    { id: 'q09', kind: 'kaitaku', type: 'shape', tags: ['tokyo'], q: 'この かたちの とは どこ?', choices: ['とうきょう', 'かながわ', 'さいたま'], answer: 0 },
+    { id: 'q09', kind: 'kaitaku', type: 'shape', tags: ['tokyo'], q: 'この かたちは どこ?', choices: ['とうきょう', 'かながわ', 'さいたま'], answer: 0 },
     { id: 'q10', kind: 'kaitaku', type: 'shape', tags: ['kanagawa'], q: 'この かたちの けんは どこ?', choices: ['かながわ', 'とうきょう', 'ちば'], answer: 0 },
     { id: 'q01b', kind: 'kaitaku', type: 'shape', tags: ['ibaraki'], q: 'この かたちの けんは どこ?', choices: ['いばらき', 'ちば', 'さいたま'], answer: 0 },
     { id: 'q02b', kind: 'kaitaku', type: 'shape', tags: ['tochigi'], q: 'この かたちの けんは どこ?', choices: ['とちぎ', 'ぐんま', 'いばらき'], answer: 0 },
@@ -454,7 +453,7 @@ export const GAME_DATA: GameData = {
     { id: 'q03p', kind: 'kaitaku', type: 'position', tags: ['chiba'], q: 'ひかっている けんは どこ?', choices: ['ちば', 'とちぎ', 'いばらき'], answer: 0 },
     { id: 'q07p', kind: 'kaitaku', type: 'position', tags: ['gunma'], q: 'ひかっている けんは どこ?', choices: ['ぐんま', 'とちぎ', 'さいたま'], answer: 0 },
     { id: 'q08p', kind: 'kaitaku', type: 'position', tags: ['saitama'], q: 'ひかっている けんは どこ?', choices: ['さいたま', 'とうきょう', 'ぐんま'], answer: 0 },
-    { id: 'q09p', kind: 'kaitaku', type: 'position', tags: ['tokyo'], q: 'ひかっている とは どこ?', choices: ['とうきょう', 'さいたま', 'かながわ'], answer: 0 },
+    { id: 'q09p', kind: 'kaitaku', type: 'position', tags: ['tokyo'], q: 'ひかっているのは どこ?', choices: ['とうきょう', 'さいたま', 'かながわ'], answer: 0 },
     { id: 'q10p', kind: 'kaitaku', type: 'position', tags: ['kanagawa'], q: 'ひかっている けんは どこ?', choices: ['かながわ', 'ちば', 'とうきょう'], answer: 0 },
 
     /* --- 開拓: いばらき --- */
@@ -578,6 +577,8 @@ export const GAME_DATA: GameData = {
 /* ---------- データ参照ヘルパ ---------- */
 export const findPref = (data: GameData, id: PrefectureId): Prefecture | undefined =>
   data.prefectures.find((p) => p.id === id);
+/** 表示用の正式なよびかた(いばらきけん・とうきょうと 等)。「けん」ベタ書き事故を防ぐ */
+export const prefTitle = (p: Prefecture): string => `${p.name}${p.suffix ?? 'けん'}`;
 export const findMaterial = (data: GameData, id: MaterialId): Material | undefined =>
   data.materials.find((m) => m.id === id);
 export const findRecipe = (data: GameData, id: RecipeId): Recipe | undefined =>

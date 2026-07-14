@@ -165,6 +165,21 @@ describe('おまつり(tier4)', () => {
   });
 });
 
+describe('地図アセット(public/assets/regions-gen.json)', () => {
+  it('全地方に実形シルエットとラベルがある', () => {
+    const gen = JSON.parse(readFileSync('public/assets/regions-gen.json', 'utf8')) as {
+      viewBox: string;
+      regions: Record<string, string[]>;
+      labels: Record<string, [number, number]>;
+    };
+    expect(gen.viewBox).toBeTruthy();
+    for (const r of D.regions) {
+      expect(gen.regions[r.id]?.length ?? 0, `region shape: ${r.id}`).toBeGreaterThan(0);
+      expect(gen.labels[r.id], `region label: ${r.id}`).toBeTruthy();
+    }
+  });
+});
+
 describe('地図アセット(public/assets/map-gen.json)', () => {
   it('全県のパス・ラベルがあり、アクティブ県には形クイズ用 bbox がある', () => {
     const mapGen = JSON.parse(readFileSync('public/assets/map-gen.json', 'utf8')) as {

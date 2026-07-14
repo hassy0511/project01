@@ -26,6 +26,16 @@ await page.waitForSelector('canvas');
 await page.waitForTimeout(1500);
 await page.evaluate(() => window.__mqAdmin.fastMode());
 
+/* 0. 導入ストーリー(初回のみ)→ スキップ → にほんぜんこく → かんとうへ */
+await d.waitText('スキップ');
+await page.screenshot({ path: `${SHOTS}/story-intro.png` });
+await d.clickText('スキップ');
+await d.waitText('🗾 にっぽん ぜんこく');
+await d.clickText('かんとう');
+await page.waitForTimeout(600);
+await d.waitText('🗾 にっぽん'); // 地図に到着
+log('導入ストーリー(スキップ)→ にほんぜんこく → かんとう');
+
 /** 収穫一連(しゅうかく!→アーケード→クイズ正解→もどる→トリビア) */
 async function harvestFlow(interact = null) {
   await d.playArcade(interact);

@@ -1,7 +1,8 @@
-/* いねかり(こめ): たんぼの列をなぞって刈る。
+/* いねかり(こめ・こまつな): 畑の列をなぞって刈る。
    1列を一筆(指を離さず)で刈りきると「ひとふでがり!」ボーナス。
-   列には🐸カエルが座っていることがある: なぞりで触れると一筆が途切れてコンボ切れ。
-   先にタップで逃がしてから刈る、の判断が入る(まっすぐ引くだけにならない)。
+   列には🐸カエルが 刈りラインの上に すわっている(1列に最大2匹)。
+   カエルは ぴょんぴょん はねて場所を変えるので、先にタップで逃がすか、
+   タイミングを見て なぞるかの判断が入る(まっすぐ引くだけにならない)。
    刈った列は少しずつ生えてくるので、45秒間 刈りつづける */
 import Phaser from 'phaser';
 import { SFX } from '../../audio/sfx';
@@ -20,8 +21,16 @@ const CUT_RADIUS = 34;
 const STALK_PTS = 3;
 const ROW_BONUS = 20;
 const REGROW_MS = 1600;
-/** カエルが列に座っている確率(時間経過で少し上がる) */
-const FROG_BASE_CHANCE = 0.55;
+/** カエル: 1匹目/2匹目が列に座っている基本確率(+進行で上がる) */
+const FROG_CHANCE_1 = 0.6;
+const FROG_CHANCE_2 = 0.2;
+const FROG_CHANCE_RAMP = 0.35;
+/** カエルに触れた時のかたまり時間と当たり判定 */
+const FROG_STUN_MS = 650;
+const FROG_RADIUS = 36;
+/** カエルが はねて場所を変える間隔(ms) */
+const FROG_HOP_MIN_MS = 1200;
+const FROG_HOP_MAX_MS = 2200;
 
 interface Stalk {
   obj: Phaser.GameObjects.Text;
@@ -32,6 +41,8 @@ interface Stalk {
 interface Frog {
   obj: Phaser.GameObjects.Text;
   row: number;
+  col: number;
+  hopTimer?: Phaser.Time.TimerEvent;
 }
 
 export function renderReap(api: MinigameApi, targetEmoji: string, prompt: string): void {
@@ -68,6 +79,7 @@ export function renderReap(api: MinigameApi, targetEmoji: string, prompt: string
   const removeFrog = (f: Frog, jumpDx: number): void => {
     const idx = frogs.indexOf(f);
     if (idx >= 0) frogs.splice(idx, 1);
+    f.hopTimer?.remove();
     f.obj.disableInteractive();
     // ぴょんと放物線でにげる
     scene.tweens.add({ targets: f.obj, x: f.obj.x + jumpDx, duration: 500, ease: 'Sine.easeOut' });
@@ -82,25 +94,68 @@ export function renderReap(api: MinigameApi, targetEmoji: string, prompt: string
     SFX.pop();
   };
 
-  const placeFrog = (r: number): void => {
-    const chance = FROG_BASE_CHANCE + session.progress() * 0.25;
-    if (Math.random() > chance) return;
-    const c = 1 + Math.floor(Math.random() * (STALKS_PER_ROW - 2));
-    const y = ROW_Y0 + r * ROW_GAP;
+  /** カエルの すわる高さ = 刈りラインの上(なぞりの通り道をふさぐ) */
+  const frogY = (r: number): number => ROW_Y0 + r * ROW_GAP - 12;
+
+  /** ぴょんと同じ列の別の場所へ はねる(定期的に呼ばれる) */
+  const hopFrog = (f: Frog): void => {
+    if (session.isEnded() || !f.obj.active) return;
+    let next = Math.floor(Math.random() * STALKS_PER_ROW);
+    if (next === f.col) next = (next + 1 + Math.floor(Math.random() * (STALKS_PER_ROW - 1))) % STALKS_PER_ROW;
+    f.col = next;
+    scene.tweens.add({ targets: f.obj, x: stalkX(next), duration: 360, ease: 'Sine.easeInOut' });
+    scene.tweens.add({
+      targets: f.obj,
+      y: frogY(f.row) - 46,
+      duration: 180,
+      ease: 'Quad.easeOut',
+      yoyo: true,
+      onComplete: () => f.obj.setY(frogY(f.row)),
+    });
+    scheduleHop(f);
+  };
+
+  const scheduleHop = (f: Frog): void => {
+    f.hopTimer = scene.time.delayedCall(
+      FROG_HOP_MIN_MS + Math.random() * (FROG_HOP_MAX_MS - FROG_HOP_MIN_MS),
+      () => hopFrog(f),
+    );
+  };
+
+  const placeFrog = (r: number, col: number): void => {
     const obj = scene.add
-      .text(stalkX(c), y - 34, '🐸', { fontSize: '30px' })
+      .text(stalkX(col), frogY(r), '🐸', { fontSize: '30px' })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
     area.add(obj);
-    scene.tweens.add({ targets: obj, y: y - 40, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-    const frog: Frog = { obj, row: r };
+    const frog: Frog = { obj, row: r, col };
     frogs.push(frog);
+    scheduleHop(frog);
     // タップで先に逃がせる(ペナルティなし)
     obj.on('pointerdown', () => {
       if (session.isEnded() || !obj.active) return;
       scene.tweens.killTweensOf(obj);
       removeFrog(frog, (Math.random() < 0.5 ? -1 : 1) * 120);
     });
+  };
+
+  /** 列にカエルを配置: 1匹目はほぼ確実、2匹目は進行に応じて(列あたり最大2匹) */
+  const placeFrogs = (r: number): void => {
+    const p = session.progress();
+    const existing = frogs.filter((f) => f.row === r).length;
+    const cols = shufflePick(STALKS_PER_ROW);
+    if (existing < 1 && Math.random() < FROG_CHANCE_1 + p * FROG_CHANCE_RAMP) placeFrog(r, cols[0]);
+    if (existing < 2 && Math.random() < FROG_CHANCE_2 + p * FROG_CHANCE_RAMP) placeFrog(r, cols[1]);
+  };
+
+  /** 0..n-1 をシャッフルした配列(かぶらない列選びに使う) */
+  const shufflePick = (n: number): number[] => {
+    const a = Array.from({ length: n }, (_, i) => i);
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
   };
 
   const plantRow = (r: number, animate: boolean): void => {
@@ -123,7 +178,7 @@ export function renderReap(api: MinigameApi, targetEmoji: string, prompt: string
       });
       rows[r].push({ obj, alive: true, strokeId: -1 });
     }
-    placeFrog(r);
+    placeFrogs(r);
   };
   for (let r = 0; r < ROWS; r++) plantRow(r, false);
 
@@ -135,16 +190,17 @@ export function renderReap(api: MinigameApi, targetEmoji: string, prompt: string
   const cutAt = (px: number, py: number): void => {
     if (session.isEnded() || Date.now() < stunnedUntil) return;
     const y = py - api.areaY;
-    // なぞりの途中でカエルに触れた: びっくりして一筆が途切れる
+    // なぞりの途中でカエルに触れた: びっくりして一筆が途切れる+しばらく かたまる
     if (strokeActive) {
       for (const f of frogs) {
         if (!f.obj.active) continue;
-        if (Math.hypot(px - f.obj.x, y - f.obj.y) < 34) {
+        if (Math.hypot(px - f.obj.x, y - f.obj.y) < FROG_RADIUS) {
           strokeActive = false;
-          stunnedUntil = Date.now() + 450;
+          stunnedUntil = Date.now() + FROG_STUN_MS;
           session.resetCombo();
           missShake(scene);
           SFX.bad();
+          floatUp(scene, f.obj.x, f.obj.y + api.areaY - 26, UI_TEXT.arcade.miss, '#c04545');
           scene.tweens.killTweensOf(f.obj);
           removeFrog(f, (Math.random() < 0.5 ? -1 : 1) * 140);
           return;

@@ -4,6 +4,7 @@ import {
   findEntity,
   findPref,
   GAME_DATA,
+  prefTitle,
   RARITY_LABEL,
   TIER_LABEL,
   type Ingredient,
@@ -101,7 +102,7 @@ export class PrefScene extends Phaser.Scene {
     chip.add(g);
     chip.add(
       this.add
-        .text(0, 0, `${this.pref.name}けん`, {
+        .text(0, 0, prefTitle(this.pref), {
           fontFamily: FONT,
           fontSize: '16px',
           color: TEXT_COLORS.main,

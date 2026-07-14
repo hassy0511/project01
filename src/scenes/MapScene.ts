@@ -1,6 +1,6 @@
 /* 地図画面: 実形パスの関東地図・雲(未開拓)・開拓フロー・ぴっけの案内 */
 import Phaser from 'phaser';
-import { GAME_DATA, type Prefecture } from '../data/gameData';
+import { GAME_DATA, prefTitle, type Prefecture } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';
 import { pickKaitakuQuiz, recordQuizAsked } from '../core/quiz';
 import { infraStock, plotState, matIdOfKey } from '../core/plots';
@@ -182,6 +182,25 @@ export class MapScene extends Phaser.Scene {
             ease: 'Sine.easeInOut',
           });
         }
+      } else if (p.active && unlocked && !done) {
+        // 開拓ずみでも、おまつりを ひらくまでは うすい「もや」が すこし のこる
+        const mist = this.add.container(lx + 18, ly - 16).setAlpha(0.45).setScale(0.75 / scale);
+        const mg = this.add.graphics();
+        mg.fillStyle(0xffffff, 1);
+        mg.fillEllipse(0, 0, 46, 16);
+        mg.fillEllipse(-15, 5, 26, 12);
+        mg.fillEllipse(16, 5, 28, 13);
+        mist.add(mg);
+        root.add(mist);
+        this.tweens.add({
+          targets: mist,
+          x: lx + 18 + 9 / scale,
+          alpha: 0.3,
+          duration: 2800 + Math.random() * 1000,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut',
+        });
       }
       if (done) {
         root.add(this.add.text(lx + 22, ly - 20, '🏮', { fontSize: `${16 / scale}px` }).setOrigin(0.5));
@@ -230,10 +249,10 @@ export class MapScene extends Phaser.Scene {
         const done = new Modal(this, UI_TEXT.kaitaku.successTitle);
         const big = this.add.text(0, 0, '🎉', { fontSize: '56px' }).setOrigin(0.5);
         done.add(big, 62);
-        done.addText(UI_TEXT.kaitaku.successBody(p.name), 19);
+        done.addText(UI_TEXT.kaitaku.successBody(prefTitle(p)), 19);
         const g2 = makeGuideRow(this, UI_TEXT.kaitaku.successGuide, 'happy');
         done.add(g2.container, g2.height);
-        done.addButton(UI_TEXT.kaitaku.goPref(p.name), COLORS.primary, () => {
+        done.addButton(UI_TEXT.kaitaku.goPref(prefTitle(p)), COLORS.primary, () => {
           done.close();
           this.scene.start('PrefScene', { prefId: p.id });
         });

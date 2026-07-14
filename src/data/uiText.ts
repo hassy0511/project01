@@ -9,6 +9,18 @@ export const UI_TEXT = {
   nav: { map: 'ちず', zukan: 'ずかん', inv: 'もちもの' },
   zukanCount: (got: number, total: number) => `ずかん ${got}/${total}`,
 
+  story: {
+    skip: 'スキップ',
+    tap: '▼ タップで つぎへ',
+    start: 'ぼうけんに しゅっぱつ!',
+    slides: [
+      'ある あさ、ふしぎな「もやもやぐも」が\nにっぽんじゅうを つつんで しまった…',
+      'くもの したでは、まちの めいさんや おまつりが\nすこしずつ わすれられて いく…',
+      'ものしりはかせは、たんけんヒヨコの ぴっけと きみに\nたいせつな「めいさんずかん」を たくした!',
+      'そざいを そだてて めいさんを つくり、\nおまつりの あかりで くもを はらおう!',
+    ],
+  },
+
   map: {
     inactivePref: 'ここは じゅんびちゅう! おたのしみに🚧',
     aria: 'かんとうの ちず',
@@ -27,21 +39,21 @@ export const UI_TEXT = {
   },
 
   kaitaku: {
-    modalTitle: 'あたらしい けん!',
-    intro: 'くもの むこうに あたらしい けんが みえるよ。\nなんていう けんか、わかるかな?',
+    modalTitle: 'あたらしい ばしょ!',
+    intro: 'くもの むこうに あたらしい まちが みえるよ。\nどこか わかるかな?',
     challenge: 'ちょうせん する!',
-    quizTitle: 'この けんは どこ?',
+    quizTitle: 'ここは どこ?',
     failTitle: 'かいたく しっぱい…',
     failGuide: 'くもは はれなかった…。\nこたえを おぼえて、もういちど ちょうせんだ!',
     retry: 'もういちど ちょうせん!',
     successTitle: 'かいたく せいこう!',
-    successBody: (name: string) => `${name}けん かいたく せいこう!`,
-    successGuide: 'ちずに いろが ついたよ!\nたねを まいて、レシピを あつめよう!',
-    goPref: (name: string) => `${name}けんに いく!`,
+    successBody: (title: string) => `${title} かいたく せいこう!`,
+    successGuide: 'もやもやぐもが すこし うすくなった!\nおまつりを ひらくと、すっきり はれるよ!',
+    goPref: (title: string) => `${title}に いく!`,
   },
 
   guide: {
-    firstMap: 'くもの かかった けんを タップ! ぼうけんの はじまりだ!',
+    firstMap: 'くもの かかった ところを タップ! ぼうけんの はじまりだ!',
     plotReady: 'しゅうかくできる はたけが あるよ! みに いこう!',
     careChance: '⚡おせわチャンスが きてる! いそげ〜!',
     infraFull: 'ストックが まんたんの いどや たんぼが あるよ!',
@@ -125,8 +137,8 @@ export const UI_TEXT = {
     doneBody: (name: string) => `${name} かいさい!`,
     bestScore: (n: number) => `さいこうきろく: ${n}`,
     newRecord: '🏆 きろく こうしん!',
-    doneGuide: (pref: string) =>
-      `${pref}けんが おおにぎわい!\nめいぶつを つくれば、おまつりは なんどでも ひらけるよ!`,
+    doneGuide: (prefTitle: string) =>
+      `${prefTitle}の もやもやぐもが すっきり はれた!\nめいぶつを つくれば、おまつりは なんどでも ひらけるよ!`,
     goMap: 'ちずを みる!',
   },
 
@@ -198,7 +210,8 @@ export const UI_TEXT = {
 
   settings: {
     title: 'せってい',
-    version: (v: string) => `めいさんクエスト(かり) v${v}\nデータは この たんまつの なかにだけ ほぞんされます。`,
+    version: (v: string) =>
+      `めいさんクエスト(かり) v${v}\nデータは この たんまつの なかにだけ ほぞんされます。\nちずデータ: svg-maps (© Victor Cazanave, CC BY 4.0)`,
     boostBtn: '⏩ かんりしゃ: せいちょう&ストックを まんたんに',
     boosted: '⏩ ぜんぶ まんたんに した(かんりしゃ)',
     resetBtn: 'データを リセットする(おうちのひと よう)',

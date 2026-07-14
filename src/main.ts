@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { BootScene } from './scenes/BootScene';
+import { StoryScene } from './scenes/StoryScene';
 import { RegionScene } from './scenes/RegionScene';
 import { MapScene } from './scenes/MapScene';
 import { PrefScene } from './scenes/PrefScene';
@@ -21,7 +22,7 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, RegionScene, MapScene, PrefScene, SessionScene, FestivalScene, ZukanScene, InvScene],
+  scene: [BootScene, StoryScene, RegionScene, MapScene, PrefScene, SessionScene, FestivalScene, ZukanScene, InvScene],
 };
 
 const game = new Phaser.Game(config);
@@ -34,12 +35,9 @@ declare global {
 }
 window.__game = game;
 
-// iOS Safari の AudioContext 制約: 初回タップで resume し、BGM も始める
-document.addEventListener(
-  'pointerdown',
-  () => {
-    resumeAudio();
-    startBgm();
-  },
-  { once: true },
-);
+// iOS Safari の AudioContext 制約: タップのたびに resume と BGM 開始を試みる
+// (初回タップが AudioContext の起動に失敗しても、次のタップで立ち上がる。起動済みなら何もしない)
+document.addEventListener('pointerdown', () => {
+  resumeAudio();
+  startBgm();
+});

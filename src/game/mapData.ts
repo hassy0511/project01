@@ -1,5 +1,6 @@
-/* 地図パスJSON(public/assets/map-gen.json)の読み込みとパース。
-   パスは gen-map.mjs が出力する M/L/Z のみの単純ポリゴン */
+/* 地図パスJSON(public/assets/map-gen.json = 関東の県形、
+   public/assets/regions-gen.json = にほんぜんこくの地方シルエット)の読み込みとパース。
+   パスは scripts/gen-*.mjs が出力する M/L/Z のみの単純ポリゴン */
 
 export interface MapPoint {
   x: number;
@@ -47,12 +48,41 @@ export function parseMapGen(raw: RawMapGen): MapAsset {
   return { viewW: w, viewH: h, polys, labels: raw.labels, boxes };
 }
 
+/* ---------- にほんぜんこく(地方シルエット) ---------- */
+
+export interface RegionMapAsset {
+  viewW: number;
+  viewH: number;
+  /** 地方id → リング(県単位のポリゴン)の配列 */
+  polys: Record<string, MapPoint[][]>;
+  labels: Record<string, [number, number]>;
+}
+
+interface RawRegionsGen {
+  viewBox: string;
+  regions: Record<string, string[]>;
+  labels: Record<string, [number, number]>;
+}
+
+export function parseRegionsGen(raw: RawRegionsGen): RegionMapAsset {
+  const [, , w, h] = raw.viewBox.split(/\s+/).map(Number);
+  const polys: Record<string, MapPoint[][]> = {};
+  for (const [id, list] of Object.entries(raw.regions)) polys[id] = list.map(parsePathPoints);
+  return { viewW: w, viewH: h, polys, labels: raw.labels };
+}
+
 let mapAsset: MapAsset | null = null;
+let regionAsset: RegionMapAsset | null = null;
 
 export async function loadMapAsset(baseUrl: string): Promise<MapAsset> {
-  const res = await fetch(`${baseUrl}assets/map-gen.json`);
+  const [res, resRegions] = await Promise.all([
+    fetch(`${baseUrl}assets/map-gen.json`),
+    fetch(`${baseUrl}assets/regions-gen.json`),
+  ]);
   if (!res.ok) throw new Error(`map-gen.json load failed: ${res.status}`);
+  if (!resRegions.ok) throw new Error(`regions-gen.json load failed: ${resRegions.status}`);
   mapAsset = parseMapGen((await res.json()) as RawMapGen);
+  regionAsset = parseRegionsGen((await resRegions.json()) as RawRegionsGen);
   return mapAsset;
 }
 
@@ -60,4 +90,9 @@ export async function loadMapAsset(baseUrl: string): Promise<MapAsset> {
 export function getMapAsset(): MapAsset {
   if (!mapAsset) throw new Error('map asset not loaded');
   return mapAsset;
+}
+
+export function getRegionAsset(): RegionMapAsset {
+  if (!regionAsset) throw new Error('region asset not loaded');
+  return regionAsset;
 }

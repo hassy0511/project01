@@ -3,7 +3,7 @@
    消費と fest 登録は ゲームを最後まで遊んだ finish() 時点で行う
    (とちゅうで もどっても なにも 失わない=成功保証) */
 import Phaser from 'phaser';
-import { findEntity, findPref, findRecipe, GAME_DATA, type Recipe } from '../data/gameData';
+import { findEntity, findPref, findRecipe, GAME_DATA, prefTitle, type Recipe } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';
 import { applyFestival, craftable, updateFestBest } from '../core/craft';
 import { store } from '../game/store';
@@ -159,7 +159,7 @@ export class FestivalScene extends Phaser.Scene {
         15,
         newRecord ? TEXT_COLORS.good : TEXT_COLORS.sub,
       );
-      const guide = makeGuideRow(this, UI_TEXT.fest.doneGuide(pref?.name ?? ''), 'happy');
+      const guide = makeGuideRow(this, UI_TEXT.fest.doneGuide(pref ? prefTitle(pref) : ''), 'happy');
       modal.add(guide.container, guide.height);
       modal.addButton(UI_TEXT.fest.goMap, COLORS.orange, () => {
         modal.close();

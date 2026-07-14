@@ -25,7 +25,8 @@ export class BootScene extends Phaser.Scene {
     installAdminApi(() => this.game.events.emit('mq-refresh'));
 
     loadMapAsset(import.meta.env.BASE_URL)
-      .then(() => this.scene.start('MapScene'))
+      // はじめての起動は 導入ストーリー(スキップ可)から。以降は地図へ直行
+      .then(() => this.scene.start(store.state.flags.introSeen ? 'MapScene' : 'StoryScene'))
       .catch((err: unknown) => {
         this.add
           .text(GAME_W / 2, GAME_H / 2 + 60, String(err), {

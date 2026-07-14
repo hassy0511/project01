@@ -12,10 +12,12 @@ const STEPS_PER_BAR = 8;
 const LOOKAHEAD_SEC = 0.35;
 const TICK_MS = 120;
 
-const MASTER_VOL = 0.5;
-const MELODY_VOL = 0.05;
-const BASS_VOL = 0.055;
-const PLUCK_VOL = 0.022;
+/* 音量: SFX(0.1〜0.16)より一段くらい下、でもちゃんと聞こえるレベルに。
+   実効音量 = 各声部 × MASTER_VOL */
+const MASTER_VOL = 1.0;
+const MELODY_VOL = 0.085;
+const BASS_VOL = 0.09;
+const PLUCK_VOL = 0.035;
 
 /** MIDIノート番号→周波数。0 は休符 */
 const freq = (midi: number): number => 440 * Math.pow(2, (midi - 69) / 12);
