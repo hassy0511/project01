@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { GAME_DATA, findMaterial } from '../data/gameData';
+import { craftable } from './craft';
 import {
+  adminUnlockAll,
   defaultState,
   isSanchiComplete,
   loadState,
@@ -90,5 +92,45 @@ describe('さんちコンプ', () => {
     registerMaterial(s, 'm07', 'tochigi', 2, 1);
     expect(markSanchiCompleteOnce(s, clay)).toBe(true);
     expect(markSanchiCompleteOnce(s, clay)).toBe(false);
+  });
+});
+
+describe('adminUnlockAll(かんりしゃ: ぜんぶ かいほう)', () => {
+  it('全アクティブ県・全レシピが解放され、導入ストーリーもスキップ扱いになる', () => {
+    const s = defaultState();
+    adminUnlockAll(s, GAME_DATA);
+    for (const p of GAME_DATA.prefectures.filter((x) => x.active)) {
+      expect(s.unlocked, p.id).toContain(p.id);
+    }
+    for (const r of GAME_DATA.recipes.filter((x) => x.tier !== 4)) {
+      expect(s.recipes, r.id).toContain(r.id);
+    }
+    expect(s.flags.introSeen).toBe(true);
+  });
+
+  it('直後に 全クラフトと全おまつり(実装ずみ)が すぐ作れる/開ける', () => {
+    const s = defaultState();
+    adminUnlockAll(s, GAME_DATA);
+    for (const r of GAME_DATA.recipes) {
+      if (r.tier === 4 && !r.implemented) continue;
+      expect(craftable(s.inv, r), `craftable: ${r.id}`).toBe(true);
+    }
+  });
+
+  it('ずかん・おまつり実績・トリビアは増やさない(遊んで埋める部分は残す)', () => {
+    const s = defaultState();
+    adminUnlockAll(s, GAME_DATA);
+    expect(Object.keys(s.zukanMat)).toHaveLength(0);
+    expect(Object.keys(s.zukanProd)).toHaveLength(0);
+    expect(s.fest).toHaveLength(0);
+    expect(Object.keys(s.seenTrivia)).toHaveLength(0);
+  });
+
+  it('2回呼んでも 解放リストは重複しない', () => {
+    const s = defaultState();
+    adminUnlockAll(s, GAME_DATA);
+    adminUnlockAll(s, GAME_DATA);
+    expect(new Set(s.unlocked).size).toBe(s.unlocked.length);
+    expect(new Set(s.recipes).size).toBe(s.recipes.length);
   });
 });

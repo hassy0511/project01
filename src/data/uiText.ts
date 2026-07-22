@@ -224,6 +224,8 @@ export const UI_TEXT = {
       `めいさんクエスト(かり) v${v}\nデータは この たんまつの なかにだけ ほぞんされます。\nちずデータ: svg-maps (© Victor Cazanave, CC BY 4.0)`,
     boostBtn: '⏩ かんりしゃ: せいちょう&ストックを まんたんに',
     boosted: '⏩ ぜんぶ まんたんに した(かんりしゃ)',
+    unlockBtn: '🔓 かんりしゃ: ぜんぶ かいほう',
+    unlocked: '🔓 ぜんぶ かいほうした! どの けんも おまつりも すぐ あそべるよ(かんりしゃ)',
     resetBtn: 'データを リセットする(おうちのひと よう)',
     parentGate: (a: number, b: number) => `おうちのひとに かくにん: ${a} + ${b} = ?`,
     resetConfirm: 'ほんとうに さいしょから はじめますか?',

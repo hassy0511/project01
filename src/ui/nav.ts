@@ -111,6 +111,17 @@ export function openSettings(scene: Phaser.Scene): void {
     48,
   );
   modal.addButton(
+    UI_TEXT.settings.unlockBtn,
+    COLORS.orange,
+    () => {
+      window.__mqAdmin?.unlockAll();
+      modal.close();
+      showToast(scene, UI_TEXT.settings.unlocked);
+    },
+    380,
+    48,
+  );
+  modal.addButton(
     UI_TEXT.settings.resetBtn,
     COLORS.gray,
     () => {

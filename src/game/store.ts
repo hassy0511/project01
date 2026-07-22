@@ -3,7 +3,7 @@
 import { GAME_DATA } from '../data/gameData';
 import { runtimeTuning } from '../data/arcadeTuning';
 import { boostAll, halfGrow } from '../core/plots';
-import { defaultState, loadState, saveState, type SaveState } from '../core/state';
+import { adminUnlockAll, defaultState, loadState, saveState, type SaveState } from '../core/state';
 
 class Store {
   state: SaveState = defaultState();
@@ -26,11 +26,16 @@ export const store = new Store();
 
 declare global {
   interface Window {
-    __mqAdmin?: { boostAll: () => void; halfGrow: () => void; fastMode: () => void };
+    __mqAdmin?: {
+      boostAll: () => void;
+      halfGrow: () => void;
+      fastMode: () => void;
+      unlockAll: () => void;
+    };
   }
 }
 
-/** コンソールAPI __mqAdmin(⏩まんたん / おせわ検証 / E2E用の時間短縮)を公開する */
+/** コンソールAPI __mqAdmin(⏩まんたん / ぜんぶ解放 / おせわ検証 / E2E用の時間短縮)を公開する */
 export function installAdminApi(onChange: () => void): void {
   window.__mqAdmin = {
     boostAll: () => {
@@ -45,6 +50,11 @@ export function installAdminApi(onChange: () => void): void {
     },
     fastMode: () => {
       runtimeTuning.timeScale = 8;
+    },
+    unlockAll: () => {
+      adminUnlockAll(store.state, GAME_DATA);
+      store.save();
+      onChange();
     },
   };
 }

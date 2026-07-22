@@ -3,7 +3,7 @@
    v0.4 の localStorage キー "meisanquest-save-v1" と互換。
    Phaser 非依存。storage を注入できるのでユニットテスト可能。
    ===================================================== */
-import type { Material, MaterialId, PrefectureId, RecipeId } from '../data/gameData';
+import type { GameData, Material, MaterialId, PrefectureId, RecipeId } from '../data/gameData';
 
 export const SAVE_KEY = 'meisanquest-save-v1';
 
@@ -107,6 +107,30 @@ export function isSanchiComplete(state: SaveState, material: Material): boolean 
   const rec = state.zukanMat[material.id];
   if (!rec) return false;
   return material.origins.every((o) => rec[o] !== undefined && rec[o] > 0);
+}
+
+/** 管理者用「ぜんぶ かいほう」: 全アクティブ県・全レシピを解放し、
+    全そざい(各産地×2個。infraは★2固定/それ以外は★3)と全さんぶつ・めいぶつ(×2個)を配る。
+    どのステージ・レシピ・おまつりもすぐ遊べる状態にする検証用機能。
+    ずかん・おまつり開催実績・トリビアは増やさない(遊んで埋める部分はそのまま残す) */
+export function adminUnlockAll(state: SaveState, data: GameData): void {
+  for (const p of data.prefectures) {
+    if (p.active && !state.unlocked.includes(p.id)) state.unlocked.push(p.id);
+  }
+  for (const r of data.recipes) {
+    if (r.tier !== 4 && !state.recipes.includes(r.id)) state.recipes.push(r.id);
+  }
+  for (const m of data.materials) {
+    const stars = m.gather.type === 'infra' ? 2 : 3;
+    for (const o of m.origins) {
+      for (let i = 0; i < 2; i++) state.inv.push({ ref: m.id, origin: o, quality: stars });
+    }
+  }
+  for (const r of data.recipes) {
+    if (r.tier === 4) continue;
+    for (let i = 0; i < 2; i++) state.inv.push({ ref: r.id, origin: r.pref, quality: null });
+  }
+  state.flags.introSeen = true;
 }
 
 export const sanchiCompFlagKey = (matId: MaterialId): string => `comp_${matId}`;
