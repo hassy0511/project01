@@ -6,7 +6,7 @@
    刈った列は少しずつ生えてくるので、45秒間 刈りつづける */
 import Phaser from 'phaser';
 import { SFX } from '../../audio/sfx';
-import { burst, floatUp, missShake } from '../../ui/effects';
+import { burst, floatUp, missShake, padHitArea } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
@@ -123,10 +123,8 @@ export function renderReap(api: MinigameApi, targetEmoji: string, prompt: string
   };
 
   const placeFrog = (r: number, col: number): void => {
-    const obj = scene.add
-      .text(stalkX(col), frogY(r), '🐸', { fontSize: '30px' })
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true });
+    const obj = scene.add.text(stalkX(col), frogY(r), '🐸', { fontSize: '30px' }).setOrigin(0.5);
+    padHitArea(obj, 10); // タップで逃がしやすく(子供の指)
     area.add(obj);
     const frog: Frog = { obj, row: r, col };
     frogs.push(frog);
@@ -243,23 +241,29 @@ export function renderReap(api: MinigameApi, targetEmoji: string, prompt: string
     }
   };
 
+  let lastTrail: { x: number; y: number } | null = null;
   const onDown = (p: Phaser.Input.Pointer): void => {
     strokeId++;
     strokeActive = true;
+    lastTrail = { x: p.x, y: p.y };
     cutAt(p.x, p.y);
   };
   const onMove = (p: Phaser.Input.Pointer): void => {
     if (!p.isDown || !strokeActive) return;
     cutAt(p.x, p.y);
-    // 鎌の軌跡
-    if (Math.random() < 0.5) {
-      const dot = scene.add.circle(p.x, p.y - api.areaY, 6, 0xffffff, 0.5);
-      area.add(dot);
-      scene.tweens.add({ targets: dot, scale: 0.2, alpha: 0, duration: 260, onComplete: () => dot.destroy() });
+    // 鎌の軌跡: 指のあとを ひとすじの光が追いかける
+    if (lastTrail) {
+      const seg = scene.add.graphics();
+      seg.lineStyle(7, 0xffffff, 0.6);
+      seg.lineBetween(lastTrail.x, lastTrail.y - api.areaY, p.x, p.y - api.areaY);
+      area.add(seg);
+      scene.tweens.add({ targets: seg, alpha: 0, duration: 230, onComplete: () => seg.destroy() });
     }
+    lastTrail = { x: p.x, y: p.y };
   };
   const onUp = (): void => {
     strokeActive = false;
+    lastTrail = null;
   };
   scene.input.on('pointerdown', onDown);
   scene.input.on('pointermove', onMove);

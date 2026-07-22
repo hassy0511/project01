@@ -1,8 +1,9 @@
-/* キャッチゲーム(うめ・なし): 木から実が降ってくる→かごを左右にドラッグしてキャッチ。
-   金の実はボーナス、枝はハズレ(コンボが切れる)。時間経過で落下が速く・多くなる */
+/* キャッチゲーム(うめ・なし・みかん): 木から実が降ってくる→かごを左右にドラッグしてキャッチ。
+   金の実はボーナス、枝はハズレ(コンボが切れる)。時間経過で落下が速く・多くなる。
+   かごは指へ吸い付くように追従しつつ慣性で傾く(手応えレイヤー) */
 import Phaser from 'phaser';
 import { SFX } from '../../audio/sfx';
-import { burst, impactRing, missShake, squashStretch } from '../../ui/effects';
+import { bigImpact, burst, impactRing, missShake, squashStretch } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { FONT, GAME_W } from '../../ui/theme';
 import { drawBasket, drawMeadow } from '../../ui/scenery';
@@ -12,9 +13,13 @@ import type { MinigameApi } from './types';
 const AREA_H = 660;
 const TREE_Y = 190;
 const BASKET_Y = 590;
-const CATCH_RADIUS = 56;
+const CATCH_RADIUS = 62;
 const FRUIT_PTS = 10;
 const GOLD_PTS = 30;
+/** かごの追従率(1フレームで縮める距離の割合)と、速度→傾きの係数 */
+const BASKET_LERP = 0.38;
+const TILT_PER_SPEED = 0.9;
+const TILT_MAX = 16;
 
 export function renderCatch(api: MinigameApi, target: string, prompt: string): void {
   const { scene, area } = api;
@@ -41,20 +46,31 @@ export function renderCatch(api: MinigameApi, target: string, prompt: string): v
   }
   area.add(tree);
 
-  // かご(ドラッグで左右移動)
+  // かご(ドラッグで左右移動)。指に吸い付きつつ慣性で追いかけ、移動速度で傾く
   const basket = drawBasket(scene);
   basket.setPosition(GAME_W / 2, BASKET_Y);
   area.add(basket);
+  let targetX = basket.x;
+  let stunnedTiltUntil = 0; // スタン演出(angleツイーン)中は傾き計算を止める
   const onMove = (p: Phaser.Input.Pointer): void => {
-    basket.x = Phaser.Math.Clamp(p.x, 56, GAME_W - 56);
+    targetX = Phaser.Math.Clamp(p.x, 56, GAME_W - 56);
   };
   scene.input.on('pointermove', onMove);
   scene.input.on('pointerdown', onMove);
+  const onBasketUpdate = (): void => {
+    const dx = (targetX - basket.x) * BASKET_LERP;
+    basket.x += dx;
+    if (Date.now() > stunnedTiltUntil) {
+      basket.angle = Phaser.Math.Clamp(dx * TILT_PER_SPEED, -TILT_MAX, TILT_MAX);
+    }
+  };
+  scene.events.on(Phaser.Scenes.Events.UPDATE, onBasketUpdate);
 
   let spawnTimer: Phaser.Time.TimerEvent | undefined;
   const cleanup = (): void => {
     scene.input.off('pointermove', onMove);
     scene.input.off('pointerdown', onMove);
+    scene.events.off(Phaser.Scenes.Events.UPDATE, onBasketUpdate);
     spawnTimer?.remove();
   };
   const session = new ArcadeSession(api, {
@@ -71,6 +87,7 @@ export function renderCatch(api: MinigameApi, target: string, prompt: string): v
     session.resetCombo();
     missShake(scene);
     SFX.bad();
+    stunnedTiltUntil = Date.now() + 400;
     scene.tweens.add({ targets: basket, angle: { from: -10, to: 10 }, duration: 70, yoyo: true, repeat: 3 });
     scene.tweens.addCounter({ from: 0, to: 1, duration: 300 }); // 触感の間
   };
@@ -121,11 +138,18 @@ export function renderCatch(api: MinigameApi, target: string, prompt: string): v
           } else {
             SFX.pop();
             squashStretch(scene, basket);
-            impactRing(scene, basket.x, BASKET_Y + api.areaY, isGold ? 0xffd34d : 0xffffff);
+            // かごが実の重みで ぽすっと沈む
+            scene.tweens.add({ targets: basket, y: BASKET_Y + 7, duration: 70, yoyo: true, ease: 'Quad.easeOut' });
+            if (isGold) {
+              bigImpact(scene, basket.x, BASKET_Y + api.areaY);
+            } else {
+              impactRing(scene, basket.x, BASKET_Y + api.areaY, 0xffffff);
+            }
             burst(scene, item.x, item.y + api.areaY, isGold ? 14 : 7);
             session.addPoints(isGold ? GOLD_PTS : FRUIT_PTS, item.x, item.y + api.areaY - 20);
             scene.tweens.add({
               targets: item,
+              x: basket.x,
               y: BASKET_Y,
               scale: 0.3,
               alpha: 0,

@@ -1,9 +1,10 @@
-/* フリックゲーム(メロン・ゆうがお): 実を引っぱって放し、岩を避けてかごに転がし入れる。
+/* フリックゲーム(メロン・ゆうがお・キャベツ): 実を引っぱって放し、岩を避けてかごに転がし入れる。
    壁と岩で跳ね返る簡易物理。ど真ん中に入ると追加ボーナス。
-   時間経過で岩が増え、かごが左右に動き出す */
+   時間経過で岩が増え、かごが左右に動き出す。
+   引っぱるほど実が「ぐぐっ」と張りつめる(手応えレイヤー)。岩バウンスは失敗ではなく物理 */
 import Phaser from 'phaser';
 import { SFX } from '../../audio/sfx';
-import { burst, impactRing, missShake } from '../../ui/effects';
+import { bigImpact, burst, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { FONT, GAME_W } from '../../ui/theme';
 import { drawBasket, drawMeadow } from '../../ui/scenery';
@@ -103,7 +104,7 @@ export function renderFlick(api: MinigameApi, target: string, prompt: string): v
 
   const onDown = (p: Phaser.Input.Pointer): void => {
     if (session.isEnded() || rolling) return;
-    if (Math.hypot(p.x - fruit.x, p.y - api.areaY - fruit.y) < 70) aiming = true;
+    if (Math.hypot(p.x - fruit.x, p.y - api.areaY - fruit.y) < 84) aiming = true;
   };
   const onMove = (p: Phaser.Input.Pointer): void => {
     if (!aiming || !p.isDown) return;
@@ -111,11 +112,16 @@ export function renderFlick(api: MinigameApi, target: string, prompt: string): v
     // ひっぱった逆方向に飛ぶ(パチンコ式)。点線でねらいを見せる
     const dx = fruit.x - p.x;
     const dy = fruit.y - (p.y - api.areaY);
+    const power = Math.hypot(dx, dy);
     for (let i = 1; i <= 6; i++) {
       const d = scene.add.circle(fruit.x + (dx * i) / 4, fruit.y + (dy * i) / 4, 5 - i * 0.5, 0xffffff, 0.7);
       area.add(d);
       aimDots.push(d);
     }
+    // 引っぱるほど実が張りつめ、発射方向へわずかに向く(チャージの手応え)
+    const charge = Math.min(power / 220, 1);
+    fruit.setScale(1 + charge * 0.14);
+    fruit.setAngle(Phaser.Math.RadToDeg(Math.atan2(dy, dx)) * 0.06);
   };
   const onUp = (p: Phaser.Input.Pointer): void => {
     if (!aiming) return;
@@ -124,11 +130,18 @@ export function renderFlick(api: MinigameApi, target: string, prompt: string): v
     const dx = fruit.x - p.x;
     const dy = fruit.y - (p.y - api.areaY);
     const power = Math.hypot(dx, dy);
-    if (power < 14) return; // 誤タップは無視
+    fruit.setAngle(0);
+    if (power < 14) {
+      fruit.setScale(1);
+      return; // 誤タップは無視
+    }
     const k = 5.2;
     vx = dx * k;
     vy = dy * k;
     rolling = true;
+    // びよんっと縮んで飛び出す
+    scene.tweens.add({ targets: fruit, scale: { from: 0.8, to: 1 }, duration: 160, ease: 'Back.easeOut' });
+    burst(scene, fruit.x, fruit.y + api.areaY + 14, 5, [0x9ccb6f, 0xd8c49a]);
     SFX.pop();
   };
   scene.input.on('pointerdown', onDown);
@@ -168,7 +181,8 @@ export function renderFlick(api: MinigameApi, target: string, prompt: string): v
     resolved = true;
     const centered = Math.abs(fruit.x - basket.x) < 16;
     SFX.good();
-    impactRing(scene, basket.x, BASKET_Y + api.areaY, 0xffd34d);
+    if (centered) bigImpact(scene, basket.x, BASKET_Y + api.areaY);
+    else impactRing(scene, basket.x, BASKET_Y + api.areaY, 0xffd34d);
     burst(scene, basket.x, BASKET_Y + api.areaY, 12);
     session.addPoints(GOAL_PTS + (centered ? CENTER_BONUS : 0), basket.x, BASKET_Y + api.areaY - 40, false);
     if (centered) {
@@ -236,9 +250,10 @@ export function renderFlick(api: MinigameApi, target: string, prompt: string): v
         vy = (vy - 2 * dot * ny) * BOUNCE;
         fruit.x = rock.x + nx * (rock.r + FRUIT_R + 1);
         fruit.y = rock.y + ny * (rock.r + FRUIT_R + 1);
+        // バウンスは「失敗」ではなく物理(バンクショットは戦略)。ごつんという手応えだけ返す
         scene.tweens.add({ targets: rock.obj, scale: { from: 1.12, to: 1 }, duration: 130 });
-        missShake(scene);
-        SFX.bad();
+        burst(scene, fruit.x - nx * FRUIT_R, fruit.y + api.areaY - ny * FRUIT_R, 4, [0xa5a5a5, 0x8d8d8d]);
+        SFX.pop();
       }
     }
     // ゴール判定

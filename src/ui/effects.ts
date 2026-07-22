@@ -175,6 +175,21 @@ export function missShake(scene: Phaser.Scene): void {
   scene.cameras.main.shake(120, 0.004);
 }
 
+/** でっかい一撃の合図: リング+フラッシュ+カメラパルスをまとめて鳴らす(金の実・ぬし・ど真ん中用) */
+export function bigImpact(scene: Phaser.Scene, x: number, y: number, color = 0xffd34d): void {
+  impactRing(scene, x, y, color, 14);
+  screenFlash(scene, color, 0.22);
+  cameraPulse(scene);
+}
+
+/** 当たり判定を見た目より広げる(子供の指は太い)。Text等の interactive 済みオブジェクトに使う */
+export function padHitArea(obj: Phaser.GameObjects.Text, pad: number): void {
+  obj.setInteractive(
+    new Phaser.Geom.Rectangle(-pad, -pad, obj.width + pad * 2, obj.height + pad * 2),
+    Phaser.Geom.Rectangle.Contains,
+  );
+}
+
 /** ぷるんと揺れ続ける(収穫ごろの実・カード強調用) */
 export function wobble(scene: Phaser.Scene, target: Phaser.GameObjects.Components.Transform): void {
   scene.tweens.add({

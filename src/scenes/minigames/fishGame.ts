@@ -4,7 +4,7 @@
    次のタップが遅れると逃げる。★3は ぬしを つりあげないと取れない */
 import Phaser from 'phaser';
 import { SFX } from '../../audio/sfx';
-import { burst, impactRing, missShake, screenFlash } from '../../ui/effects';
+import { bigImpact, burst, impactRing, missShake, padHitArea, screenFlash } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { FONT, GAME_W } from '../../ui/theme';
 import { drawSea } from '../../ui/scenery';
@@ -107,8 +107,8 @@ export function renderFish(api: MinigameApi, prompt: string): void {
     const speed = Phaser.Math.Between(spec.speed[0], spec.speed[1]) * (isBoss ? 1 : speedBoost);
     const obj = scene.add
       .text(fromLeft ? -40 : GAME_W + 40, depth, spec.emoji, { fontSize: `${spec.size}px` })
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true });
+      .setOrigin(0.5);
+    padHitArea(obj, isBoss ? 18 : 12); // 泳ぐ的は見た目より当たり判定を広く(子供の指)
     obj.setFlipX(fromLeft);
     area.add(obj);
     const swimmer: Swimmer = {
@@ -192,6 +192,7 @@ export function renderFish(api: MinigameApi, prompt: string): void {
     burst(scene, s.obj.x, s.obj.y + api.areaY, s.isBoss ? 22 : 8, [0x8ed4e8, 0xffffff, 0x6fc4e0]);
     if (s.isBoss) {
       bossCaught = true;
+      bigImpact(scene, s.obj.x, s.obj.y + api.areaY);
       screenFlash(scene, 0xfff2c4, 0.45);
       const caught = scene.add
         .text(GAME_W / 2, 300, UI_TEXT.arcade.bossCaught, {
