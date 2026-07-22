@@ -1,5 +1,6 @@
 /* もちもの: インベントリをグループ化して表示 */
 import Phaser from 'phaser';
+import { setupHiDpi } from '../ui/display';
 import { findEntity, findPref, GAME_DATA } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';
 import { store } from '../game/store';
@@ -16,6 +17,7 @@ export class InvScene extends Phaser.Scene {
   }
 
   create(): void {
+    setupHiDpi(this);
     this.cameras.main.setBackgroundColor(COLORS.ground);
     buildHeader(this);
     buildNav(this, 'inv');

@@ -3,6 +3,7 @@
    めいさんずかんと ともに はらしていく」という ぼうけんの動機づけ。
    くわしい設計は docs/STORY_DRAFT.md(案A)を参照 */
 import Phaser from 'phaser';
+import { setupHiDpi } from '../ui/display';
 import { UI_TEXT } from '../data/uiText';
 import { store } from '../game/store';
 import { SFX } from '../audio/sfx';
@@ -26,6 +27,7 @@ export class StoryScene extends Phaser.Scene {
   }
 
   create(): void {
+    setupHiDpi(this);
     this.idx = 0;
 
     // 全面タップで つぎへ(ボタンは topOnly でこのゾーンより優先される)

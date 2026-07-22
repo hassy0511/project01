@@ -3,6 +3,7 @@
    ほかの地方は灰色+雲の「じゅんびちゅう」(エリア解放型の入り口になる画面)。
    もやもやぐも(ストーリー)の「まだ はれていない にっぽん」を見せる場でもある */
 import Phaser from 'phaser';
+import { setupHiDpi } from '../ui/display';
 import { GAME_DATA, type Region } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';
 import { store } from '../game/store';
@@ -33,6 +34,7 @@ export class RegionScene extends Phaser.Scene {
   }
 
   create(): void {
+    setupHiDpi(this);
     this.cameras.main.setBackgroundColor(COLORS.sky);
     this.drawSea();
     this.buildTop();

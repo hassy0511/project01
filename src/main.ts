@@ -9,14 +9,18 @@ import { FestivalScene } from './scenes/FestivalScene';
 import { ZukanScene } from './scenes/ZukanScene';
 import { InvScene } from './scenes/InvScene';
 import { GAME_H, GAME_W } from './ui/theme';
+import { DPR, installHiDpiText } from './ui/display';
 import { resumeAudio } from './audio/sfx';
 import { startBgm } from './audio/bgm';
+
+// HiDPI: バッファは DPR 倍で確保し、各シーンのカメラズームで論理480×800を保つ(ui/display.ts)
+installHiDpiText();
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   parent: 'app',
-  width: GAME_W,
-  height: GAME_H,
+  width: GAME_W * DPR,
+  height: GAME_H * DPR,
   backgroundColor: '#f2f7e8',
   scale: {
     mode: Phaser.Scale.FIT,

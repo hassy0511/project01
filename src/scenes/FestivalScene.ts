@@ -3,6 +3,7 @@
    消費と fest 登録は ゲームを最後まで遊んだ finish() 時点で行う
    (とちゅうで もどっても なにも 失わない=成功保証) */
 import Phaser from 'phaser';
+import { setupHiDpi } from '../ui/display';
 import { findEntity, findPref, findRecipe, GAME_DATA, prefTitle, type Recipe } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';
 import { applyFestival, craftable, updateFestBest } from '../core/craft';
@@ -14,6 +15,8 @@ import { COLORS, DEPTH, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { makeGuideRow, Modal } from '../ui/widgets';
 import { confetti, firework, screenFlash } from '../ui/effects';
 import { renderFestival, type StallItem } from './minigames/festivalGame';
+import { renderDaruma } from './minigames/darumaGame';
+import { renderHanabi } from './minigames/hanabiGame';
 import type { MinigameApi } from './minigames/types';
 
 const TOP_H = 48;
@@ -36,6 +39,7 @@ export class FestivalScene extends Phaser.Scene {
   }
 
   create(): void {
+    setupHiDpi(this);
     const r = findRecipe(GAME_DATA, this.recipeId);
     // めいぶつが足りないまま直接呼ばれた場合の保険(PrefScene 側でも確認している)
     if (!r || !craftable(store.state.inv, r)) {
@@ -72,7 +76,15 @@ export class FestivalScene extends Phaser.Scene {
     );
 
     this.area = this.add.container(0, GAME_AREA_Y);
-    renderFestival(this.minigameApi(), UI_TEXT.fest.prompt, this.buildMenu());
+    // おまつりごとのゲーム(データ駆動)。全県ユニーク化の方針は docs/ACTION_DESIGN.md
+    const kind = r.festGame ?? 'yatai';
+    if (kind === 'daruma') {
+      renderDaruma(this.minigameApi(), UI_TEXT.fest.darumaPrompt);
+    } else if (kind === 'hanabi') {
+      renderHanabi(this.minigameApi(), UI_TEXT.fest.hanabiPrompt);
+    } else {
+      renderFestival(this.minigameApi(), UI_TEXT.fest.prompt, this.buildMenu());
+    }
   }
 
   /** やたいの 品ぞろえ: recipe.menu(未指定なら ingredients)を解決する */

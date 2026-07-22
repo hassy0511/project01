@@ -104,14 +104,14 @@ export function renderFlick(api: MinigameApi, target: string, prompt: string): v
 
   const onDown = (p: Phaser.Input.Pointer): void => {
     if (session.isEnded() || rolling) return;
-    if (Math.hypot(p.x - fruit.x, p.y - api.areaY - fruit.y) < 84) aiming = true;
+    if (Math.hypot(p.worldX - fruit.x, p.worldY - api.areaY - fruit.y) < 84) aiming = true;
   };
   const onMove = (p: Phaser.Input.Pointer): void => {
     if (!aiming || !p.isDown) return;
     clearAim();
     // ひっぱった逆方向に飛ぶ(パチンコ式)。点線でねらいを見せる
-    const dx = fruit.x - p.x;
-    const dy = fruit.y - (p.y - api.areaY);
+    const dx = fruit.x - p.worldX;
+    const dy = fruit.y - (p.worldY - api.areaY);
     const power = Math.hypot(dx, dy);
     for (let i = 1; i <= 6; i++) {
       const d = scene.add.circle(fruit.x + (dx * i) / 4, fruit.y + (dy * i) / 4, 5 - i * 0.5, 0xffffff, 0.7);
@@ -127,8 +127,8 @@ export function renderFlick(api: MinigameApi, target: string, prompt: string): v
     if (!aiming) return;
     aiming = false;
     clearAim();
-    const dx = fruit.x - p.x;
-    const dy = fruit.y - (p.y - api.areaY);
+    const dx = fruit.x - p.worldX;
+    const dy = fruit.y - (p.worldY - api.areaY);
     const power = Math.hypot(dx, dy);
     fruit.setAngle(0);
     if (power < 14) {

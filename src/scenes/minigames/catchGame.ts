@@ -53,7 +53,7 @@ export function renderCatch(api: MinigameApi, target: string, prompt: string): v
   let targetX = basket.x;
   let stunnedTiltUntil = 0; // スタン演出(angleツイーン)中は傾き計算を止める
   const onMove = (p: Phaser.Input.Pointer): void => {
-    targetX = Phaser.Math.Clamp(p.x, 56, GAME_W - 56);
+    targetX = Phaser.Math.Clamp(p.worldX, 56, GAME_W - 56);
   };
   scene.input.on('pointermove', onMove);
   scene.input.on('pointerdown', onMove);

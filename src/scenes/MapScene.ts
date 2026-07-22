@@ -1,5 +1,6 @@
 /* 地図画面: 実形パスの関東地図・雲(未開拓)・開拓フロー・ぴっけの案内 */
 import Phaser from 'phaser';
+import { setupHiDpi } from '../ui/display';
 import { GAME_DATA, prefTitle, type Prefecture } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';
 import { pickKaitakuQuiz, recordQuizAsked } from '../core/quiz';
@@ -26,6 +27,7 @@ export class MapScene extends Phaser.Scene {
   }
 
   create(): void {
+    setupHiDpi(this);
     this.cameras.main.setBackgroundColor(COLORS.sky);
     this.drawSea();
     this.drawMap();

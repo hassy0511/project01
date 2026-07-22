@@ -154,9 +154,9 @@ export function renderChain(api: MinigameApi, target: string, prompt: string): v
     }
   };
 
-  const onDown = (p: Phaser.Input.Pointer): void => touch(p.x, p.y);
+  const onDown = (p: Phaser.Input.Pointer): void => touch(p.worldX, p.worldY);
   const onMove = (p: Phaser.Input.Pointer): void => {
-    if (p.isDown) touch(p.x, p.y);
+    if (p.isDown) touch(p.worldX, p.worldY);
   };
   scene.input.on('pointerdown', onDown);
   scene.input.on('pointermove', onMove);

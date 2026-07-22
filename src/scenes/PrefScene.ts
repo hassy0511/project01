@@ -1,5 +1,6 @@
 /* 県画面: 風景バナー・そざいカード(いど/はたけ/待ちなし)・レシピ・おまつり */
 import Phaser from 'phaser';
+import { setupHiDpi } from '../ui/display';
 import {
   findEntity,
   findPref,
@@ -50,6 +51,7 @@ export class PrefScene extends Phaser.Scene {
   }
 
   create(): void {
+    setupHiDpi(this);
     const pref = findPref(GAME_DATA, this.prefId);
     if (!pref) {
       this.scene.start('MapScene');
@@ -481,7 +483,13 @@ export class PrefScene extends Phaser.Scene {
   private startFestival(r: Recipe): void {
     const modal = new Modal(this, r.name, true);
     modal.add(this.add.text(0, 0, r.emoji, { fontSize: '54px' }).setOrigin(0.5), 60);
-    modal.addText(UI_TEXT.fest.introBody, 15);
+    const intro =
+      r.festGame === 'daruma'
+        ? UI_TEXT.fest.introDaruma
+        : r.festGame === 'hanabi'
+          ? UI_TEXT.fest.introHanabi
+          : UI_TEXT.fest.introBody;
+    modal.addText(intro, 15);
     const best = store.state.festBest[r.id];
     if (best) modal.addText(UI_TEXT.fest.bestScore(best), 14, TEXT_COLORS.accent);
     modal.addButton(UI_TEXT.fest.startBtn, COLORS.orange, () => {

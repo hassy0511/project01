@@ -2,6 +2,7 @@
    どのゲームを使うかはデータ(harvest.engine 等)が決め、シーン側に品種分岐は書かない。
    ★はスコアの実力制(core/stars.ts)。ただし最低★1は保証 */
 import Phaser from 'phaser';
+import { setupHiDpi } from '../ui/display';
 import { findMaterial, findPref, GAME_DATA, type Material } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';
 import { ARCADE_TUNING, type ArcadeEngine } from '../data/arcadeTuning';
@@ -53,6 +54,7 @@ export class SessionScene extends Phaser.Scene {
   }
 
   create(): void {
+    setupHiDpi(this);
     const m = findMaterial(GAME_DATA, this.matId);
     const pref = findPref(GAME_DATA, this.prefId);
     if (!m || !pref) {

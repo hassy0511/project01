@@ -245,21 +245,21 @@ export function renderReap(api: MinigameApi, targetEmoji: string, prompt: string
   const onDown = (p: Phaser.Input.Pointer): void => {
     strokeId++;
     strokeActive = true;
-    lastTrail = { x: p.x, y: p.y };
-    cutAt(p.x, p.y);
+    lastTrail = { x: p.worldX, y: p.worldY };
+    cutAt(p.worldX, p.worldY);
   };
   const onMove = (p: Phaser.Input.Pointer): void => {
     if (!p.isDown || !strokeActive) return;
-    cutAt(p.x, p.y);
+    cutAt(p.worldX, p.worldY);
     // 鎌の軌跡: 指のあとを ひとすじの光が追いかける
     if (lastTrail) {
       const seg = scene.add.graphics();
       seg.lineStyle(7, 0xffffff, 0.6);
-      seg.lineBetween(lastTrail.x, lastTrail.y - api.areaY, p.x, p.y - api.areaY);
+      seg.lineBetween(lastTrail.x, lastTrail.y - api.areaY, p.worldX, p.worldY - api.areaY);
       area.add(seg);
       scene.tweens.add({ targets: seg, alpha: 0, duration: 230, onComplete: () => seg.destroy() });
     }
-    lastTrail = { x: p.x, y: p.y };
+    lastTrail = { x: p.worldX, y: p.worldY };
   };
   const onUp = (): void => {
     strokeActive = false;

@@ -2,6 +2,7 @@
    そざいセルは「さいこう★+さんち n/m」の要約だけ表示し、
    タップで産地ごとの★一覧モーダルを開く(県が増えても破綻しない) */
 import Phaser from 'phaser';
+import { setupHiDpi } from '../ui/display';
 import { findPref, GAME_DATA, type Material } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';
 import { store } from '../game/store';
@@ -26,6 +27,7 @@ export class ZukanScene extends Phaser.Scene {
   }
 
   create(): void {
+    setupHiDpi(this);
     this.cameras.main.setBackgroundColor(COLORS.ground);
     buildHeader(this);
     buildNav(this, 'zukan');

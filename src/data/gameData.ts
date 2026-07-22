@@ -138,7 +138,12 @@ export interface Recipe {
   steps?: string[];
   /** tier4のみ: 屋台ラッシュに並ぶ しなもの(未指定なら ingredients の ref)。その県のめいぶつを並べる */
   menu?: (MaterialId | RecipeId)[];
+  /** tier4のみ: おまつりのゲーム種別(未指定なら yatai)。
+      実在の祭りで「実際にやること」を動詞にする方針(docs/ACTION_DESIGN.md) */
+  festGame?: FestGameKind;
 }
+
+export type FestGameKind = 'yatai' | 'daruma' | 'hanabi';
 
 export interface Trivia {
   target: MaterialId | RecipeId;
@@ -314,7 +319,7 @@ export const GAME_DATA: GameData = {
     { id: 'r11', name: 'ブランドなし', emoji: '✨', tier: 3, type: 'syukaku', pref: 'chiba',
       ingredients: [{ ref: 'm10', count: 1, quality: 3 }] },
     { id: 'rf2', name: 'ちょうし みなとまつり', emoji: '🎆', tier: 4, type: 'matsuri', pref: 'chiba',
-      implemented: true,
+      implemented: true, festGame: 'hanabi',
       ingredients: [{ ref: 'r10', count: 1 }, { ref: 'r09', count: 1 }],
       menu: ['r07', 'r10', 'r09'] },
 
@@ -340,7 +345,7 @@ export const GAME_DATA: GameData = {
     { id: 'r18', name: 'みそこんにゃく', emoji: '🍡', tier: 3, type: 'gattai', pref: 'gunma',
       ingredients: [{ ref: 'r16', count: 1 }, { ref: 'r08', count: 1 }] },
     { id: 'rf4', name: 'たかさき だるまいち', emoji: '⛩️', tier: 4, type: 'matsuri', pref: 'gunma',
-      implemented: true,
+      implemented: true, festGame: 'daruma',
       ingredients: [{ ref: 'r17', count: 1 }, { ref: 'r18', count: 1 }],
       menu: ['r16', 'r17', 'm13'] },
 

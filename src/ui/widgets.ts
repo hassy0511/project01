@@ -276,12 +276,12 @@ export class ScrollArea {
     let startContentY = 0;
     zone.on('pointerdown', (p: Phaser.Input.Pointer) => {
       dragging = true;
-      startPointerY = p.y;
+      startPointerY = p.worldY;
       startContentY = this.content.y - y;
     });
     scene.input.on('pointermove', (p: Phaser.Input.Pointer) => {
       if (!dragging || !p.isDown) return;
-      this.scrollTo(startContentY + (p.y - startPointerY));
+      this.scrollTo(startContentY + (p.worldY - startPointerY));
     });
     scene.input.on('pointerup', () => {
       dragging = false;
@@ -289,7 +289,7 @@ export class ScrollArea {
     scene.input.on(
       'wheel',
       (p: Phaser.Input.Pointer, _objs: unknown, _dx: number, dy: number) => {
-        if (p.y < y || p.y > y + h) return;
+        if (p.worldY < y || p.worldY > y + h) return;
         this.scrollTo(this.content.y - y - dy * 0.6);
       },
     );

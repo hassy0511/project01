@@ -1,8 +1,10 @@
-/* 起動: セーブ読み込み・地図データ取得・管理者API登録 → MapScene へ */
+/* 起動: セーブ読み込み・地図データ取得・パーティクル用テクスチャ焼き・管理者API登録 → MapScene へ */
 import Phaser from 'phaser';
+import { setupHiDpi } from '../ui/display';
 import { UI_TEXT } from '../data/uiText';
 import { loadMapAsset } from '../game/mapData';
 import { installAdminApi, store } from '../game/store';
+import { makeParticleTextures } from '../ui/effects';
 import { FONT, GAME_H, GAME_W, TEXT_COLORS, COLORS } from '../ui/theme';
 
 export class BootScene extends Phaser.Scene {
@@ -11,6 +13,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   create(): void {
+    setupHiDpi(this);
     this.cameras.main.setBackgroundColor(COLORS.ground);
     this.add
       .text(GAME_W / 2, GAME_H / 2, `🐤\n${UI_TEXT.loading}`, {
@@ -22,6 +25,7 @@ export class BootScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     store.load();
+    makeParticleTextures(this);
     installAdminApi(() => this.game.events.emit('mq-refresh'));
 
     loadMapAsset(import.meta.env.BASE_URL)

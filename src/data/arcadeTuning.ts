@@ -10,7 +10,17 @@
      fest:  おきゃくさん12pt×コンボ + はやわざ6pt、とくべつな客30pt。★なし(さいこうスコア制)
 */
 
-export type ArcadeEngine = 'chain' | 'reap' | 'catch' | 'flick' | 'mine' | 'fish' | 'care' | 'fest';
+export type ArcadeEngine =
+  | 'chain'
+  | 'reap'
+  | 'catch'
+  | 'flick'
+  | 'mine'
+  | 'fish'
+  | 'care'
+  | 'fest'
+  | 'daruma'
+  | 'hanabi';
 
 export interface ArcadeTuning {
   /** 制限時間(秒) */
@@ -30,6 +40,8 @@ export const ARCADE_TUNING: Record<ArcadeEngine, ArcadeTuning> = {
   fish: { durationSec: 45, star2: 300, star3: 650 },
   care: { durationSec: 25, star2: 0, star3: 0 }, // おせわは★なし(careDone のみ)
   fest: { durationSec: 60, star2: 0, star3: 0 }, // おまつりは★なし(さいこうスコア制)。集大成なので最長
+  daruma: { durationSec: 60, star2: 0, star3: 0 }, // だるまいち(ぐんま)
+  hanabi: { durationSec: 60, star2: 0, star3: 0 }, // はなび(ちば)
 };
 
 /** 実行時チューニング: E2E テストは timeScale を上げて時間を短縮する(__mqAdmin.fastMode) */

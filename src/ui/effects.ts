@@ -1,10 +1,52 @@
 /* ゲームフィール用エフェクト: スカッシュ&ストレッチ・パーティクル・
-   スコアポップ・紙吹雪・画面パルス・衝撃リング・画面フラッシュ。
-   すべて Tween ベースでアセット不要 */
+   スコアポップ・紙吹雪・画面パルス・衝撃リング・画面フラッシュ・ヒットストップ。
+   画像アセット不要(パーティクルのテクスチャは起動時に Graphics から焼く) */
 import Phaser from 'phaser';
 import { DEPTH, FONT, GAME_H, GAME_W } from './theme';
 
 const CONF_COLORS = [0xff9f40, 0x6fbf44, 0xff9eb5, 0xffd166, 0x8ed4e8, 0xb39ddb];
+
+/* ---------- パーティクル用テクスチャ(起動時に一度だけ焼く) ---------- */
+
+export const TX_DOT = 'tx-dot';
+export const TX_GLOW = 'tx-glow';
+export const TX_SQUARE = 'tx-square';
+
+/** BootScene から呼ぶ。Graphics を焼いてテクスチャ化(画像ファイル不要のまま ParticleEmitter を使う) */
+export function makeParticleTextures(scene: Phaser.Scene): void {
+  if (scene.textures.exists(TX_DOT)) return;
+  const g = scene.make.graphics({ x: 0, y: 0 }, false);
+  g.fillStyle(0xffffff, 1);
+  g.fillCircle(4, 4, 4);
+  g.generateTexture(TX_DOT, 8, 8);
+  g.clear();
+  // やわらかい光球(加算合成でグローに使う)
+  for (let r = 12; r >= 2; r -= 2) {
+    g.fillStyle(0xffffff, r === 2 ? 0.9 : 0.13);
+    g.fillCircle(12, 12, r);
+  }
+  g.generateTexture(TX_GLOW, 24, 24);
+  g.clear();
+  g.fillStyle(0xffffff, 1);
+  g.fillRect(0, 0, 7, 7);
+  g.generateTexture(TX_SQUARE, 7, 7);
+  g.destroy();
+}
+
+/* ---------- ヒットストップ ---------- */
+
+let hitStopActive = false;
+
+/** でかい一撃の「間」: 一瞬だけ世界を止める(市販アクションの常套手段)。多重呼び出しは無視 */
+export function hitStop(scene: Phaser.Scene, ms = 70): void {
+  if (hitStopActive || !scene.scene.isActive()) return;
+  hitStopActive = true;
+  scene.scene.pause();
+  setTimeout(() => {
+    hitStopActive = false;
+    if (scene.scene.isPaused()) scene.scene.resume();
+  }, ms);
+}
 
 /** タップの手応え: ぐにゃっと潰れてから弾ける */
 export function squashStretch(scene: Phaser.Scene, target: Phaser.GameObjects.Components.Transform): void {
@@ -56,31 +98,38 @@ export function impactRing(scene: Phaser.Scene, x: number, y: number, color = 0x
   });
 }
 
-/** その場で弾けるパーティクル(色つき破片+中心の衝撃リング) */
+/** その場で弾けるパーティクル(グロー閃光+重力つき色破片+中心の衝撃リング) */
 export function burst(scene: Phaser.Scene, x: number, y: number, count = 14, colors = CONF_COLORS): void {
   impactRing(scene, x, y, colors[0]);
-  for (let i = 0; i < count; i++) {
-    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
-    const dist = 40 + Math.random() * 46;
-    const size = 6 + Math.random() * 6;
-    const color = colors[i % colors.length];
-    const shape =
-      Math.random() < 0.5
-        ? scene.add.rectangle(x, y, size, size, color)
-        : scene.add.circle(x, y, size / 2, color);
-    shape.setDepth(DEPTH.overlay).setAngle(Math.random() * 360);
-    scene.tweens.add({
-      targets: shape,
-      x: x + Math.cos(angle) * dist,
-      y: y + Math.sin(angle) * dist + 14,
-      angle: shape.angle + 220,
-      alpha: { from: 1, to: 0 },
-      scale: { from: 1, to: 0.3 },
-      duration: 460 + Math.random() * 220,
-      ease: 'Quad.easeOut',
-      onComplete: () => shape.destroy(),
-    });
-  }
+  // 中心の光(加算合成でグロー)
+  const kira = scene.add
+    .particles(x, y, TX_GLOW, {
+      speed: { min: 30, max: 130 },
+      lifespan: { min: 180, max: 360 },
+      scale: { start: 1.2, end: 0 },
+      blendMode: Phaser.BlendModes.ADD,
+      tint: 0xfff2c4,
+      emitting: false,
+    })
+    .setDepth(DEPTH.overlay);
+  kira.explode(Math.min(6, count));
+  // 色つき破片(重力で散る)
+  const bits = scene.add
+    .particles(x, y, Math.random() < 0.5 ? TX_DOT : TX_SQUARE, {
+      speed: { min: 130, max: 300 },
+      lifespan: { min: 380, max: 640 },
+      gravityY: 620,
+      scale: { start: 1.2, end: 0.2 },
+      rotate: { min: 0, max: 360 },
+      tint: colors,
+      emitting: false,
+    })
+    .setDepth(DEPTH.overlay);
+  bits.explode(count);
+  scene.time.delayedCall(800, () => {
+    kira.destroy();
+    bits.destroy();
+  });
 }
 
 /** 土けむり(dig 用): 茶色の破片+石ころが舞う */
@@ -159,12 +208,14 @@ export function screenFlash(scene: Phaser.Scene, color = 0xffffff, peakAlpha = 0
   });
 }
 
-/** ジャスト成功の画面パルス(ズームがふっと寄って戻る) */
+/** ジャスト成功の画面パルス(ズームがふっと寄って戻る)。
+    HiDPI でカメラの基準ズームが 1 でない場合があるため、必ず現在値からの相対で書く */
 export function cameraPulse(scene: Phaser.Scene): void {
   const cam = scene.cameras.main;
+  const base = cam.zoom;
   scene.tweens.add({
     targets: cam,
-    zoom: { from: 1.045, to: 1 },
+    zoom: { from: base * 1.045, to: base },
     duration: 260,
     ease: 'Quad.easeOut',
   });
@@ -175,11 +226,12 @@ export function missShake(scene: Phaser.Scene): void {
   scene.cameras.main.shake(120, 0.004);
 }
 
-/** でっかい一撃の合図: リング+フラッシュ+カメラパルスをまとめて鳴らす(金の実・ぬし・ど真ん中用) */
+/** でっかい一撃の合図: ヒットストップ+リング+フラッシュ+カメラパルス(金の実・ぬし・ど真ん中用) */
 export function bigImpact(scene: Phaser.Scene, x: number, y: number, color = 0xffd34d): void {
   impactRing(scene, x, y, color, 14);
   screenFlash(scene, color, 0.22);
   cameraPulse(scene);
+  hitStop(scene, 70);
 }
 
 /** 当たり判定を見た目より広げる(子供の指は太い)。Text等の interactive 済みオブジェクトに使う */
