@@ -234,7 +234,41 @@ await page.waitForTimeout(600);
 await d.waitText('🗾 にっぽん'); // 地図に戻った(にっぽんボタンが見える)
 log('にほんぜんこく画面(エリア選択UI)');
 
-/* 12c. 新県: ぐんま開拓(クイズローテーションで再挑戦時は別問題が出る) */
+/* 12c. せってい → 保護者ゲート(かけ算テンキー) → 保護者メニュー → プライバシー表示 */
+await d.clickText('⚙️');
+await d.waitText('🔒 おうちのひと メニュー');
+await d.clickText('🔒 おうちのひと メニュー');
+await d.waitText('保護者の方へ');
+const gateQ = await page.evaluate(() => {
+  let v = null;
+  for (const scene of window.__game.scene.getScenes(true)) {
+    const walk = (list) => {
+      for (const o of list) {
+        if (o.list) walk(o.list);
+        if (typeof o.text === 'string' && /^\d+ × \d+ = /.test(o.text)) v = o.text;
+      }
+    };
+    walk(scene.children.list);
+  }
+  return v;
+});
+const gm = gateQ.match(/^(\d+) × (\d+)/);
+for (const ch of String(Number(gm[1]) * Number(gm[2]))) {
+  const keys = await d.findTexts(ch);
+  const k = keys[keys.length - 1]; // 画面奥の数字と重複したらモーダル側(後着)を叩く
+  await page.mouse.click(k.x, k.y);
+  await page.waitForTimeout(120);
+}
+await d.clickText('OK');
+await d.waitText('保護者メニュー');
+await page.screenshot({ path: `${SHOTS}/parent-menu.png` });
+await d.clickText('📄 プライバシーポリシー');
+await d.waitText('プライバシーポリシー');
+await d.clickText('とじる');
+await page.waitForTimeout(300);
+log('保護者ゲート(かけ算)→ 保護者メニュー → プライバシーポリシー');
+
+/* 12d. 新県: ぐんま開拓(クイズローテーションで再挑戦時は別問題が出る) */
 await page.mouse.click(10 + 92 * 1.263, 80 + 122 * 1.263); // ぐんま
 await d.clickText('ちょうせん する!');
 await d.answerQuiz();

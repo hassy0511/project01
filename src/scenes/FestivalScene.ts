@@ -10,6 +10,7 @@ import { applyFestival, craftable, updateFestBest } from '../core/craft';
 import { store } from '../game/store';
 import { setHook } from '../game/testHooks';
 import { SFX } from '../audio/sfx';
+import { setBgmTrack } from '../audio/bgm';
 import { showTriviaOnce } from '../ui/trivia';
 import { COLORS, DEPTH, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { makeGuideRow, Modal } from '../ui/widgets';
@@ -78,6 +79,10 @@ export class FestivalScene extends Phaser.Scene {
         })
         .setOrigin(0.5),
     );
+
+    // おまつりBGM(はなびは夜空なので夜の曲)。シーンを離れたら通常曲へ
+    setBgmTrack(r.festGame === 'hanabi' ? 'night' : 'fest');
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => setBgmTrack('day'));
 
     this.area = this.add.container(0, GAME_AREA_Y);
     // おまつりごとのゲーム(データ駆動)。全県ユニーク化の方針は docs/ACTION_DESIGN.md

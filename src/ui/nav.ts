@@ -6,6 +6,7 @@ import { store } from '../game/store';
 import { isMuted, setMuted, SFX } from '../audio/sfx';
 import { COLORS, DEPTH, FONT, GAME_H, GAME_W, TEXT_COLORS } from './theme';
 import { Modal, showToast } from './widgets';
+import { showParentGate } from './parentGate';
 
 export const NAV_H = 72;
 export const HEADER_H = 56;
@@ -95,10 +96,28 @@ export function buildNav(scene: Phaser.Scene, active: NavKey): void {
   c.add(gear);
 }
 
-/** せってい: 管理者⏩まんたん + 保護者ゲート(足し算)つきリセット */
+/** せってい(子供も開ける): 情報表示+「おうちのひとメニュー」入口のみ。
+    管理者機能・リセットは保護者ゲート(ui/parentGate.ts)の先に置く */
 export function openSettings(scene: Phaser.Scene): void {
   const modal = new Modal(scene, UI_TEXT.settings.title, true);
   modal.addText(UI_TEXT.settings.version(GAME_DATA.meta.version), 14, TEXT_COLORS.sub);
+  modal.addButton(
+    UI_TEXT.settings.parentMenuBtn,
+    COLORS.gray,
+    () => {
+      modal.close();
+      showParentGate(scene, () => openParentMenu(scene));
+    },
+    380,
+    48,
+  );
+  modal.show();
+}
+
+/** 保護者メニュー(ゲートの先): 動作確認用の管理者機能+ポリシー+リセット */
+function openParentMenu(scene: Phaser.Scene): void {
+  const modal = new Modal(scene, UI_TEXT.settings.parentTitle, true);
+  modal.addText(UI_TEXT.settings.parentInfo(GAME_DATA.meta.version), 13, TEXT_COLORS.sub);
   modal.addButton(
     UI_TEXT.settings.boostBtn,
     COLORS.orange,
@@ -122,25 +141,50 @@ export function openSettings(scene: Phaser.Scene): void {
     48,
   );
   modal.addButton(
-    UI_TEXT.settings.resetBtn,
-    COLORS.gray,
+    UI_TEXT.settings.privacyBtn,
+    COLORS.primary,
     () => {
-      const a = 2 + Math.floor(Math.random() * 7);
-      const b = 2 + Math.floor(Math.random() * 7);
-      const ans = window.prompt(UI_TEXT.settings.parentGate(a, b));
-      if (ans !== null && parseInt(ans, 10) === a + b) {
-        if (window.confirm(UI_TEXT.settings.resetConfirm)) {
-          store.reset();
-          modal.close();
-          scene.scene.start('MapScene');
-          showToast(scene, UI_TEXT.settings.resetDone);
-        }
-      } else if (ans !== null) {
-        showToast(scene, UI_TEXT.settings.wrongAnswer);
-      }
+      modal.close();
+      openPrivacy(scene);
     },
     380,
     48,
   );
+  modal.addButton(
+    UI_TEXT.settings.resetBtn,
+    COLORS.gray,
+    () => {
+      modal.close();
+      openResetConfirm(scene);
+    },
+    380,
+    48,
+  );
+  modal.show();
+}
+
+function openPrivacy(scene: Phaser.Scene): void {
+  const modal = new Modal(scene, UI_TEXT.settings.privacyTitle, true);
+  modal.addText(UI_TEXT.settings.privacyBody, 13, TEXT_COLORS.main);
+  modal.addButton(UI_TEXT.settings.close, COLORS.primary, () => modal.close());
+  modal.show();
+}
+
+function openResetConfirm(scene: Phaser.Scene): void {
+  const modal = new Modal(scene, UI_TEXT.settings.resetTitle, true);
+  modal.addText(UI_TEXT.settings.resetConfirm, 15, TEXT_COLORS.main);
+  modal.addButton(
+    UI_TEXT.settings.resetYes,
+    COLORS.gray,
+    () => {
+      store.reset();
+      modal.close();
+      scene.scene.start('MapScene');
+      showToast(scene, UI_TEXT.settings.resetDone);
+    },
+    380,
+    48,
+  );
+  modal.addButton(UI_TEXT.settings.resetNo, COLORS.primary, () => modal.close(), 380, 48);
   modal.show();
 }

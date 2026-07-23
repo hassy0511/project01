@@ -22,7 +22,7 @@ export const UI_TEXT = {
   },
 
   map: {
-    inactivePref: 'ここは じゅんびちゅう! おたのしみに🚧',
+    inactivePref: 'ここは まだ くもの なか☁️ ぼうけんが すすむと はれるよ!',
     aria: 'かんとうの ちず',
     japanBtn: '🗾 にっぽん',
   },
@@ -31,8 +31,8 @@ export const UI_TEXT = {
     title: 'にっぽん ぜんこく',
     back: '← ちずへ',
     guide: 'にっぽんは 8つの エリアに わかれているよ。\nまずは かんとうから ぼうけんだ!',
-    lockedToast: 'ここは まだ じゅんびちゅう! まずは かんとうを ぼうけんしよう🚧',
-    preparing: 'じゅんびちゅう',
+    lockedToast: 'ここは まだ もやもやぐもの なか! まずは かんとうの くもを はらおう☁️',
+    preparing: 'くもの なか',
     prog: (got: number, total: number) => `かいたく ${got}/${total}`,
     festCount: (n: number) => `🏮×${n}`,
     go: 'いってみよう!',
@@ -120,7 +120,7 @@ export const UI_TEXT = {
   },
 
   fest: {
-    preparing: 'じゅんびちゅう… アップデートで あそべるように なるよ!',
+    preparing: 'まだ くもの むこう… ぼうけんが すすむと ひらくよ!',
     held: '🏮かいさいずみ',
     openBtn: 'ひらく!',
     againBtn: 'もういちど!',
@@ -258,15 +258,38 @@ export const UI_TEXT = {
     title: 'せってい',
     version: (v: string) =>
       `めいさんクエスト(かり) v${v}\nデータは この たんまつの なかにだけ ほぞんされます。\nちずデータ: svg-maps (© Victor Cazanave, CC BY 4.0)`,
-    boostBtn: '⏩ かんりしゃ: せいちょう&ストックを まんたんに',
-    boosted: '⏩ ぜんぶ まんたんに した(かんりしゃ)',
-    unlockBtn: '🔓 かんりしゃ: ぜんぶ かいほう',
-    unlocked: '🔓 ぜんぶ かいほうした! どの けんも おまつりも すぐ あそべるよ(かんりしゃ)',
-    resetBtn: 'データを リセットする(おうちのひと よう)',
-    parentGate: (a: number, b: number) => `おうちのひとに かくにん: ${a} + ${b} = ?`,
-    resetConfirm: 'ほんとうに さいしょから はじめますか?',
+    parentMenuBtn: '🔒 おうちのひと メニュー',
+    /* --- 保護者ゲート/保護者メニュー ---
+       大人向けのため意図的に漢字表記(ひらがな中心ルールの例外)。
+       子供が読めない+九九を超える計算で、誤操作・誤課金系の審査要件に対応する */
+    gateTitle: '保護者の方へ',
+    gateBody: 'お子様の誤操作を防ぐため、次の計算に答えてください。',
+    gateQuestion: (a: number, b: number, ans: string) => `${a} × ${b} = ${ans || '?'}`,
+    gateWrong: '答えが違います。もう一度どうぞ',
+    gateKeyDel: '←',
+    gateKeyOk: 'OK',
+    parentTitle: '保護者メニュー',
+    parentInfo: (v: string) =>
+      `バージョン v${v}\n個人情報の収集・外部送信はありません。\n広告・課金・プッシュ通知もありません。`,
+    boostBtn: '⏩ 成長とストックを満タンにする(動作確認用)',
+    boosted: '⏩ ぜんぶ まんたんに なったよ',
+    unlockBtn: '🔓 全県・全レシピを開放する(動作確認用)',
+    unlocked: '🔓 ぜんぶ かいほうされたよ! どの けんも おまつりも すぐ あそべる',
+    privacyBtn: '📄 プライバシーポリシー',
+    privacyTitle: 'プライバシーポリシー',
+    privacyBody:
+      'めいさんクエスト(仮)は、お子様向けの日本地理学習ゲームです。\n\n' +
+      '・個人情報の収集は行いません\n' +
+      '・セーブデータは端末内にのみ保存され、外部に送信されません\n' +
+      '・広告表示、アプリ内課金、プッシュ通知はありません\n' +
+      '・外部サービスとの通信は行いません\n\n' +
+      '地図データ: svg-maps(© Victor Cazanave, CC BY 4.0)',
+    resetBtn: '🗑 データをリセット',
+    resetTitle: 'リセットの確認',
+    resetConfirm: '本当に最初からはじめますか?\nこの端末のセーブデータが消えます。',
+    resetYes: 'はい、リセットする',
+    resetNo: 'やめる',
     resetDone: 'リセットしました',
-    wrongAnswer: 'こたえが ちがうみたい',
     close: 'とじる',
   },
 } as const;
