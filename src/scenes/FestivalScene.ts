@@ -28,6 +28,7 @@ import { renderTanabata } from './minigames/tanabataGame';
 import { renderKantou } from './minigames/kantouGame';
 import { renderHanagasa } from './minigames/hanagasaGame';
 import { renderWaraji } from './minigames/warajiGame';
+import { renderYukimatsuri } from './minigames/yukimatsuriGame';
 import type { MinigameApi } from './minigames/types';
 
 const TOP_H = 48;
@@ -129,6 +130,9 @@ export class FestivalScene extends Phaser.Scene {
         break;
       case 'waraji':
         renderWaraji(api, UI_TEXT.fest.warajiPrompt);
+        break;
+      case 'yukimatsuri':
+        renderYukimatsuri(api, UI_TEXT.fest.yukimatsuriPrompt);
         break;
       default:
         renderFestival(api, UI_TEXT.fest.prompt, this.buildMenu());

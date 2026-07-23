@@ -11,14 +11,21 @@ const mod = req('@svg-maps/japan');
 const map = mod.default ?? mod;
 
 const REGION_PREFS = {
-  hokkaido: ['hokkaido'],
-  tohoku: ['aomori', 'iwate', 'miyagi', 'akita', 'yamagata', 'fukushima'],
+  tohoku: ['hokkaido', 'aomori', 'iwate', 'miyagi', 'akita', 'yamagata', 'fukushima'],
   kanto: ['ibaraki', 'tochigi', 'gunma', 'saitama', 'chiba', 'tokyo', 'kanagawa'],
   chubu: ['niigata', 'toyama', 'ishikawa', 'fukui', 'yamanashi', 'nagano', 'gifu', 'shizuoka', 'aichi'],
   kinki: ['mie', 'shiga', 'kyoto', 'osaka', 'hyogo', 'nara', 'wakayama'],
   chugoku: ['tottori', 'shimane', 'okayama', 'hiroshima', 'yamaguchi'],
   shikoku: ['tokushima', 'kagawa', 'ehime', 'kochi'],
   kyushu: ['fukuoka', 'saga', 'nagasaki', 'kumamoto', 'oita', 'miyazaki', 'kagoshima', 'okinawa'],
+};
+
+/** ラベル位置の手動補正(重心が となりの県名と 重なる場合に ずらす) */
+const NUDGE = {
+  akita: [-18, -4],
+  iwate: [18, 2],
+  miyagi: [22, 8],
+  yamagata: [-22, 2],
 };
 
 const region = process.argv[2];
@@ -155,7 +162,8 @@ for (const [name, ring] of Object.entries(rings)) {
   pts = pts.concat([pts[0]]);
   out.paths[name] = 'M' + pts.map(([x, y]) => x.toFixed(1) + ',' + y.toFixed(1)).join('L') + 'Z';
   const [cx, cy] = centroid(pts.slice(0, -1));
-  out.labels[name] = [Math.round(cx), Math.round(cy)];
+  const [nx, ny] = NUDGE[name] ?? [0, 0];
+  out.labels[name] = [Math.round(cx + nx), Math.round(cy + ny)];
   let bx0 = 1e9, by0 = 1e9, bx1 = -1e9, by1 = -1e9;
   for (const [x, y] of pts) {
     bx0 = Math.min(bx0, x); by0 = Math.min(by0, y);

@@ -163,7 +163,8 @@ export type FestGameKind =
   | 'tanabata'
   | 'kantou'
   | 'hanagasa'
-  | 'waraji';
+  | 'waraji'
+  | 'yukimatsuri';
 
 export interface Trivia {
   target: MaterialId | RecipeId;
@@ -202,8 +203,8 @@ export const GAME_DATA: GameData = {
      実形シルエットは public/assets/regions-gen.json(scripts/gen-region-map.mjs で生成)。
      active な地方だけ地図に入れる。今は かんとう のみ */
   regions: [
-    { id: 'hokkaido', name: 'ほっかいどう', kanji: '北海道', emoji: '❄️', active: false, color: '#B3E5FC' },
-    { id: 'tohoku', name: 'とうほく', kanji: '東北', emoji: '🍎', active: true, color: '#C5E1A5', mapFile: 'map-tohoku.json', unlockFests: 3 },
+    /* ほっかいどうは1道だけなので、独立エリアにせず「とうほく」に含める(ユーザー決定 2026-07) */
+    { id: 'tohoku', name: 'ほっかいどう・とうほく', kanji: '北海道・東北', emoji: '❄️', active: true, color: '#C5E1A5', mapFile: 'map-tohoku.json', unlockFests: 3 },
     { id: 'kanto', name: 'かんとう', kanji: '関東', emoji: '🗼', active: true, color: '#A9DC76', mapFile: 'map-gen.json' },
     { id: 'chubu', name: 'ちゅうぶ', kanji: '中部', emoji: '🗻', active: false, color: '#FFE0B2' },
     { id: 'kinki', name: 'きんき', kanji: '近畿', emoji: '🦌', active: false, color: '#F8BBD0' },
@@ -221,6 +222,7 @@ export const GAME_DATA: GameData = {
     { id: 'saitama', name: 'さいたま', kanji: '埼玉', region: 'kanto', active: true, color: '#80CBC4', festivalId: 'rf5' },
     { id: 'tokyo', name: 'とうきょう', kanji: '東京', region: 'kanto', active: true, color: '#FFAB91', festivalId: 'rf6', suffix: 'と' },
     { id: 'kanagawa', name: 'かながわ', kanji: '神奈川', region: 'kanto', active: true, color: '#81D4FA', festivalId: 'rf7' },
+    { id: 'hokkaido', name: 'ほっかいどう', kanji: '北海道', region: 'tohoku', active: true, color: '#B3E5FC', festivalId: 'rf14', suffix: '' },
     { id: 'aomori', name: 'あおもり', kanji: '青森', region: 'tohoku', active: true, color: '#EF9A9A', festivalId: 'rf8' },
     { id: 'iwate', name: 'いわて', kanji: '岩手', region: 'tohoku', active: true, color: '#A5D6A7', festivalId: 'rf9' },
     { id: 'miyagi', name: 'みやぎ', kanji: '宮城', region: 'tohoku', active: true, color: '#90CAF9', festivalId: 'rf10' },
@@ -327,7 +329,7 @@ export const GAME_DATA: GameData = {
         care: { target: '🐰', label: 'うさぎが にんじんを ねらってる! タップで おいはらえ!' } } },
 
     /* --- いわて --- */
-    { id: 'm23', name: 'ぎゅうにゅう', emoji: '🥛', origins: ['iwate'], rarity: 'local',
+    { id: 'm23', name: 'ぎゅうにゅう', emoji: '🥛', origins: ['iwate', 'hokkaido'], rarity: 'local',
       gather: { type: 'infra', building: 'ぼくじょう', bEmoji: '🐄', rateSec: 300, max: 3, collectVerb: 'しぼる' } },
     { id: 'm24', name: 'てついし', emoji: '🪨', origins: ['iwate'], rarity: 'unique',
       gather: { type: 'dig', verb: 'ほりに いく',
@@ -366,6 +368,16 @@ export const GAME_DATA: GameData = {
       gather: { type: 'plant', verb: 'なえを うえる', growSec: 360,
         harvest: { engine: 'chain', target: '🍅', prompt: 'まっかに いろづいた トマトだけ つもう! みどりは まだ はやいよ' },
         care: { target: '🐛', label: 'むしが ついてる! タップで とろう!' } } },
+
+    /* --- ほっかいどう --- */
+    { id: 'm32', name: 'とうもろこし', emoji: '🌽', origins: ['hokkaido'], rarity: 'local',
+      gather: { type: 'plant', verb: 'たねを まく', growSec: 420,
+        harvest: { engine: 'chain', target: '🌽', prompt: 'ひげが ちゃいろに なった とうもろこしだけ つもう!' },
+        care: { target: '🐦', label: 'とりが みを ねらってる! タップで おいはらえ!' } } },
+    { id: 'm33', name: 'じゃがいも', emoji: '🥔', origins: ['hokkaido'], rarity: 'local',
+      gather: { type: 'plant', verb: 'たねいもを うえる', growSec: 420,
+        harvest: { engine: 'mine', prompt: 'じゃがいもは つちのなか。すうじの ヒントで ばしょを すいりして ほろう!' },
+        care: { target: '🐛', label: 'むしが はっぱに ついてる! タップで とろう!' } } },
   ],
 
   /* ---------- レシピマスタ(Tier2〜4) ---------- */
@@ -523,6 +535,16 @@ export const GAME_DATA: GameData = {
       implemented: true, festGame: 'waraji',
       ingredients: [{ ref: 'r37', count: 1 }, { ref: 'r38', count: 1 }],
       menu: ['r37', 'r38', 'm30'] },
+
+    /* --- ほっかいどう --- */
+    { id: 'r39', name: 'バター', emoji: '🧈', tier: 2, type: 'kakou', pref: 'hokkaido',
+      ingredients: [{ ref: 'm23', count: 2, origin: 'hokkaido' }] },
+    { id: 'r40', name: 'コーンスープ', emoji: '🥣', tier: 3, type: 'gattai', pref: 'hokkaido',
+      ingredients: [{ ref: 'm32', count: 2 }, { ref: 'm23', count: 1 }] },
+    { id: 'rf14', name: 'さっぽろ ゆきまつり', emoji: '⛄', tier: 4, type: 'matsuri', pref: 'hokkaido',
+      implemented: true, festGame: 'yukimatsuri',
+      ingredients: [{ ref: 'r39', count: 1 }, { ref: 'r40', count: 1 }],
+      menu: ['r39', 'r40', 'm33'] },
   ],
 
   /* ---------- ものしりカード(checkは裏取り未了マーク) ---------- */
@@ -611,6 +633,11 @@ export const GAME_DATA: GameData = {
     { target: 'rf11', text: 'かんとうまつりは、ちょうちんを いっぱい つけた ながい さおを、てのひらや おでこで バランスを とって ささえる おまつりだよ。' },
     { target: 'rf12', text: 'はながさまつりは、はなの かさを くるくる まわして おどる やまがたの おまつりだよ。' },
     { target: 'rf13', text: 'わらじまつりでは、にほんいちの おおきさと いわれる おおわらじを みんなで かついで あるくよ。', check: '日本一表現裏取り' },
+    { target: 'm32', text: 'ほっかいどうは とうもろこしづくりが にほんいち! ひろい だいちで のびのび そだつよ。', check: '統計裏取り' },
+    { target: 'm33', text: 'ほっかいどうは じゃがいもの だいさんち。「だんしゃく」や「メークイン」が ゆうめいだよ。', check: '統計裏取り' },
+    { target: 'r39', text: 'しぼりたての ぎゅうにゅうから つくる バター。ほっかいどうの ぼくじょうの めぐみだよ。' },
+    { target: 'r40', text: 'あまい とうもろこしと ぎゅうにゅうで つくる、あったか〜い スープだよ。' },
+    { target: 'rf14', text: 'さっぽろ ゆきまつりでは、ゆきで つくった おおきな ぞうが まちに ずらーっと ならぶよ。' },
   ],
 
   /* ---------- クイズバンク ----------
@@ -651,6 +678,17 @@ export const GAME_DATA: GameData = {
     { id: 'qt65', kind: 'kaitaku', tags: ['fukushima'], q: 'ふくしまけんで たくさん つくられる くだものは?', choices: ['もも', 'パイナップル', 'キウイ'], answer: 0 },
     { id: 'qt66', kind: 'kaitaku', tags: ['fukushima'], q: 'ふくしまけんの おまつりで かつぐのは?', choices: ['おおきな わらじ', 'おおきな だるま', 'おおきな かがみ'], answer: 0 },
     { id: 'qt67', kind: 'kaitaku', tags: ['fukushima'], q: 'ふくしまけんは とうほくの どこに ある?', choices: ['いちばん みなみ', 'いちばん きた', 'うみの うえ'], answer: 0 },
+
+    /* --- ほっかいどう --- */
+    { id: 'qh01', kind: 'kaitaku', type: 'shape', tags: ['hokkaido'], q: 'この かたちは どこ?', choices: ['ほっかいどう', 'あおもり', 'いわて'], answer: 0 },
+    { id: 'qh02', kind: 'kaitaku', type: 'position', tags: ['hokkaido'], q: 'ひかっている ところは どこ?', choices: ['ほっかいどう', 'あおもり', 'あきた'], answer: 0 },
+    { id: 'qh03', kind: 'kaitaku', tags: ['hokkaido'], q: 'にほんの いちばん きたに あるのは?', choices: ['ほっかいどう', 'おきなわ', 'とうきょう'], answer: 0 },
+    { id: 'qh04', kind: 'kaitaku', tags: ['hokkaido'], q: 'ほっかいどうの ふゆの おまつりで つくるのは?', choices: ['ゆきの ぞう(ゆきぞう)', 'すなの おしろ', 'こおりの プール'], answer: 0 },
+    { id: 'qh05', kind: 'kaitaku', tags: ['hokkaido'], q: 'ほっかいどうで さかんなのは?', choices: ['らくのう(うしを そだてる)', 'パイナップルづくり', 'さとうきびづくり'], answer: 0 },
+    { id: 'qh06', kind: 'sozai', tags: ['m32', 'r40'], q: 'とうもろこしの みは どこに つく?', choices: ['くきの とちゅう', 'つちの なか', 'ねっこ'], answer: 0 },
+    { id: 'qh07', kind: 'sozai', tags: ['m33'], q: 'じゃがいもは どこに できる?', choices: ['つちの なか', 'きの うえ', 'みずの なか'], answer: 0 },
+    { id: 'qh08', kind: 'sozai', tags: ['m23', 'r39'], q: 'バターは なにから つくる?', choices: ['ぎゅうにゅう', 'みず', 'たまご'], answer: 0 },
+    { id: 'qh09', kind: 'bunka', tags: ['rf14', 'r39'], q: 'さっぽろ ゆきまつりで ならぶのは?', choices: ['おおきな ゆきぞう', 'おおきな すなやま', 'おおきな かかし'], answer: 0 },
 
     /* --- とうほく: そざい(育成・レシピ用) --- */
     { id: 'qt20', kind: 'sozai', tags: ['m20', 'r26'], q: 'りんごが よく そだつのは どんな きこう?', choices: ['すずしい ところ', 'あつい ところ', 'うみの なか'], answer: 0 },

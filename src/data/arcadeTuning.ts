@@ -35,7 +35,8 @@ export type ArcadeEngine =
   | 'tanabata'
   | 'kantou'
   | 'hanagasa'
-  | 'waraji';
+  | 'waraji'
+  | 'yukimatsuri';
 
 export interface ArcadeTuning {
   /** 制限時間(秒) */
@@ -70,6 +71,7 @@ export const ARCADE_TUNING: Record<ArcadeEngine, ArcadeTuning> = {
   kantou: { durationSec: 60, star2: 0, star3: 0 }, // かんとうまつり(あきた)
   hanagasa: { durationSec: 60, star2: 0, star3: 0 }, // はながさおどり(やまがた)
   waraji: { durationSec: 60, star2: 0, star3: 0 }, // おおわらじ(ふくしま)
+  yukimatsuri: { durationSec: 60, star2: 0, star3: 0 }, // 雪像づくり(ほっかいどう・さっぽろ)
 };
 
 /** 実行時チューニング: E2E テストは timeScale を上げて時間を短縮する(__mqAdmin.fastMode) */

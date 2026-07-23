@@ -20,7 +20,7 @@ const AREA_MIN = 8;
 const EPS = 0.9;
 
 const REGION_OF = {
-  hokkaido: 'hokkaido',
+  hokkaido: 'tohoku',
   aomori: 'tohoku', iwate: 'tohoku', miyagi: 'tohoku', akita: 'tohoku', yamagata: 'tohoku', fukushima: 'tohoku',
   ibaraki: 'kanto', tochigi: 'kanto', gunma: 'kanto', saitama: 'kanto', chiba: 'kanto', tokyo: 'kanto', kanagawa: 'kanto',
   niigata: 'chubu', toyama: 'chubu', ishikawa: 'chubu', fukui: 'chubu', yamanashi: 'chubu', nagano: 'chubu',
@@ -119,7 +119,6 @@ function centroid(ring) {
 
 /** ラベル位置の手動補正(細長い地方は重心が読みにくい位置に来るため) */
 const NUDGE = {
-  hokkaido: [0, 0],
   tohoku: [0, 0],
   kanto: [6, 4],
   chubu: [-4, 6],

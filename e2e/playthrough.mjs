@@ -226,7 +226,7 @@ await d.clickText('← ちず');
 await page.waitForTimeout(600);
 await d.clickText('🗾 にっぽん');
 await d.waitText('🗾 にっぽん ぜんこく');
-await d.clickText('ほっかいどう'); // じゅんびちゅう(トーストのみ、遷移しない)
+await d.clickText('ちゅうぶ'); // まだ雲の中(トーストのみ、遷移しない)
 await d.waitText('🗾 にっぽん ぜんこく');
 await page.screenshot({ path: `${SHOTS}/region-select.png` });
 await d.clickText('かんとう');
@@ -284,11 +284,11 @@ log('ぐんま開拓(新関東エリア)');
    あおもりの ゆきしたにんじん(sweep=こすって雪はらい)を収穫できる */
 await d.clickText('🗾 にっぽん');
 await d.waitText('🗾 にっぽん ぜんこく');
-await d.clickText('とうほく'); // まだ festBest は 1種 → 解放されずトースト
+await d.clickText('ほっかいどう・とうほく'); // まだ festBest は 1種 → 解放されずトースト
 await d.waitText('🗾 にっぽん ぜんこく');
 await page.evaluate(() => window.__mqAdmin.unlockAll());
 await page.waitForTimeout(400);
-await d.clickText('とうほく'); // 開拓済みの県ができたので入れる
+await d.clickText('ほっかいどう・とうほく'); // 開拓済みの県ができたので入れる
 await page.waitForTimeout(700);
 await d.waitText('あおもり'); // とうほくの地図に到着
 await page.screenshot({ path: `${SHOTS}/tohoku-map.png` });

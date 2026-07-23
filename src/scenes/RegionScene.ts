@@ -19,8 +19,7 @@ const BOTTOM_PAD = 170;
 
 /** ラベルの逃がし(viewBox座標系)。せまい地方は海の上に出して重なりを防ぐ */
 const LABEL_OFF: Record<string, [number, number]> = {
-  hokkaido: [6, 16],
-  tohoku: [26, 6],
+  tohoku: [30, 10],
   kanto: [34, 16],
   chubu: [-38, 30],
   kinki: [18, 34],
