@@ -21,6 +21,8 @@ import { confetti, screenFlash } from '../ui/effects';
 import { renderCatch } from './minigames/catchGame';
 import { renderChain } from './minigames/chainGame';
 import { renderReap } from './minigames/reapGame';
+import { renderPluck } from './minigames/pluckGame';
+import { renderRhythm } from './minigames/rhythmGame';
 import { renderMine } from './minigames/mineGame';
 import { renderFish } from './minigames/fishGame';
 import { renderFlick } from './minigames/flickGame';
@@ -158,6 +160,10 @@ export class SessionScene extends Phaser.Scene {
       renderChain(api, targetEmoji, prompt);
     } else if (engine === 'reap') {
       renderReap(api, targetEmoji, prompt);
+    } else if (engine === 'pluck') {
+      renderPluck(api, targetEmoji, prompt);
+    } else if (engine === 'rhythm') {
+      renderRhythm(api, targetEmoji, prompt);
     } else if (engine === 'mine') {
       renderMine(api, prompt, this.material.emoji);
     } else if (engine === 'flick') {

@@ -39,12 +39,14 @@ export type Rarity = 'common' | 'local' | 'unique';
  * 収穫アーケードの種別。実在の植物の性質に合わせて選ぶ(コード側に品種分岐は書かない):
  *   chain = 畑の実が緑→色づく→食べごろ と変化。食べごろだけ摘む(いちご・だいず等の畑もの)
  *   reap  = 列をなぞって刈る。一筆で1列刈るとボーナス(いね)
+ *   pluck = 熟した実を押さえて下にゆっくり引く。速すぎるとくき切れ(いちご・まゆ)
+ *   rhythm= 的の輪に流れてくる葉をタイミングよくタップ(ちゃば)
  *   catch = 木から降ってくる実をかごでキャッチ(うめ・なし等の木の実)
  *   flick = 実をはじいて岩を避けてかごに入れる(メロン等の重い実)
  *   mine  = シャベル回数制限+数字ヒントの推理掘り(さつまいも・らっかせい等の土中もの・ねんど)
  */
 export interface HarvestSpec {
-  engine: 'chain' | 'reap' | 'catch' | 'flick' | 'mine';
+  engine: 'chain' | 'reap' | 'pluck' | 'rhythm' | 'catch' | 'flick' | 'mine';
   target?: string;
   prompt: string;
   success?: string;
@@ -243,7 +245,7 @@ export const GAME_DATA: GameData = {
         care: { target: '🐝', label: 'はちが みに あつまってる! タップで はらおう!' } } },
     { id: 'm11', name: 'いちご', emoji: '🍓', origins: ['tochigi', 'ibaraki'], rarity: 'local',
       gather: { type: 'plant', verb: 'たねを まく', growSec: 300,
-        harvest: { engine: 'chain', target: '🍓', prompt: 'まっかに いろづいた いちごだけ つもう! みどりは まだ はやいよ' },
+        harvest: { engine: 'pluck', target: '🍓', prompt: 'まっかな いちごを おさえて、したに ゆーっくり ひっぱろう! はやいと くきが きれちゃう' },
         care: { target: '🐦', label: 'とりが いちごを ねらってる! タップで おいはらえ!' } } },
     { id: 'm12', name: 'ゆうがお', emoji: '🥒', origins: ['tochigi'], rarity: 'unique',
       gather: { type: 'plant', verb: 'たねを まく', growSec: 420,
@@ -261,13 +263,13 @@ export const GAME_DATA: GameData = {
         care: { target: '🐗', label: 'いのししが きた! タップで おいはらえ!' } } },
     { id: 'm15', name: 'まゆ', emoji: '🧶', origins: ['gunma'], rarity: 'unique',
       gather: { type: 'plant', verb: 'かいこを そだてる', growSec: 300, fieldLabel: 'かいこべや',
-        harvest: { engine: 'chain', target: '🧶', prompt: 'まっしろに できあがった まゆだけ あつめよう!' },
+        harvest: { engine: 'pluck', target: '🧶', prompt: 'まっしろな まゆを おさえて、ゆーっくり ひっぱって とろう! はやいと いとが きれちゃう' },
         care: { target: '🐦', label: 'とりが かいこを ねらってる! タップで おいはらえ!' } } },
 
     /* --- さいたま --- */
     { id: 'm16', name: 'ちゃば', emoji: '🍃', origins: ['saitama'], rarity: 'unique',
       gather: { type: 'plant', verb: 'ちゃのきを うえる', growSec: 300,
-        harvest: { engine: 'chain', target: '🍃', prompt: 'つみごろに そだった わかばだけ つもう!' },
+        harvest: { engine: 'rhythm', target: '🍃', prompt: 'わっかに わかばが きたら タップ! リズムよく ちゃつみ しよう' },
         care: { target: '🐛', label: 'むしが わかばに ついてる! タップで とろう!' } } },
 
     /* --- とうきょう --- */

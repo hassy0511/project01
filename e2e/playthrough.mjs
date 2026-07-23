@@ -201,16 +201,25 @@ await d.clickText('もどる');
 await d.dismissTrivia();
 log('メロン(フリック アーケード。クイズ不正解でも★1保証)');
 
-/* 12. いちご(chain=色づき判定): 青い実を触ってもペナルティは無く完走できる */
+/* 12. いちご(pluck=ひっぱり収穫): ゆっくり下に引けば くきは切れない。
+   あおい実を引いても ぷるんと もどるだけなので、どの実を引いても完走できる */
 await d.scrollAndClick('たねを まく', 2); // だいず, メロン, [いちご]
 await page.evaluate(() => window.__mqAdmin.boostAll());
 await page.waitForTimeout(1600);
 await d.scrollAndClick('しゅうかく!');
 await harvestFlow(async () => {
   const t = await d.findTexts('🍓');
-  if (t.length) await page.mouse.click(t[0].x, t[0].y);
+  if (!t.length) return;
+  const f = t[0];
+  await page.mouse.move(f.x, f.y);
+  await page.mouse.down();
+  for (let i = 1; i <= 7; i++) {
+    await page.mouse.move(f.x, f.y + i * 20);
+    await page.waitForTimeout(40);
+  }
+  await page.mouse.up();
 });
-log('いちご(色づき判定 アーケード)');
+log('いちご(つみとり アーケード)');
 
 /* 12b. にほんぜんこく画面: ロック中エリアはトースト、かんとうから地図へ戻れる */
 await d.clickText('← ちず');

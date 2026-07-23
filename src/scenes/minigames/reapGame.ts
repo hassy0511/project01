@@ -31,6 +31,12 @@ const FROG_RADIUS = 36;
 /** カエルが はねて場所を変える間隔(ms) */
 const FROG_HOP_MIN_MS = 1200;
 const FROG_HOP_MAX_MS = 2200;
+/** とり: 初回・出現間隔・飛行時間(進行で速くなる) */
+const BIRD_FIRST_MS = 4500;
+const BIRD_MIN_MS = 6000;
+const BIRD_MAX_MS = 9000;
+const BIRD_FLY_FROM_MS = 1700;
+const BIRD_FLY_TO_MS = 1100;
 
 interface Stalk {
   obj: Phaser.GameObjects.Text;
@@ -180,6 +186,105 @@ export function renderReap(api: MinigameApi, targetEmoji: string, prompt: string
   };
   for (let r = 0; r < ROWS; r++) plantRow(r, false);
 
+  /* ---------- とり(挙動の違う邪魔いきもの)
+     カエル=なぞりの通り道の「通せんぼ」/ とり=時間制限つきの「よこどり」。
+     横から飛んできて 稲を1本くわえて にげる。飛んでいるあいだに タップすれば阻止。
+     ぬすまれても 稲が1本へるだけ(コンボは切れない=成功保証) ---------- */
+  let birdTimer: Phaser.Time.TimerEvent | undefined;
+  const scheduleBird = (delayMs?: number): void => {
+    birdTimer = scene.time.delayedCall(
+      delayMs ?? BIRD_MIN_MS + Math.random() * (BIRD_MAX_MS - BIRD_MIN_MS),
+      spawnBird,
+    );
+  };
+  const spawnBird = (): void => {
+    if (session.isEnded()) return;
+    const targets: { r: number; st: Stalk }[] = [];
+    for (let r = 0; r < ROWS; r++) {
+      for (const st of rows[r] ?? []) if (st.alive && st.obj.active) targets.push({ r, st });
+    }
+    if (!targets.length) {
+      scheduleBird(1200);
+      return;
+    }
+    const { r, st } = targets[Math.floor(Math.random() * targets.length)];
+    const fromLeft = Math.random() < 0.5;
+    const bird = scene.add
+      .text(fromLeft ? -40 : GAME_W + 40, frogY(r) - 130, '🐦', { fontSize: '32px' })
+      .setOrigin(0.5);
+    bird.setFlipX(!fromLeft);
+    padHitArea(bird, 12);
+    area.add(bird);
+    floatUp(scene, fromLeft ? 70 : GAME_W - 70, frogY(r) + api.areaY - 130, UI_TEXT.arcade.birdCome, '#c04545');
+    // はばたき
+    scene.tweens.add({ targets: bird, angle: { from: -8, to: 8 }, duration: 160, yoyo: true, repeat: -1 });
+    let stopped = false;
+    const flee = (): void => {
+      scene.tweens.killTweensOf(bird);
+      bird.disableInteractive();
+      scene.tweens.add({
+        targets: bird,
+        y: bird.y - 170,
+        x: bird.x + (fromLeft ? -90 : 90),
+        alpha: 0,
+        duration: 450,
+        ease: 'Quad.easeIn',
+        onComplete: () => bird.destroy(),
+      });
+    };
+    // タップで阻止(ぬすまれる前なら いつでも)
+    bird.on('pointerdown', () => {
+      if (stopped || session.isEnded()) return;
+      stopped = true;
+      SFX.pop();
+      burst(scene, bird.x, bird.y + api.areaY, 5, [0x9ad0f5, 0xffffff]);
+      floatUp(scene, bird.x, bird.y + api.areaY - 26, UI_TEXT.arcade.birdSafe, '#3f7d2c');
+      flee();
+    });
+    scene.tweens.add({
+      targets: bird,
+      x: st.obj.x,
+      y: st.obj.y - 26,
+      duration: Phaser.Math.Linear(BIRD_FLY_FROM_MS, BIRD_FLY_TO_MS, session.progress()),
+      ease: 'Sine.easeIn',
+      onComplete: () => {
+        if (stopped) return;
+        stopped = true;
+        // ねらった稲が もう刈られていたら 手ぶらで帰る
+        if (session.isEnded() || !st.alive || !st.obj.active) {
+          flee();
+          return;
+        }
+        st.alive = false;
+        scene.tweens.killTweensOf(st.obj);
+        scene.tweens.killTweensOf(bird);
+        bird.disableInteractive();
+        SFX.bad();
+        floatUp(scene, st.obj.x, st.obj.y + api.areaY - 44, UI_TEXT.arcade.birdSteal, '#c04545');
+        scene.tweens.add({
+          targets: [bird, st.obj],
+          y: '-=190',
+          x: fromLeft ? '-=110' : '+=110',
+          alpha: 0,
+          duration: 600,
+          ease: 'Quad.easeIn',
+          onComplete: () => {
+            bird.destroy();
+            st.obj.destroy();
+          },
+        });
+        // ぬすまれて列が からになったら 生やしなおす(ひとふでボーナスは付かない)
+        if (rows[r].every((x) => !x.alive)) {
+          scene.time.delayedCall(REGROW_MS, () => {
+            if (!session.isEnded()) plantRow(r, true);
+          });
+        }
+      },
+    });
+    scheduleBird();
+  };
+  scheduleBird(BIRD_FIRST_MS);
+
   let strokeId = 0;
   let strokeActive = false;
 
@@ -272,6 +377,7 @@ export function renderReap(api: MinigameApi, targetEmoji: string, prompt: string
     scene.input.off('pointerdown', onDown);
     scene.input.off('pointermove', onMove);
     scene.input.off('pointerup', onUp);
+    birdTimer?.remove();
   };
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, cleanupInput);
 }

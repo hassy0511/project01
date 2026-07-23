@@ -211,6 +211,20 @@ export const UI_TEXT = {
     noShovels: 'シャベルが きれた… あたらしい ほりばへ!',
     shovelBonus: (n: number) => `シャベルのこり ×${n} ボーナス!`,
     careResult: (bopped: number, leaked: number) => `おいはらった: ${bopped}ひき\nたべられた: ${leaked}かい`,
+    /* つみとり(pluck) */
+    notRipe: 'まだ あおい!',
+    stemBreak: 'くきが きれた!',
+    pluckPop: 'ぷちっ!',
+    bigFruit: 'まぼろしの おおつぶ!',
+    /* リズムづみ(rhythm) */
+    rhythmPerfect: 'ばっちり!',
+    rhythmGood: 'おしい!',
+    rhythmWhiff: 'すかっ…',
+    goldLeaf: 'きんの わかば!',
+    /* いねかりの とり */
+    birdCome: 'とりが きた!',
+    birdSteal: 'とられた!',
+    birdSafe: 'セーフ!',
   },
 
   quiz: {

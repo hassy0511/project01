@@ -3,6 +3,8 @@
    engine ごとの得点レート(概算):
      chain: 食べごろ1個 8pt ×コンボ倍率(最大×4)。上手いと45秒で 700pt 超
      reap:  いね1本 3pt ×コンボ + ひとふでがり 20pt。上手いと 800pt 前後
+     pluck: ふつうの実 10pt ×コンボ、おおつぶ 40pt。ていねいに引ききると 800pt 前後
+     rhythm: ばっちり14/おしい6 ×コンボ、きんの葉 30pt。リズムを守ると 900pt 前後
      catch: 実1個 10pt ×コンボ、金の実 30pt。終盤ラッシュを取り切ると 800pt 超
      mine:  お宝 30pt ×5個/盤 + シャベル残ボーナス。1盤クリア ≈ 170pt
      fish:  小10(1タップ)/中25(2タップ)/大50(3タップ)/ぬし120(4タップ)×コンボ。★3はぬし必須
@@ -13,6 +15,8 @@
 export type ArcadeEngine =
   | 'chain'
   | 'reap'
+  | 'pluck'
+  | 'rhythm'
   | 'catch'
   | 'flick'
   | 'mine'
@@ -38,6 +42,8 @@ export interface ArcadeTuning {
 export const ARCADE_TUNING: Record<ArcadeEngine, ArcadeTuning> = {
   chain: { durationSec: 45, star2: 300, star3: 700 },
   reap: { durationSec: 45, star2: 320, star3: 750 },
+  pluck: { durationSec: 45, star2: 300, star3: 680 },
+  rhythm: { durationSec: 45, star2: 320, star3: 700 },
   catch: { durationSec: 45, star2: 320, star3: 800 },
   flick: { durationSec: 40, star2: 75, star3: 160 },
   mine: { durationSec: 50, star2: 170, star3: 330 },
