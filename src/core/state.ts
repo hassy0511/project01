@@ -45,6 +45,8 @@ export interface SaveState {
   plots: Record<string, PlotRecord>;
   infra: Record<string, InfraRecord>;
   flags: Record<string, boolean>;
+  /** さいごに ひらいていた地方(MapScene の表示対象) */
+  currentRegion: string;
 }
 
 /** localStorage 互換の最小インターフェース(テスト時はメモリ実装を注入) */
@@ -67,6 +69,7 @@ export function defaultState(): SaveState {
     plots: {},
     infra: {},
     flags: {},
+    currentRegion: 'kanto',
   };
 }
 
@@ -113,6 +116,23 @@ export function isSanchiComplete(state: SaveState, material: Material): boolean 
     全そざい(各産地×2個。infraは★2固定/それ以外は★3)と全さんぶつ・めいぶつ(×2個)を配る。
     どのステージ・レシピ・おまつりもすぐ遊べる状態にする検証用機能。
     ずかん・おまつり開催実績・トリビアは増やさない(遊んで埋める部分はそのまま残す) */
+/** これまでに あそびきった おまつりの種類数(festBest に記録が残る) */
+export function playedFestCount(state: SaveState): number {
+  return Object.keys(state.festBest).length;
+}
+
+/** 地方に いま入れるか。active が前提。unlockFests(おまつり種類数)を満たすか、
+    すでにその地方の県が開拓済み(管理者の全開放を含む)なら入れる */
+export function isRegionOpen(
+  state: SaveState,
+  region: { active: boolean; unlockFests?: number },
+  regionPrefIds: PrefectureId[],
+): boolean {
+  if (!region.active) return false;
+  if (regionPrefIds.some((p) => state.unlocked.includes(p))) return true;
+  return (region.unlockFests ?? 0) <= playedFestCount(state);
+}
+
 export function adminUnlockAll(state: SaveState, data: GameData): void {
   for (const p of data.prefectures) {
     if (p.active && !state.unlocked.includes(p.id)) state.unlocked.push(p.id);

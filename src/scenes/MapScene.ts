@@ -1,4 +1,5 @@
-/* 地図画面: 実形パスの関東地図・雲(未開拓)・開拓フロー・ぴっけの案内 */
+/* 地図画面: 実形パスの地方地図(かんとう/とうほく…)・雲(未開拓)・開拓フロー・ぴっけの案内。
+   どの地方を表示するかは scene data の regionId(なければ前回の地方)で決まる */
 import Phaser from 'phaser';
 import { setupHiDpi } from '../ui/display';
 import { GAME_DATA, prefTitle, type Prefecture } from '../data/gameData';
@@ -21,13 +22,22 @@ const TIP_ROTATE_MS = 9000;
 export class MapScene extends Phaser.Scene {
   private guideBox?: Phaser.GameObjects.Container;
   private lastGuideText = '';
+  private regionId = 'kanto';
 
   constructor() {
     super('MapScene');
   }
 
+  init(data: { regionId?: string }): void {
+    this.regionId = data.regionId ?? store.state.currentRegion ?? 'kanto';
+  }
+
   create(): void {
     setupHiDpi(this);
+    if (store.state.currentRegion !== this.regionId) {
+      store.state.currentRegion = this.regionId;
+      store.save();
+    }
     this.cameras.main.setBackgroundColor(COLORS.sky);
     this.drawSea();
     this.drawMap();
@@ -125,13 +135,13 @@ export class MapScene extends Phaser.Scene {
   }
 
   private drawMap(): void {
-    const map = getMapAsset();
+    const map = getMapAsset(this.regionId);
     const scale = Math.min((GAME_W - 20) / map.viewW, 560 / map.viewH);
     const offX = (GAME_W - map.viewW * scale) / 2;
     const offY = HEADER_H + 24;
     const root = this.add.container(offX, offY).setScale(scale);
 
-    for (const p of GAME_DATA.prefectures) {
+    for (const p of GAME_DATA.prefectures.filter((x) => x.region === this.regionId)) {
       const poly = map.polys[p.id];
       if (!poly) continue;
       const unlocked = store.state.unlocked.includes(p.id);

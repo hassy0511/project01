@@ -28,7 +28,14 @@ export type ArcadeEngine =
   | 'dashi'
   | 'mikoshi'
   | 'rokuro'
-  | 'sousen';
+  | 'sousen'
+  | 'sweep'
+  | 'nebuta'
+  | 'sansa'
+  | 'tanabata'
+  | 'kantou'
+  | 'hanagasa'
+  | 'waraji';
 
 export interface ArcadeTuning {
   /** 制限時間(秒) */
@@ -56,6 +63,13 @@ export const ARCADE_TUNING: Record<ArcadeEngine, ArcadeTuning> = {
   mikoshi: { durationSec: 60, star2: 0, star3: 0 }, // 神輿(とうきょう・かんだ)
   rokuro: { durationSec: 60, star2: 0, star3: 0 }, // ろくろと窯(とちぎ・ましこ)
   sousen: { durationSec: 60, star2: 0, star3: 0 }, // 操船(かながわ・よこはま)
+  sweep: { durationSec: 45, star2: 300, star3: 680 }, // ゆきはらい(とうほくの雪下野菜)
+  nebuta: { durationSec: 60, star2: 0, star3: 0 }, // ねぶた(あおもり)
+  sansa: { durationSec: 60, star2: 0, star3: 0 }, // さんさおどり(いわて)
+  tanabata: { durationSec: 60, star2: 0, star3: 0 }, // たなばたかざり(みやぎ)
+  kantou: { durationSec: 60, star2: 0, star3: 0 }, // かんとうまつり(あきた)
+  hanagasa: { durationSec: 60, star2: 0, star3: 0 }, // はながさおどり(やまがた)
+  waraji: { durationSec: 60, star2: 0, star3: 0 }, // おおわらじ(ふくしま)
 };
 
 /** 実行時チューニング: E2E テストは timeScale を上げて時間を短縮する(__mqAdmin.fastMode) */

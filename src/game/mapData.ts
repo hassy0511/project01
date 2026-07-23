@@ -1,6 +1,8 @@
-/* 地図パスJSON(public/assets/map-gen.json = 関東の県形、
+/* 地図パスJSON(public/assets/map-<region>.json = 各地方の県形(かんとうのみ旧名 map-gen.json)、
    public/assets/regions-gen.json = にほんぜんこくの地方シルエット)の読み込みとパース。
+   どの地方を読むかは GAME_DATA.regions の active/mapFile が決める(データ駆動)。
    パスは scripts/gen-*.mjs が出力する M/L/Z のみの単純ポリゴン */
+import { GAME_DATA } from '../data/gameData';
 
 export interface MapPoint {
   x: number;
@@ -71,25 +73,29 @@ export function parseRegionsGen(raw: RawRegionsGen): RegionMapAsset {
   return { viewW: w, viewH: h, polys, labels: raw.labels };
 }
 
-let mapAsset: MapAsset | null = null;
+/** 地方id → 県形マップ。active な地方のぶんを Boot で読み込む(mapFile はデータ駆動) */
+const prefMaps: Record<string, MapAsset> = {};
 let regionAsset: RegionMapAsset | null = null;
 
-export async function loadMapAsset(baseUrl: string): Promise<MapAsset> {
-  const [res, resRegions] = await Promise.all([
-    fetch(`${baseUrl}assets/map-gen.json`),
+export async function loadMapAsset(baseUrl: string): Promise<void> {
+  const targets = GAME_DATA.regions.filter((r) => r.active && r.mapFile);
+  const [resRegions, ...resMaps] = await Promise.all([
     fetch(`${baseUrl}assets/regions-gen.json`),
+    ...targets.map((r) => fetch(`${baseUrl}assets/${r.mapFile}`)),
   ]);
-  if (!res.ok) throw new Error(`map-gen.json load failed: ${res.status}`);
   if (!resRegions.ok) throw new Error(`regions-gen.json load failed: ${resRegions.status}`);
-  mapAsset = parseMapGen((await res.json()) as RawMapGen);
   regionAsset = parseRegionsGen((await resRegions.json()) as RawRegionsGen);
-  return mapAsset;
+  for (let i = 0; i < targets.length; i++) {
+    if (!resMaps[i].ok) throw new Error(`${targets[i].mapFile} load failed: ${resMaps[i].status}`);
+    prefMaps[targets[i].id] = parseMapGen((await resMaps[i].json()) as RawMapGen);
+  }
 }
 
-/** Boot で読み込み済みの地図データを取得(未ロードなら例外) */
-export function getMapAsset(): MapAsset {
-  if (!mapAsset) throw new Error('map asset not loaded');
-  return mapAsset;
+/** Boot で読み込み済みの県形マップを取得(未ロードなら例外) */
+export function getMapAsset(regionId = 'kanto'): MapAsset {
+  const m = prefMaps[regionId];
+  if (!m) throw new Error(`map asset not loaded: ${regionId}`);
+  return m;
 }
 
 export function getRegionAsset(): RegionMapAsset {

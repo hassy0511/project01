@@ -1,7 +1,7 @@
 /* クイズ出題UI(モーダル版=開拓・レシピ探索/埋め込み版=セッション内)。
    まちがえても すすめる(せいかいを おしえる)。選択肢は毎回シャッフル */
 import Phaser from 'phaser';
-import type { Quiz } from '../data/gameData';
+import { findPref, GAME_DATA, type Quiz } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';
 import { shuffledChoiceOrder } from '../core/quiz';
 import { SFX } from '../audio/sfx';
@@ -21,8 +21,9 @@ export function buildQuizVisual(
   quiz: Quiz,
 ): { container: Phaser.GameObjects.Container; height: number } | null {
   if (quiz.type !== 'shape' && quiz.type !== 'position') return null;
-  const map = getMapAsset();
   const target = quiz.tags[0];
+  // 形・位置クイズは 対象県の地方マップで出す(かんとう以外にも対応)
+  const map = getMapAsset(findPref(GAME_DATA, target)?.region ?? 'kanto');
   const c = scene.add.container(0, 0);
 
   if (quiz.type === 'shape') {

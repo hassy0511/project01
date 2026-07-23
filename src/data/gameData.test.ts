@@ -180,19 +180,22 @@ describe('地図アセット(public/assets/regions-gen.json)', () => {
   });
 });
 
-describe('地図アセット(public/assets/map-gen.json)', () => {
-  it('全県のパス・ラベルがあり、アクティブ県には形クイズ用 bbox がある', () => {
-    const mapGen = JSON.parse(readFileSync('public/assets/map-gen.json', 'utf8')) as {
-      viewBox: string;
-      paths: Record<string, string>;
-      labels: Record<string, [number, number]>;
-      boxes: Record<string, string>;
-    };
-    expect(mapGen.viewBox).toBeTruthy();
-    for (const p of D.prefectures) {
-      expect(mapGen.paths[p.id], `path: ${p.id}`).toBeTruthy();
-      expect(mapGen.labels[p.id], `label: ${p.id}`).toBeTruthy();
-      if (p.active) expect(mapGen.boxes[p.id], `box: ${p.id}`).toBeTruthy();
+describe('地図アセット(地方ごとの県形マップ)', () => {
+  it('アクティブ地方に mapFile があり、その地方の全県のパス・ラベル・bbox が揃っている', () => {
+    for (const region of D.regions.filter((r) => r.active)) {
+      expect(region.mapFile, `mapFile: ${region.id}`).toBeTruthy();
+      const mapGen = JSON.parse(readFileSync(`public/assets/${region.mapFile}`, 'utf8')) as {
+        viewBox: string;
+        paths: Record<string, string>;
+        labels: Record<string, [number, number]>;
+        boxes: Record<string, string>;
+      };
+      expect(mapGen.viewBox, region.id).toBeTruthy();
+      for (const p of D.prefectures.filter((x) => x.region === region.id)) {
+        expect(mapGen.paths[p.id], `path: ${p.id}`).toBeTruthy();
+        expect(mapGen.labels[p.id], `label: ${p.id}`).toBeTruthy();
+        if (p.active) expect(mapGen.boxes[p.id], `box: ${p.id}`).toBeTruthy();
+      }
     }
   });
 });

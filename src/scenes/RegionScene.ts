@@ -6,6 +6,7 @@ import Phaser from 'phaser';
 import { setupHiDpi } from '../ui/display';
 import { GAME_DATA, type Region } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';
+import { isRegionOpen, playedFestCount } from '../core/state';
 import { store } from '../game/store';
 import { getRegionAsset } from '../game/mapData';
 import { SFX } from '../audio/sfx';
@@ -143,7 +144,8 @@ export class RegionScene extends Phaser.Scene {
       const lx = lp[0] + ox;
       const ly = lp[1] + oy;
 
-      if (!region.active) {
+      const open = this.regionOpen(region);
+      if (!open) {
         // じゅんびちゅうの もやもやぐも(地方の上に。ラベルとは別位置)
         const cloud = this.add.container(lp[0], lp[1] - 6).setAlpha(0.85).setScale(0.9 / scale);
         const cg = this.add.graphics();
@@ -169,9 +171,9 @@ export class RegionScene extends Phaser.Scene {
       const name = this.add
         .text(lx, ly, region.name, {
           fontFamily: FONT,
-          fontSize: `${(region.name.length > 6 ? 10 : region.active ? 15 : 12) / scale}px`,
-          color: region.active ? TEXT_COLORS.main : TEXT_COLORS.sub,
-          fontStyle: region.active ? 'bold' : 'normal',
+          fontSize: `${(region.name.length > 6 ? 10 : open ? 15 : 12) / scale}px`,
+          color: open ? TEXT_COLORS.main : TEXT_COLORS.sub,
+          fontStyle: open ? 'bold' : 'normal',
           stroke: '#ffffff',
           strokeThickness: 3.5 / scale,
         })
@@ -180,7 +182,22 @@ export class RegionScene extends Phaser.Scene {
       name.on('pointerup', () => this.onRegionTap(region));
       root.add(name);
 
-      if (region.active) {
+      // アクティブだが未解放: あと何回で はれるかを見せる(めあて表示)
+      if (region.active && !open && region.unlockFests) {
+        const hint = this.add
+          .text(lx, ly + 14 / scale, UI_TEXT.region.almostOpen(region.unlockFests), {
+            fontFamily: FONT,
+            fontSize: `${10 / scale}px`,
+            color: TEXT_COLORS.sub,
+            fontStyle: 'bold',
+            stroke: '#ffffff',
+            strokeThickness: 3 / scale,
+          })
+          .setOrigin(0.5);
+        root.add(hint);
+      }
+
+      if (open) {
         const sub = this.add
           .text(lx, ly + 15 / scale, this.regionProgress(region), {
             fontFamily: FONT,
@@ -216,12 +233,21 @@ export class RegionScene extends Phaser.Scene {
     }
   }
 
+  private regionOpen(region: Region): boolean {
+    const prefIds = GAME_DATA.prefectures.filter((p) => p.region === region.id).map((p) => p.id);
+    return isRegionOpen(store.state, region, prefIds);
+  }
+
   private onRegionTap(region: Region): void {
     if (!region.active) {
       showToast(this, UI_TEXT.region.lockedToast);
       return;
     }
+    if (!this.regionOpen(region)) {
+      showToast(this, UI_TEXT.region.unlockHint(region.unlockFests ?? 0, playedFestCount(store.state)));
+      return;
+    }
     SFX.good();
-    this.scene.start('MapScene');
+    this.scene.start('MapScene', { regionId: region.id });
   }
 }

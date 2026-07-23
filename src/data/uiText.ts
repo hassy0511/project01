@@ -36,6 +36,9 @@ export const UI_TEXT = {
     prog: (got: number, total: number) => `かいたく ${got}/${total}`,
     festCount: (n: number) => `🏮×${n}`,
     go: 'いってみよう!',
+    unlockHint: (need: number, have: number) =>
+      `おまつりを ${need}かい ひらくと くもが はれるよ!(いま ${have}かい)`,
+    almostOpen: (need: number) => `🏮×${need}で はれる!`,
   },
 
   kaitaku: {
