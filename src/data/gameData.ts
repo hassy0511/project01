@@ -143,7 +143,7 @@ export interface Recipe {
   festGame?: FestGameKind;
 }
 
-export type FestGameKind = 'yatai' | 'daruma' | 'hanabi';
+export type FestGameKind = 'yatai' | 'daruma' | 'hanabi' | 'dashi' | 'mikoshi' | 'rokuro' | 'sousen';
 
 export interface Trivia {
   target: MaterialId | RecipeId;
@@ -333,7 +333,7 @@ export const GAME_DATA: GameData = {
     { id: 'r15', name: 'ましこやき', emoji: '🍵', tier: 3, type: 'kougei', pref: 'tochigi',
       ingredients: [{ ref: 'm07', count: 2, origin: 'tochigi' }, { ref: 'm01', count: 1 }] },
     { id: 'rf3', name: 'ましこ とうきいち', emoji: '🎪', tier: 4, type: 'matsuri', pref: 'tochigi',
-      implemented: true,
+      implemented: true, festGame: 'rokuro',
       ingredients: [{ ref: 'r15', count: 1 }, { ref: 'r13', count: 1 }],
       menu: ['r15', 'r12', 'r13'] },
 
@@ -357,7 +357,7 @@ export const GAME_DATA: GameData = {
     { id: 'r21', name: 'くさかせんべい', emoji: '🍘', tier: 3, type: 'gattai', pref: 'saitama',
       ingredients: [{ ref: 'm02', count: 2 }, { ref: 'r07', count: 1 }] },
     { id: 'rf5', name: 'かわごえまつり', emoji: '🎐', tier: 4, type: 'matsuri', pref: 'saitama',
-      implemented: true,
+      implemented: true, festGame: 'dashi',
       ingredients: [{ ref: 'r20', count: 1 }, { ref: 'r21', count: 1 }],
       menu: ['r19', 'r20', 'r21'] },
 
@@ -367,7 +367,7 @@ export const GAME_DATA: GameData = {
     { id: 'r23', name: 'こまつなの おひたし', emoji: '🥗', tier: 3, type: 'gattai', pref: 'tokyo',
       ingredients: [{ ref: 'm17', count: 2 }, { ref: 'r07', count: 1 }] },
     { id: 'rf6', name: 'かんだまつり', emoji: '🎌', tier: 4, type: 'matsuri', pref: 'tokyo',
-      implemented: true,
+      implemented: true, festGame: 'mikoshi',
       ingredients: [{ ref: 'r22', count: 1 }, { ref: 'r23', count: 1 }],
       menu: ['r22', 'r23', 'm18'] },
 
@@ -377,7 +377,7 @@ export const GAME_DATA: GameData = {
     { id: 'r25', name: 'ブランドみかん', emoji: '🏵️', tier: 3, type: 'syukaku', pref: 'kanagawa',
       ingredients: [{ ref: 'm19', count: 1, quality: 3 }] },
     { id: 'rf7', name: 'よこはま みなとまつり', emoji: '🎇', tier: 4, type: 'matsuri', pref: 'kanagawa',
-      implemented: true,
+      implemented: true, festGame: 'sousen',
       ingredients: [{ ref: 'r24', count: 1 }, { ref: 'r25', count: 1 }],
       menu: ['r24', 'r25', 'm19'] },
   ],

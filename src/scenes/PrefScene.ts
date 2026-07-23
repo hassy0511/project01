@@ -483,13 +483,16 @@ export class PrefScene extends Phaser.Scene {
   private startFestival(r: Recipe): void {
     const modal = new Modal(this, r.name, true);
     modal.add(this.add.text(0, 0, r.emoji, { fontSize: '54px' }).setOrigin(0.5), 60);
-    const intro =
-      r.festGame === 'daruma'
-        ? UI_TEXT.fest.introDaruma
-        : r.festGame === 'hanabi'
-          ? UI_TEXT.fest.introHanabi
-          : UI_TEXT.fest.introBody;
-    modal.addText(intro, 15);
+    const INTROS: Record<string, string> = {
+      yatai: UI_TEXT.fest.introBody,
+      daruma: UI_TEXT.fest.introDaruma,
+      hanabi: UI_TEXT.fest.introHanabi,
+      dashi: UI_TEXT.fest.introDashi,
+      mikoshi: UI_TEXT.fest.introMikoshi,
+      rokuro: UI_TEXT.fest.introRokuro,
+      sousen: UI_TEXT.fest.introSousen,
+    };
+    modal.addText(INTROS[r.festGame ?? 'yatai'] ?? UI_TEXT.fest.introBody, 15);
     const best = store.state.festBest[r.id];
     if (best) modal.addText(UI_TEXT.fest.bestScore(best), 14, TEXT_COLORS.accent);
     modal.addButton(UI_TEXT.fest.startBtn, COLORS.orange, () => {

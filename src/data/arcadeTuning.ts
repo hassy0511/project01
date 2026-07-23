@@ -20,7 +20,11 @@ export type ArcadeEngine =
   | 'care'
   | 'fest'
   | 'daruma'
-  | 'hanabi';
+  | 'hanabi'
+  | 'dashi'
+  | 'mikoshi'
+  | 'rokuro'
+  | 'sousen';
 
 export interface ArcadeTuning {
   /** 制限時間(秒) */
@@ -42,6 +46,10 @@ export const ARCADE_TUNING: Record<ArcadeEngine, ArcadeTuning> = {
   fest: { durationSec: 60, star2: 0, star3: 0 }, // おまつりは★なし(さいこうスコア制)。集大成なので最長
   daruma: { durationSec: 60, star2: 0, star3: 0 }, // だるまいち(ぐんま)
   hanabi: { durationSec: 60, star2: 0, star3: 0 }, // はなび(ちば)
+  dashi: { durationSec: 60, star2: 0, star3: 0 }, // 山車引き(さいたま・かわごえ)
+  mikoshi: { durationSec: 60, star2: 0, star3: 0 }, // 神輿(とうきょう・かんだ)
+  rokuro: { durationSec: 60, star2: 0, star3: 0 }, // ろくろと窯(とちぎ・ましこ)
+  sousen: { durationSec: 60, star2: 0, star3: 0 }, // 操船(かながわ・よこはま)
 };
 
 /** 実行時チューニング: E2E テストは timeScale を上げて時間を短縮する(__mqAdmin.fastMode) */

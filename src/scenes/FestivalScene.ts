@@ -17,6 +17,10 @@ import { confetti, firework, screenFlash } from '../ui/effects';
 import { renderFestival, type StallItem } from './minigames/festivalGame';
 import { renderDaruma } from './minigames/darumaGame';
 import { renderHanabi } from './minigames/hanabiGame';
+import { renderDashi } from './minigames/dashiGame';
+import { renderMikoshi } from './minigames/mikoshiGame';
+import { renderRokuro } from './minigames/rokuroGame';
+import { renderSousen } from './minigames/sousenGame';
 import type { MinigameApi } from './minigames/types';
 
 const TOP_H = 48;
@@ -77,13 +81,28 @@ export class FestivalScene extends Phaser.Scene {
 
     this.area = this.add.container(0, GAME_AREA_Y);
     // おまつりごとのゲーム(データ駆動)。全県ユニーク化の方針は docs/ACTION_DESIGN.md
-    const kind = r.festGame ?? 'yatai';
-    if (kind === 'daruma') {
-      renderDaruma(this.minigameApi(), UI_TEXT.fest.darumaPrompt);
-    } else if (kind === 'hanabi') {
-      renderHanabi(this.minigameApi(), UI_TEXT.fest.hanabiPrompt);
-    } else {
-      renderFestival(this.minigameApi(), UI_TEXT.fest.prompt, this.buildMenu());
+    const api = this.minigameApi();
+    switch (r.festGame ?? 'yatai') {
+      case 'daruma':
+        renderDaruma(api, UI_TEXT.fest.darumaPrompt);
+        break;
+      case 'hanabi':
+        renderHanabi(api, UI_TEXT.fest.hanabiPrompt);
+        break;
+      case 'dashi':
+        renderDashi(api, UI_TEXT.fest.dashiPrompt);
+        break;
+      case 'mikoshi':
+        renderMikoshi(api, UI_TEXT.fest.mikoshiPrompt);
+        break;
+      case 'rokuro':
+        renderRokuro(api, UI_TEXT.fest.rokuroPrompt);
+        break;
+      case 'sousen':
+        renderSousen(api, UI_TEXT.fest.sousenPrompt);
+        break;
+      default:
+        renderFestival(api, UI_TEXT.fest.prompt, this.buildMenu());
     }
   }
 
