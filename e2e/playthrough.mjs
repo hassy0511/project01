@@ -280,6 +280,41 @@ await d.clickText('← ちず');
 await page.waitForTimeout(600);
 log('ぐんま開拓(新関東エリア)');
 
+/* 12e. とうほく: おまつり3回までは くもの中(トースト)。全開放後は入れて、
+   あおもりの ゆきしたにんじん(sweep=こすって雪はらい)を収穫できる */
+await d.clickText('🗾 にっぽん');
+await d.waitText('🗾 にっぽん ぜんこく');
+await d.clickText('とうほく'); // まだ festBest は 1種 → 解放されずトースト
+await d.waitText('🗾 にっぽん ぜんこく');
+await page.evaluate(() => window.__mqAdmin.unlockAll());
+await page.waitForTimeout(400);
+await d.clickText('とうほく'); // 開拓済みの県ができたので入れる
+await page.waitForTimeout(700);
+await d.waitText('あおもり'); // とうほくの地図に到着
+await page.screenshot({ path: `${SHOTS}/tohoku-map.png` });
+const aomoriLabel = (await d.findTexts('あおもり'))[0];
+await page.mouse.click(aomoriLabel.x, aomoriLabel.y);
+await d.waitText('くみあげる'); // あおもりにも いど(みず)がある
+await d.scrollAndClick('たねを まく'); // ゆきしたにんじん
+await page.evaluate(() => window.__mqAdmin.boostAll());
+await page.waitForTimeout(1600);
+await d.scrollAndClick('しゅうかく!');
+await harvestFlow(async () => {
+  // 雪の山を こする(1れつめの あたりを 左右に なぞる)→ でてきた🥕を タップ
+  await page.mouse.move(70, 245);
+  await page.mouse.down();
+  for (let i = 0; i < 10; i++) {
+    await page.mouse.move(70 + (i % 2) * 70, 240 + (i % 3) * 6);
+    await page.waitForTimeout(35);
+  }
+  await page.mouse.up();
+  const carrots = await d.findTexts('🥕');
+  for (const c of carrots.slice(0, 2)) await page.mouse.click(c.x, c.y);
+});
+log('とうほく解放 → あおもり ゆきしたにんじん(ゆきはらい=sweep アーケード)');
+await d.clickText('← ちず');
+await page.waitForTimeout(600);
+
 /* 13. セーブ検証 */
 const save = await page.evaluate(() => JSON.parse(localStorage.getItem('meisanquest-save-v1')));
 const assert = (cond, msg) => {
@@ -290,6 +325,8 @@ assert(save.unlocked.includes('gunma'), 'gunma unlocked (新関東エリア)');
 assert(save.fest.includes('rf1'), 'rf1 held');
 assert(save.festBest?.rf1 >= 12, 'festival best score recorded');
 assert(Array.isArray(save.quizRecent) && save.quizRecent.length > 0, 'quiz rotation history recorded');
+assert(save.zukanMat.m22?.aomori >= 1, 'yukishita ninjin swept (tohoku)');
+assert(save.currentRegion === 'tohoku', 'currentRegion tracks last visited region');
 assert(save.zukanProd.r03 && save.zukanProd.r05, 'crafted r03/r05');
 assert(save.zukanProd.r05.jimoto === true, 'r05 jimoto medal');
 assert(save.zukanMat.m02?.ibaraki >= 1, 'kome harvested (not infra)');

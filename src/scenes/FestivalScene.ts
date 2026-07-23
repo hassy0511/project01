@@ -22,6 +22,12 @@ import { renderDashi } from './minigames/dashiGame';
 import { renderMikoshi } from './minigames/mikoshiGame';
 import { renderRokuro } from './minigames/rokuroGame';
 import { renderSousen } from './minigames/sousenGame';
+import { renderNebuta } from './minigames/nebutaGame';
+import { renderSansa } from './minigames/sansaGame';
+import { renderTanabata } from './minigames/tanabataGame';
+import { renderKantou } from './minigames/kantouGame';
+import { renderHanagasa } from './minigames/hanagasaGame';
+import { renderWaraji } from './minigames/warajiGame';
 import type { MinigameApi } from './minigames/types';
 
 const TOP_H = 48;
@@ -105,6 +111,24 @@ export class FestivalScene extends Phaser.Scene {
         break;
       case 'sousen':
         renderSousen(api, UI_TEXT.fest.sousenPrompt);
+        break;
+      case 'nebuta':
+        renderNebuta(api, UI_TEXT.fest.nebutaPrompt);
+        break;
+      case 'sansa':
+        renderSansa(api, UI_TEXT.fest.sansaPrompt);
+        break;
+      case 'tanabata':
+        renderTanabata(api, UI_TEXT.fest.tanabataPrompt);
+        break;
+      case 'kantou':
+        renderKantou(api, UI_TEXT.fest.kantouPrompt);
+        break;
+      case 'hanagasa':
+        renderHanagasa(api, UI_TEXT.fest.hanagasaPrompt);
+        break;
+      case 'waraji':
+        renderWaraji(api, UI_TEXT.fest.warajiPrompt);
         break;
       default:
         renderFestival(api, UI_TEXT.fest.prompt, this.buildMenu());

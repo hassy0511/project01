@@ -23,6 +23,7 @@ import { renderChain } from './minigames/chainGame';
 import { renderReap } from './minigames/reapGame';
 import { renderPluck } from './minigames/pluckGame';
 import { renderRhythm } from './minigames/rhythmGame';
+import { renderSweep } from './minigames/sweepGame';
 import { renderMine } from './minigames/mineGame';
 import { renderFish } from './minigames/fishGame';
 import { renderFlick } from './minigames/flickGame';
@@ -164,6 +165,8 @@ export class SessionScene extends Phaser.Scene {
       renderPluck(api, targetEmoji, prompt);
     } else if (engine === 'rhythm') {
       renderRhythm(api, targetEmoji, prompt);
+    } else if (engine === 'sweep') {
+      renderSweep(api, targetEmoji, prompt);
     } else if (engine === 'mine') {
       renderMine(api, prompt, this.material.emoji);
     } else if (engine === 'flick') {
