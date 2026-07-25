@@ -99,23 +99,23 @@ describe('isJimoto / applyCraft', () => {
   });
 
   it('材料の産物(レシピref)は じもと判定から除外される', () => {
-    // なっとうていしょく: なっとう(いばらき産物) + こめ + しょうゆ(ちば産物)
-    const used = [item('r01', 'ibaraki', null), item('m02', 'ibaraki', 2), item('r07', 'chiba', null)];
-    expect(isJimoto(used, recipe('r04'))).toBe(true);
+    // せりなべ: せり(みやぎ産そざい)×2 + みそ(ちば産物) → そざいが全部みやぎ産なら じもと
+    const used = [item('m39', 'miyagi', 2), item('m39', 'miyagi', 2), item('r08', 'chiba', null)];
+    expect(isJimoto(used, recipe('r54'))).toBe(true);
   });
 
-  it('県またぎ: ちば産しょうゆで なっとうていしょく 完成 → ずかん登録・しょうゆ消費', () => {
+  it('県またぎ: ちば産みそで せりなべ 完成 → ずかん登録・みそ消費', () => {
     const state = defaultState();
     state.inv = [
-      item('r01', 'ibaraki', null),
-      item('m02', 'ibaraki', 2),
-      item('r07', 'chiba', null),
+      item('m39', 'miyagi', 2),
+      item('m39', 'miyagi', 2),
+      item('r08', 'chiba', null),
     ];
-    expect(craftable(state.inv, recipe('r04'))).toBe(true);
-    applyCraft(state, recipe('r04'));
-    expect(state.zukanProd['r04']).toBeDefined();
-    expect(state.inv.some((it) => it.ref === 'r07')).toBe(false);
-    expect(state.inv.some((it) => it.ref === 'r04' && it.origin === 'ibaraki')).toBe(true);
+    expect(craftable(state.inv, recipe('r54'))).toBe(true);
+    applyCraft(state, recipe('r54'));
+    expect(state.zukanProd['r54']).toBeDefined();
+    expect(state.inv.some((it) => it.ref === 'r08')).toBe(false);
+    expect(state.inv.some((it) => it.ref === 'r54' && it.origin === 'miyagi')).toBe(true);
   });
 
   it('じもとメダルは一度取れば維持される(2回目が他県産でも)', () => {

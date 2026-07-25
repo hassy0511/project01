@@ -54,18 +54,17 @@ await d.waitText('かいたく せいこう!');
 await d.clickText('いばらきけんに いく!');
 log('いばらき開拓(1問制)');
 
-/* 2. こめ(reap): いねを うえる → ⏩ → チェーンなぞり。米はもう infra ストックではない */
-await d.waitText('いねを うえる');
-await d.clickText('いねを うえる');
+/* 2. さつまいも(mine=すいり掘り): たねいもを うえる → ⏩ → 数字ヒントで掘る */
+await d.waitText('たねいもを うえる');
+await d.clickText('たねいもを うえる');
 await page.evaluate(() => window.__mqAdmin.boostAll());
 await page.waitForTimeout(1600);
 await d.clickText('しゅうかく!');
 await harvestFlow(async () => {
-  // 熟した🌾をなぞる(タップでも収穫できる)
-  const t = await d.findTexts('🌾');
-  if (t.length) await page.mouse.click(t[0].x, t[0].y);
+  // 上の列を順にタップして掘り進める
+  for (let col = 0; col < 5; col++) await page.mouse.click(52 + col * 92 + 43, 268);
 });
-log('こめ(いねかり=reap アーケード)');
+log('さつまいも(すいり掘り アーケード)');
 
 /* 3. うめ(catch): 落ちてくる実をかごでキャッチ */
 await d.scrollAndClick('なえを うえる');
@@ -127,7 +126,7 @@ await d.answerQuiz();
 await d.waitText('もどる');
 await d.clickText('もどる');
 await d.dismissTrivia();
-await d.scrollAndClick('レシピを さがす', 3); // r01,r02,r04,[r05]
+await d.scrollAndClick('レシピを さがす', 2); // r01,r02,[r05](r04 は バランス調整で廃止)
 await d.clickText('クイズに ちょうせん!');
 await d.answerQuiz();
 await d.answerQuiz();
@@ -165,6 +164,16 @@ await d.clickText('ちょうせん する!');
 await d.answerQuiz();
 await d.waitText('かいたく せいこう!');
 await d.clickText('ちばけんに いく!');
+/* ちばの こめ(reap=いねかり): いばらきから 米の産地が 移ったので ここで検証 */
+await d.scrollAndClick('いねを うえる');
+await page.evaluate(() => window.__mqAdmin.boostAll());
+await page.waitForTimeout(1600);
+await d.scrollAndClick('しゅうかく!');
+await harvestFlow(async () => {
+  const t = await d.findTexts('🌾');
+  if (t.length) await page.mouse.click(t[0].x, t[0].y);
+});
+log('ちばの こめ(いねかり=reap アーケード)');
 await d.scrollAndClick('りょうに でる');
 await harvestFlow(async () => {
   const t = await d.findTexts('🐟');
@@ -177,7 +186,7 @@ await d.clickText('← ちず');
 await page.waitForTimeout(600);
 await page.mouse.click(10 + 276 * 1.263, 80 + 155 * 1.263); // いばらき(開拓済み)
 await d.waitText('くみあげる');
-await d.scrollAndClick('たねを まく', 1); // だいず, [メロン], いちご
+await d.scrollAndClick('たねを まく'); // いばらきで たねを まくのは メロンだけ
 await page.evaluate(() => window.__mqAdmin.halfGrow());
 await page.waitForTimeout(1600);
 await d.scrollAndClick('おせわに いく!');
@@ -201,25 +210,7 @@ await d.clickText('もどる');
 await d.dismissTrivia();
 log('メロン(フリック アーケード。クイズ不正解でも★1保証)');
 
-/* 12. いちご(pluck=ひっぱり収穫): ゆっくり下に引けば くきは切れない。
-   あおい実を引いても ぷるんと もどるだけなので、どの実を引いても完走できる */
-await d.scrollAndClick('たねを まく', 2); // だいず, メロン, [いちご]
-await page.evaluate(() => window.__mqAdmin.boostAll());
-await page.waitForTimeout(1600);
-await d.scrollAndClick('しゅうかく!');
-await harvestFlow(async () => {
-  const t = await d.findTexts('🍓');
-  if (!t.length) return;
-  const f = t[0];
-  await page.mouse.move(f.x, f.y);
-  await page.mouse.down();
-  for (let i = 1; i <= 7; i++) {
-    await page.mouse.move(f.x, f.y + i * 20);
-    await page.waitForTimeout(40);
-  }
-  await page.mouse.up();
-});
-log('いちご(つみとり アーケード)');
+
 
 /* 12b. にほんぜんこく画面: ロック中エリアはトースト、かんとうから地図へ戻れる */
 await d.clickText('← ちず');
@@ -276,6 +267,25 @@ await d.waitText('かいたく せいこう!');
 await d.clickText('ぐんまけんに いく!');
 await d.waitText('たねいもを うえる'); // ぐんまの こんにゃくいも(みずの いどは めいすいの さとだけ)
 await page.screenshot({ path: `${SHOTS}/gunma-pref.png` });
+/* ぐんまの まゆ(pluck=ひっぱり収穫): ゆっくり引けば いとは切れない。
+   青いものを引いても ぷるんと もどるだけなので、どれを引いても完走できる */
+await d.scrollAndClick('かいこを そだてる');
+await page.evaluate(() => window.__mqAdmin.boostAll());
+await page.waitForTimeout(1600);
+await d.scrollAndClick('しゅうかく!');
+await harvestFlow(async () => {
+  const t = await d.findTexts('🧶');
+  if (!t.length) return;
+  const f = t[0];
+  await page.mouse.move(f.x, f.y);
+  await page.mouse.down();
+  for (let i = 1; i <= 7; i++) {
+    await page.mouse.move(f.x, f.y + i * 20);
+    await page.waitForTimeout(40);
+  }
+  await page.mouse.up();
+});
+log('ぐんまの まゆ(つみとり アーケード)');
 await d.clickText('← ちず');
 await page.waitForTimeout(600);
 log('ぐんま開拓(新関東エリア)');
@@ -329,13 +339,14 @@ assert(save.zukanMat.m22?.aomori >= 1, 'yukishita ninjin swept (tohoku)');
 assert(save.currentRegion === 'tohoku', 'currentRegion tracks last visited region');
 assert(save.zukanProd.r03 && save.zukanProd.r05, 'crafted r03/r05');
 assert(save.zukanProd.r05.jimoto === true, 'r05 jimoto medal');
-assert(save.zukanMat.m02?.ibaraki >= 1, 'kome harvested (not infra)');
+assert(save.zukanMat.m04?.ibaraki >= 1, 'satsumaimo mined (ibaraki)');
+assert(save.zukanMat.m02?.chiba >= 1, 'kome harvested (chiba: 米の産地が移った)');
 assert(save.zukanMat.m06?.ibaraki >= 1, 'ume harvested');
 assert(save.zukanMat.m07?.ibaraki >= 1, 'clay mined');
 assert(save.zukanMat.m01?.ibaraki === 2, 'mizu ★2 (infra)');
 assert(save.zukanMat.m09?.chiba >= 1, 'iwashi fished');
 assert(save.zukanMat.m05?.ibaraki >= 1, 'melon obtained');
-assert(save.zukanMat.m11?.ibaraki >= 1, 'strawberry obtained');
+assert(save.zukanMat.m15?.gunma >= 1, 'mayu plucked (gunma)');
 assert(!save.plots['ibaraki|m05'], 'melon plot cleared');
 log('セーブ検証 OK');
 

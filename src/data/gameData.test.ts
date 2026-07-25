@@ -180,15 +180,17 @@ describe('地図アセット(public/assets/regions-gen.json)', () => {
   });
 });
 
-/* 県ごとの「あそべる量」の下限。県を増やすときに ここを下回らせない
-   (先に作った県だけ豪華で、あとの県が すかすか になるのを防ぐ)。
-   ねらいは「数のバランス」だけ。中身は県ごとに ちがってよい ―
+/* 県ごとの あそべる量は「全県 ぴったり おなじ数」に そろえる。
+   少なすぎる県(すかすか)も、多すぎる県(先に作った いばらき)も どちらも だめ。
+   ねらいは 数のバランスだけ。中身は 県ごとに ちがってよい ―
    むしろ そざいの かぶりは 県の個性を うすめるので、
-   「その県だけの そざい」が1つ以上あることも 下限にする。
-   みず(いど)のような 共通そざいを 全県に置くことは しない(地方に1つの めいすいの さと) */
-const FLOOR = { materials: 5, tier2: 2, tier3: 2, engines: 4, uniqueMaterials: 1 };
+   「その県だけの そざい」が1つ以上あることも 条件にする。
+   みず(いど)のような 共通そざいを 全県に置くことは しない(地方に1つの めいすいの さと)。
+   ここを増やすときは 全県ぶん 足すこと(docs/ADD_PREF_CHECKLIST.md) */
+const QUOTA = { materials: 5, tier2: 3, tier3: 2, fest: 1 };
+const FLOOR = { engines: 4, uniqueMaterials: 1 };
 
-describe('県ごとの ボリューム下限(バランス)', () => {
+describe('県ごとの ボリューム(全県そろえる)', () => {
   const activePrefs = D.prefectures.filter((p) => p.active);
   /** その県で あそべる アーケード種別(infra=いど収集ふくむ) */
   const enginesOf = (prefId: string): Set<string> => {
@@ -201,13 +203,13 @@ describe('県ごとの ボリューム下限(バランス)', () => {
     return set;
   };
 
-  it.each(activePrefs.map((p) => [p.name, p.id]))('%s: そざい/レシピ/あそびが下限を満たす', (_name, prefId) => {
+  it.each(activePrefs.map((p) => [p.name, p.id]))('%s: そざい/レシピの数が 全県そろっている', (_name, prefId) => {
     const mats = D.materials.filter((m) => m.origins.includes(prefId));
     const recipes = D.recipes.filter((r) => r.pref === prefId);
-    expect(mats.length, 'そざい数').toBeGreaterThanOrEqual(FLOOR.materials);
-    expect(recipes.filter((r) => r.tier === 2).length, 'tier2 レシピ数').toBeGreaterThanOrEqual(FLOOR.tier2);
-    expect(recipes.filter((r) => r.tier === 3).length, 'tier3 レシピ数').toBeGreaterThanOrEqual(FLOOR.tier3);
-    expect(recipes.filter((r) => r.tier === 4).length, 'おまつり数').toBe(1);
+    expect(mats.length, `そざい数(いま: ${mats.map((m) => m.name).join('・')})`).toBe(QUOTA.materials);
+    expect(recipes.filter((r) => r.tier === 2).length, 'tier2 レシピ数').toBe(QUOTA.tier2);
+    expect(recipes.filter((r) => r.tier === 3).length, 'tier3 レシピ数').toBe(QUOTA.tier3);
+    expect(recipes.filter((r) => r.tier === 4).length, 'おまつり数').toBe(QUOTA.fest);
     expect(enginesOf(prefId).size, 'あそびの種類').toBeGreaterThanOrEqual(FLOOR.engines);
     // その県だけの そざい(= 県の個性)
     const only = mats.filter((m) => m.origins.length === 1);
