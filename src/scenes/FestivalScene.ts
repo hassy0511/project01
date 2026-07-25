@@ -45,6 +45,15 @@ import { renderDanjiri } from './minigames/danjiriGame';
 import { renderFukuotoko } from './minigames/fukuotokoGame';
 import { renderYamayaki } from './minigames/yamayakiGame';
 import { renderOugi } from './minigames/ougiGame';
+import { renderShanshan } from './minigames/shanshanGame';
+import { renderKagura } from './minigames/kaguraGame';
+import { renderEyou } from './minigames/eyouGame';
+import { renderBetcha } from './minigames/betchaGame';
+import { renderKingyo } from './minigames/kingyoGame';
+import { renderAwaodori } from './minigames/awaodoriGame';
+import { renderChousa } from './minigames/chousaGame';
+import { renderUshioni } from './minigames/ushioniGame';
+import { renderYosakoi } from './minigames/yosakoiGame';
 import type { MinigameApi } from './minigames/types';
 
 const TOP_H = 48;
@@ -197,6 +206,33 @@ export class FestivalScene extends Phaser.Scene {
         break;
       case 'ougi':
         renderOugi(api, UI_TEXT.fest.ougiPrompt);
+        break;
+      case 'shanshan':
+        renderShanshan(api, UI_TEXT.fest.shanshanPrompt);
+        break;
+      case 'kagura':
+        renderKagura(api, UI_TEXT.fest.kaguraPrompt);
+        break;
+      case 'eyou':
+        renderEyou(api, UI_TEXT.fest.eyouPrompt);
+        break;
+      case 'betcha':
+        renderBetcha(api, UI_TEXT.fest.betchaPrompt);
+        break;
+      case 'kingyo':
+        renderKingyo(api, UI_TEXT.fest.kingyoPrompt);
+        break;
+      case 'awaodori':
+        renderAwaodori(api, UI_TEXT.fest.awaodoriPrompt);
+        break;
+      case 'chousa':
+        renderChousa(api, UI_TEXT.fest.chousaPrompt);
+        break;
+      case 'ushioni':
+        renderUshioni(api, UI_TEXT.fest.ushioniPrompt);
+        break;
+      case 'yosakoi':
+        renderYosakoi(api, UI_TEXT.fest.yosakoiPrompt);
         break;
       default:
         renderFestival(api, UI_TEXT.fest.prompt, this.buildMenu());

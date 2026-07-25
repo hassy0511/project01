@@ -54,7 +54,16 @@ export type ArcadeEngine =
   | 'danjiri'
   | 'fukuotoko'
   | 'yamayaki'
-  | 'ougi';
+  | 'ougi'
+  | 'shanshan'
+  | 'kagura'
+  | 'eyou'
+  | 'betcha'
+  | 'kingyo'
+  | 'awaodori'
+  | 'chousa'
+  | 'ushioni'
+  | 'yosakoi';
 
 export interface ArcadeTuning {
   /** 制限時間(秒) */
@@ -108,6 +117,15 @@ export const ARCADE_TUNING: Record<ArcadeEngine, ArcadeTuning> = {
   fukuotoko: { durationSec: 60, star2: 0, star3: 0 }, // ふくおとこえらび(ひょうご)
   yamayaki: { durationSec: 60, star2: 0, star3: 0 }, // わかくさやま やまやき(なら)
   ougi: { durationSec: 60, star2: 0, star3: 0 }, // なちの おうぎまつり(わかやま)
+  shanshan: { durationSec: 60, star2: 0, star3: 0 }, // しゃんしゃんまつり(とっとり)
+  kagura: { durationSec: 60, star2: 0, star3: 0 }, // いわみかぐら(しまね)
+  eyou: { durationSec: 60, star2: 0, star3: 0 }, // さいだいじ えよう(おかやま)
+  betcha: { durationSec: 60, star2: 0, star3: 0 }, // べっちゃーまつり(ひろしま)
+  kingyo: { durationSec: 60, star2: 0, star3: 0 }, // きんぎょちょうちん(やまぐち)
+  awaodori: { durationSec: 60, star2: 0, star3: 0 }, // あわおどり(とくしま)
+  chousa: { durationSec: 60, star2: 0, star3: 0 }, // ちょうさまつり(かがわ)
+  ushioni: { durationSec: 60, star2: 0, star3: 0 }, // うしおにまつり(えひめ)
+  yosakoi: { durationSec: 60, star2: 0, star3: 0 }, // よさこいまつり(こうち)
 };
 
 /** 実行時チューニング: E2E テストは timeScale を上げて時間を短縮する(__mqAdmin.fastMode) */
