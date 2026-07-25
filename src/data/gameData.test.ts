@@ -242,6 +242,31 @@ describe('県ごとの ボリューム(全県そろえる)', () => {
   });
 });
 
+describe('そざいの あそび方が 実物と あっているか', () => {
+  /** つるして そだてる貝・かご漁の いきもの は「釣りざお」ゲームにしない
+      (2026-07: かき・ほたてが 魚釣りゲームになっていた不整合の再発防止) */
+  const CAGE_GROWN = ['🦪', '🐚', '🦀'];
+
+  it('貝・かに(つるす/かご漁)は fish(釣りざお)ではなく shell(ひきあげ)', () => {
+    for (const m of D.materials) {
+      if (!CAGE_GROWN.includes(m.emoji)) continue;
+      const g = m.gather;
+      expect(g.type, `${m.name}: 釣りざお(timing)ではなく いかだ/かご(plant)`).toBe('plant');
+      if (g.type === 'plant') {
+        expect(g.harvest.engine, `${m.name} の あそび方`).toBe('shell');
+      }
+    }
+  });
+
+  it('shell エンジンの そざいは いかだ/かごの よびなを もつ', () => {
+    for (const m of D.materials) {
+      const g = m.gather;
+      if (g.type !== 'plant' || g.harvest.engine !== 'shell') continue;
+      expect(g.fieldLabel, `${m.name} の fieldLabel`).toBeTruthy();
+    }
+  });
+});
+
 describe('地図アセット(地方ごとの県形マップ)', () => {
   it('アクティブ地方に mapFile があり、その地方の全県のパス・ラベル・bbox が揃っている', () => {
     for (const region of D.regions.filter((r) => r.active)) {

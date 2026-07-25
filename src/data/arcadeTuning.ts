@@ -38,6 +38,7 @@ export type ArcadeEngine =
   | 'waraji'
   | 'yukimatsuri'
   | 'scoop'
+  | 'shell'
   | 'minyou'
   | 'owara'
   | 'tourou'
@@ -83,6 +84,7 @@ export const ARCADE_TUNING: Record<ArcadeEngine, ArcadeTuning> = {
   waraji: { durationSec: 60, star2: 0, star3: 0 }, // おおわらじ(ふくしま)
   yukimatsuri: { durationSec: 60, star2: 0, star3: 0 }, // 雪像づくり(ほっかいどう・さっぽろ)
   scoop: { durationSec: 45, star2: 300, star3: 700 }, // すくいとり(しらす・しろえび)
+  shell: { durationSec: 45, star2: 280, star3: 640 }, // かいひきあげ(かき・ほたて・かに)
   minyou: { durationSec: 60, star2: 0, star3: 0 }, // だいみんようながし(にいがた)
   owara: { durationSec: 60, star2: 0, star3: 0 }, // おわら かぜの ぼん(とやま)
   tourou: { durationSec: 60, star2: 0, star3: 0 }, // とうろう流し(いしかわ)

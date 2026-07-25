@@ -35,6 +35,9 @@
 2. **materials**: 県の名産そざい(ノルマ5個。既存そざいの産地追加でもよい)
    - 既存そざいの産地追加は `origins` に県 id を足すだけ(例: こめ+akita)
    - engine は実物の性質で選ぶ(gameData.ts 冒頭のコメント参照)
+   - **獲り方を まちがえない**: 貝・かに(いかだ/かご養殖)は釣り(fish)ではなく
+     `shell`(つるして ひきあげる)。魚は fish、掘るものは mine。
+     テスト(gameData.test.ts)が 🦪🐚🦀 の engine を強制する
    - みず(m01)の origins に県を足すと いど が建つ
 3. **recipes**: tier2〜3 を 2〜3品 + tier4 おまつり(rf◯)
    - おまつりは **実在の祭りで「実際にやること」を動詞化**(ACTION_DESIGN.md)

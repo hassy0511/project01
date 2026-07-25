@@ -327,6 +327,13 @@ export const UI_TEXT = {
     spilled: (n: number) => `${n}ぴき こぼれた!`,
     waveWarn: 'なみが くるよ〜!',
     goldSwarm: 'きんの むれ だ!',
+    /* かいひきあげ(shell) */
+    shellPace: 'いい はやさ!',
+    shellDrop: 'おちちゃった!',
+    shellDeck: 'デッキに あがった!',
+    shellPeel: 'はずせた!',
+    shellAll: 'ぜんぶ はずした!',
+    shellGold: 'おおつぶ だ!',
     /* いねかりの とり */
     birdCome: 'とりが きた!',
     birdSteal: 'とられた!',

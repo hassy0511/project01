@@ -163,6 +163,7 @@ export class MapScene extends Phaser.Scene {
 
       const [lx, ly] = map.labels[p.id];
       const fontSize = p.active ? 15 / scale : 11 / scale;
+      // 名前ラベルも タップできる(細長い県や、ラベルが 県の外に はみ出す場合の 救済)
       const label = this.add
         .text(lx, ly, p.active && !unlocked ? '?' : p.name, {
           fontFamily: FONT,
@@ -172,7 +173,9 @@ export class MapScene extends Phaser.Scene {
           stroke: '#ffffff',
           strokeThickness: 3 / scale,
         })
-        .setOrigin(0.5);
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+      label.on('pointerup', () => this.onPrefTap(p));
       root.add(label);
 
       if (p.active && !unlocked) {

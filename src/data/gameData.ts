@@ -47,12 +47,14 @@ export type Rarity = 'common' | 'local' | 'unique';
  *   rhythm= 的の輪に流れてくる葉をタイミングよくタップ(ちゃば)
  *   sweep = こすって雪をはらい、出てきた作物をタップで集める。吹雪で再び積もる(とうほくの雪下野菜)
  *   scoop = ざるを動かして群れをすくい上げる(しらす・しろえび。ちゅうぶの海)
+ *   shell = つるしたロープ/かごを ちょうどよい速さで引き上げ、貝をはずす
+ *           (かき・ほたて・かに。「貝を釣り竿で釣る」のはおかしいので専用エンジン)
  *   catch = 木から降ってくる実をかごでキャッチ(うめ・なし等の木の実)
  *   flick = 実をはじいて岩を避けてかごに入れる(メロン等の重い実)
  *   mine  = シャベル回数制限+数字ヒントの推理掘り(さつまいも・らっかせい等の土中もの・ねんど)
  */
 export interface HarvestSpec {
-  engine: 'chain' | 'reap' | 'pluck' | 'rhythm' | 'sweep' | 'scoop' | 'catch' | 'flick' | 'mine';
+  engine: 'chain' | 'reap' | 'pluck' | 'rhythm' | 'sweep' | 'scoop' | 'shell' | 'catch' | 'flick' | 'mine';
   target?: string;
   prompt: string;
   success?: string;
@@ -360,8 +362,9 @@ export const GAME_DATA: GameData = {
         harvest: { engine: 'chain', target: '🫛', prompt: 'ぷっくり ふくらんだ さやだけ つもう! ぺたんこは まだ はやいよ' },
         care: { target: '🐛', label: 'むしが さやに ついてる! タップで とろう!' } } },
     { id: 'm26', name: 'かき', emoji: '🦪', origins: ['miyagi'], rarity: 'unique',
-      gather: { type: 'timing', verb: 'いかだに でる',
-        theme: { intro: 'かきの いかだに とうちゃく!', prompt: 'かきを タップして ひきあげよう! おおきい かきほど なんかいも タップ! ぬしを あげると ★3!', stopBtn: 'ロープを ひく!', marker: '🦪', success: 'たいりょうだ!', stages: ['⛵', '🌊', '🦪'] } } },
+      gather: { type: 'plant', verb: 'たねがいを つるす', growSec: 480, fieldLabel: 'かきの いかだ',
+        harvest: { engine: 'shell', target: '🦪', prompt: 'ロープを ちょうどよい はやさで ひきあげて、デッキで かきを はずそう! はやすぎると おちるよ' },
+        care: { target: '🦅', label: 'とりが いかだを ねらってる! タップで おいはらえ!' } } },
 
     /* --- あきた --- */
     { id: 'm27', name: 'はたはた', emoji: '🐠', origins: ['akita'], rarity: 'unique',
@@ -400,11 +403,13 @@ export const GAME_DATA: GameData = {
         harvest: { engine: 'flick', target: '🍉', prompt: 'おもい すいかを はじいて、かごに ころがしこもう!' },
         care: { target: '🐦', label: 'とりが すいかを つついてる! タップで おいはらえ!' } } },
     { id: 'm36', name: 'かに', emoji: '🦀', origins: ['hokkaido', 'ishikawa', 'fukui'], rarity: 'local',
-      gather: { type: 'timing', verb: 'かにりょうに でる',
-        theme: { intro: 'つめたい うみに かにかごを しずめたよ!', prompt: 'かにを タップして ひきあげよう! おおきい かにほど なんかいも タップ! ぬしを あげると ★3!', stopBtn: 'かごを あげる!', marker: '🦀', success: 'たいりょうだ!', stages: ['⛵', '🌊', '🦀'] } } },
+      gather: { type: 'plant', verb: 'かにかごを しずめる', growSec: 540, fieldLabel: 'かにかごば',
+        harvest: { engine: 'shell', target: '🦀', prompt: 'かごの ロープを ちょうどよい はやさで ひきあげて、デッキで かにを とりだそう!' },
+        care: { target: '🐙', label: 'たこが かごに はいってる! タップで だそう!' } } },
     { id: 'm37', name: 'ほたて', emoji: '🐚', origins: ['aomori'], rarity: 'unique',
-      gather: { type: 'timing', verb: 'いかだに でる',
-        theme: { intro: 'むつわんの ほたての いかだに とうちゃく!', prompt: 'ほたてを タップして ひきあげよう! おおきい ほたてほど なんかいも タップ! ぬしを あげると ★3!', stopBtn: 'ロープを ひく!', marker: '🐚', success: 'たいりょうだ!', stages: ['⛵', '🌊', '🐚'] } } },
+      gather: { type: 'plant', verb: 'かごを つるす', growSec: 480, fieldLabel: 'ほたての いかだ',
+        harvest: { engine: 'shell', target: '🐚', prompt: 'ロープを ちょうどよい はやさで ひきあげて、デッキで ほたてを はずそう!' },
+        care: { target: '🦅', label: 'とりが いかだを ねらってる! タップで おいはらえ!' } } },
     { id: 'm38', name: 'わかめ', emoji: '☘️', origins: ['iwate'], rarity: 'unique',
       gather: { type: 'plant', verb: 'たねなわを しずめる', growSec: 480, fieldLabel: 'いかだ',
         harvest: { engine: 'reap', target: '☘️', prompt: 'よこに なぞって わかめを かりとろう! 1れつを ひとふでで かると ボーナス!' },
@@ -958,7 +963,7 @@ export const GAME_DATA: GameData = {
     { target: 'm23', text: 'いわてには ひろーい ぼくじょうが あって、うしさんが のんびり くらしているよ。' },
     { target: 'm24', text: 'いわての なんぶてっきは、てつから つくる でんとうこうげい。400ねん いじょうの れきしが あるよ。' },
     { target: 'm25', text: 'ずんだは えだまめを すりつぶした みやぎの あじ。あざやかな みどりいろが きれい!' },
-    { target: 'm26', text: 'みやぎの まつしまわんでは、いかだに ロープを つるして かきを そだてているよ。' },
+    { target: 'm26', text: 'かきは いかだから つるした ロープに くっついて そだつよ。つりざおでは とらないんだ!' },
     { target: 'm27', text: 'はたはたは あきたを だいひょうする さかな。ふゆの あらしの ころに やってくるよ。' },
     { target: 'm28', text: 'やまがたけんは さくらんぼづくりが にほんいち! ぜんこくの 8わりくらいが やまがたさんだよ。' },
     { target: 'm29', text: 'さといもは ねばねばが おいしい おいも。やまがたの あきの なべに かかせない!' },
@@ -992,8 +997,8 @@ export const GAME_DATA: GameData = {
     /* --- バランス調整で追加した そざい・めいぶつ(2026-07) --- */
     { target: 'm34', text: 'ねぎは まちごとに めいさんが あるよ。さいたまの ふかや、ぐんまの しもにた、あきたの しらかみ!' },
     { target: 'm35', text: 'かながわの みうら はんとうでは、あまい すいかが そだつよ。' },
-    { target: 'm36', text: 'ほっかいどうの つめたい うみには、おおきな かにが たくさん すんでいるよ。' },
-    { target: 'm37', text: 'あおもりの むつわんでは、うみに つるした かごで ほたてを そだてているよ。' },
+    { target: 'm36', text: 'かには「かにかご」を うみに しずめて とるよ。ロープを ひきあげて とりだすんだ。' },
+    { target: 'm37', text: 'ほたては うみに つるした かごの なかで そだてるよ。ひきあげて ひとつずつ はずすんだ。' },
     { target: 'm38', text: 'いわての さんりくの うみは わかめの めいさんち。なみに ゆられて そだつよ。' },
     { target: 'm39', text: 'せんだいの せりは「ねっこまで たべる」のが とくちょう。しゃきしゃきで おいしいよ。' },
     { target: 'm40', text: 'べにばなは さいた ときは きいろ、だんだん あかく なる ふしぎな はな。やまがたけんの はなだよ。' },
