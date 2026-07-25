@@ -106,6 +106,21 @@ export class RegionScene extends Phaser.Scene {
     return text;
   }
 
+  /** 「いってみよう!」を つける エリアを 1つだけ えらぶ。
+      ひらいている エリアの うち かいたくが いちばん すすんでいない ところ(=つぎの ぼうけん先)。
+      ぜんぶ かいたくずみなら いま いる エリア。7エリアぶん 出すと 地図が うまるので 1つに しぼる */
+  private badgeRegionId(): string {
+    const open = GAME_DATA.regions.filter((r) => r.active && this.regionOpen(r));
+    if (!open.length) return '';
+    const rest = (r: Region): number => {
+      const prefs = GAME_DATA.prefectures.filter((p) => p.region === r.id && p.active);
+      return prefs.filter((p) => !store.state.unlocked.includes(p.id)).length;
+    };
+    const frontier = open.filter((r) => rest(r) > 0).sort((a, b) => rest(b) - rest(a))[0];
+    if (frontier) return frontier.id;
+    return store.state.currentRegion ?? open[0].id;
+  }
+
   /* ---------- 実形の日本地図 ---------- */
   private drawJapan(): void {
     const rm = getRegionAsset();
@@ -114,6 +129,7 @@ export class RegionScene extends Phaser.Scene {
     const offX = (GAME_W - rm.viewW * scale) / 2;
     const offY = TOP_H + 10 + (availH - rm.viewH * scale) / 2;
     const root = this.add.container(offX, offY).setScale(scale);
+    const badgeId = this.badgeRegionId();
 
     // 地面(県リングを地方色で塗る。白フチで県境も見える)
     for (const region of GAME_DATA.regions) {
@@ -179,6 +195,9 @@ export class RegionScene extends Phaser.Scene {
         .setOrigin(0.5)
         .setInteractive({ useHandCursor: true });
       name.on('pointerup', () => this.onRegionTap(region));
+      // 画面の はしで もじが きれないように よこ位置を おさえる
+      const halfW = name.width / 2 + 4 / scale;
+      name.x = Phaser.Math.Clamp(name.x, (8 - offX) / scale + halfW, (GAME_W - 8 - offX) / scale - halfW);
       root.add(name);
 
       // アクティブだが未解放: あと何回で はれるかを見せる(めあて表示)
@@ -208,7 +227,9 @@ export class RegionScene extends Phaser.Scene {
           })
           .setOrigin(0.5);
         root.add(sub);
+      }
 
+      if (open && region.id === badgeId) {
         const badge = this.add
           .text(lx, ly - 46 / scale, UI_TEXT.region.go, {
             fontFamily: FONT,

@@ -63,7 +63,15 @@ export type ArcadeEngine =
   | 'awaodori'
   | 'chousa'
   | 'ushioni'
-  | 'yosakoi';
+  | 'yosakoi'
+  | 'yamakasa'
+  | 'balloon'
+  | 'kokkodesho'
+  | 'kazariuma'
+  | 'yukake'
+  | 'hyottoko'
+  | 'rokugatsudo'
+  | 'tsunahiki';
 
 export interface ArcadeTuning {
   /** 制限時間(秒) */
@@ -126,6 +134,14 @@ export const ARCADE_TUNING: Record<ArcadeEngine, ArcadeTuning> = {
   chousa: { durationSec: 60, star2: 0, star3: 0 }, // ちょうさまつり(かがわ)
   ushioni: { durationSec: 60, star2: 0, star3: 0 }, // うしおにまつり(えひめ)
   yosakoi: { durationSec: 60, star2: 0, star3: 0 }, // よさこいまつり(こうち)
+  yamakasa: { durationSec: 60, star2: 0, star3: 0 }, // はかた ぎおん やまかさ(ふくおか)
+  balloon: { durationSec: 60, star2: 0, star3: 0 }, // さが バルーンフェスタ(さが)
+  kokkodesho: { durationSec: 60, star2: 0, star3: 0 }, // ながさきくんち コッコデショ(ながさき)
+  kazariuma: { durationSec: 60, star2: 0, star3: 0 }, // ぼした祭り かざりうま(くまもと)
+  yukake: { durationSec: 60, star2: 0, star3: 0 }, // べっぷ おんせんまつり ゆかけ(おおいた)
+  hyottoko: { durationSec: 60, star2: 0, star3: 0 }, // ひゅうが ひょっとこ夏祭り(みやざき)
+  rokugatsudo: { durationSec: 60, star2: 0, star3: 0 }, // ろくがつどう(かごしま)
+  tsunahiki: { durationSec: 60, star2: 0, star3: 0 }, // なは おおづなひき(おきなわ)
 };
 
 /** 実行時チューニング: E2E テストは timeScale を上げて時間を短縮する(__mqAdmin.fastMode) */

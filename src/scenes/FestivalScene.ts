@@ -54,6 +54,14 @@ import { renderAwaodori } from './minigames/awaodoriGame';
 import { renderChousa } from './minigames/chousaGame';
 import { renderUshioni } from './minigames/ushioniGame';
 import { renderYosakoi } from './minigames/yosakoiGame';
+import { renderYamakasa } from './minigames/yamakasaGame';
+import { renderBalloon } from './minigames/balloonGame';
+import { renderKokkodesho } from './minigames/kokkodeshoGame';
+import { renderKazariuma } from './minigames/kazariumaGame';
+import { renderYukake } from './minigames/yukakeGame';
+import { renderHyottoko } from './minigames/hyottokoGame';
+import { renderRokugatsudo } from './minigames/rokugatsudoGame';
+import { renderTsunahiki } from './minigames/tsunahikiGame';
 import type { MinigameApi } from './minigames/types';
 
 const TOP_H = 48;
@@ -233,6 +241,30 @@ export class FestivalScene extends Phaser.Scene {
         break;
       case 'yosakoi':
         renderYosakoi(api, UI_TEXT.fest.yosakoiPrompt);
+        break;
+      case 'yamakasa':
+        renderYamakasa(api, UI_TEXT.fest.yamakasaPrompt);
+        break;
+      case 'balloon':
+        renderBalloon(api, UI_TEXT.fest.balloonPrompt);
+        break;
+      case 'kokkodesho':
+        renderKokkodesho(api, UI_TEXT.fest.kokkodeshoPrompt);
+        break;
+      case 'kazariuma':
+        renderKazariuma(api, UI_TEXT.fest.kazariumaPrompt);
+        break;
+      case 'yukake':
+        renderYukake(api, UI_TEXT.fest.yukakePrompt);
+        break;
+      case 'hyottoko':
+        renderHyottoko(api, UI_TEXT.fest.hyottokoPrompt);
+        break;
+      case 'rokugatsudo':
+        renderRokugatsudo(api, UI_TEXT.fest.rokugatsudoPrompt);
+        break;
+      case 'tsunahiki':
+        renderTsunahiki(api, UI_TEXT.fest.tsunahikiPrompt);
         break;
       default:
         renderFestival(api, UI_TEXT.fest.prompt, this.buildMenu());

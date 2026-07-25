@@ -20,6 +20,14 @@ const REGION_PREFS = {
   kyushu: ['fukuoka', 'saga', 'nagasaki', 'kumamoto', 'oita', 'miyazaki', 'kagoshima', 'okinawa'],
 };
 
+/** はなれた しま(おきなわ)は 実測どおり置くと 地方ぜんたいが ほそながく なって
+    子供には あそびにくい。にほんの ちずと おなじく「はこ入りの さしえ(インセット)」にする:
+    その県だけ 別で 拡大して、あいている 海の 上に おく */
+const INSET = {
+  // ほんどの bbox の した(あいている うみ)に、はこ入りの さしえとして おく
+  kyushu: { okinawa: { scale: 1.18, at: [52, 420] } },
+};
+
 /** ラベル位置の手動補正(重心が となりの県名と 重なる場合に ずらす) */
 const NUDGE = {
   akita: [-18, -4],
@@ -135,9 +143,12 @@ for (const loc of map.locations) {
   if (best) rings[loc.id] = best;
 }
 
-/* ---- 地方の bbox を W=340 に正規化(map-gen.json と同じ座標感覚) ---- */
+/* ---- 地方の bbox を W=340 に正規化(map-gen.json と同じ座標感覚)。
+       インセットの県は はこ入りの さしえに するので bbox の けいさんに 入れない ---- */
+const insets = INSET[region] ?? {};
 let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
-for (const r of Object.values(rings)) {
+for (const [name, r] of Object.entries(rings)) {
+  if (insets[name]) continue;
   for (const [x, y] of r) {
     x0 = Math.min(x0, x); y0 = Math.min(y0, y);
     x1 = Math.max(x1, x); y1 = Math.max(y1, y);
@@ -150,7 +161,22 @@ const px = ([x, y]) => [PAD + (x - x0) * scale, PAD + (y - y0) * scale];
 
 const out = { viewBox: `0 0 ${Math.round(W + PAD * 2)} ${Math.round(H + PAD * 2)}`, paths: {}, labels: {}, boxes: {} };
 for (const [name, ring] of Object.entries(rings)) {
-  const projected = ring.map(px);
+  let projected = ring.map(px);
+  const inset = insets[name];
+  if (inset) {
+    // 自分の bbox の 中心を きめて、拡大して しめされた ばしょへ うつす
+    let ix0 = 1e9, iy0 = 1e9, ix1 = -1e9, iy1 = -1e9;
+    for (const [x, y] of projected) {
+      ix0 = Math.min(ix0, x); iy0 = Math.min(iy0, y);
+      ix1 = Math.max(ix1, x); iy1 = Math.max(iy1, y);
+    }
+    const mx = (ix0 + ix1) / 2, my = (iy0 + iy1) / 2;
+    // あいている うみに ずらす(at = 出力座標)
+    projected = projected.map(([x, y]) => [
+      inset.at[0] + (x - mx) * inset.scale,
+      inset.at[1] + (y - my) * inset.scale,
+    ]);
+  }
   let lo = 0.05, hi = 8, pts = simplifyRing(projected, 1);
   for (let i = 0; i < 22; i++) {
     const eps = (lo + hi) / 2;
@@ -171,6 +197,16 @@ for (const [name, ring] of Object.entries(rings)) {
   }
   out.boxes[name] = `${(bx0 - 6).toFixed(0)} ${(by0 - 6).toFixed(0)} ${(bx1 - bx0 + 12).toFixed(0)} ${(by1 - by0 + 12).toFixed(0)}`;
   console.log(name, pts.length + 'pts');
+}
+// インセットを ふくめた ぜんたいの おおきさに viewBox を あわせる
+{
+  let vx1 = 0, vy1 = 0;
+  for (const box of Object.values(out.boxes)) {
+    const [bx, by, bw, bh] = box.split(' ').map(Number);
+    vx1 = Math.max(vx1, bx + bw + 6);
+    vy1 = Math.max(vy1, by + bh + 6);
+  }
+  out.viewBox = `0 0 ${Math.max(Math.round(W + PAD * 2), Math.round(vx1))} ${Math.max(Math.round(H + PAD * 2), Math.round(vy1))}`;
 }
 fs.writeFileSync(OUT, JSON.stringify(out, null, 1));
 console.log('viewBox:', out.viewBox);

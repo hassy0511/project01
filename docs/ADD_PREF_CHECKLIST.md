@@ -9,6 +9,9 @@
 2. `gameData.ts` regions: `active: true` + `mapFile` + `unlockFests`(解放条件=おまつり種類数)
 3. 新動詞(地方=新ワールド。学習コストは常に+1):
    - `HarvestSpec.engine` union と `ArcadeEngine` union に追加
+   - 2026-07 現在 **7エリア・47都道府県すべて active**。
+     はなれた しま(おきなわ)は `scripts/gen-pref-map.mjs` の `INSET` で
+     「はこ入りの さしえ」として 配置する(実測どおりだと 地方が ほそながく なる)
    - `ARCADE_TUNING` に制限時間と★しきい値
    - `src/scenes/minigames/<verb>Game.ts` 実装 + `SessionScene.renderGame` に分岐
 4. BGM が地方テーマに合わないなら `bgm.ts` の TRACKS に曲を足す(任意)
