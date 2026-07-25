@@ -180,6 +180,45 @@ describe('地図アセット(public/assets/regions-gen.json)', () => {
   });
 });
 
+/* 県ごとの「あそべる量」の下限。県を増やすときに ここを下回らせない
+   (先に作った県だけ豪華で、あとの県が すかすか になるのを防ぐ) */
+const FLOOR = { materials: 5, tier2: 2, tier3: 2, engines: 4 };
+
+describe('県ごとの ボリューム下限(バランス)', () => {
+  const activePrefs = D.prefectures.filter((p) => p.active);
+  /** その県で あそべる アーケード種別(infra=いど収集ふくむ) */
+  const enginesOf = (prefId: string): Set<string> => {
+    const set = new Set<string>();
+    for (const m of D.materials) {
+      if (!m.origins.includes(prefId)) continue;
+      const g = m.gather;
+      set.add(g.type === 'plant' ? g.harvest.engine : g.type === 'dig' ? 'mine' : g.type === 'timing' ? 'fish' : 'infra');
+    }
+    return set;
+  };
+
+  it.each(activePrefs.map((p) => [p.name, p.id]))('%s: そざい/レシピ/あそびが下限を満たす', (_name, prefId) => {
+    const mats = D.materials.filter((m) => m.origins.includes(prefId));
+    const recipes = D.recipes.filter((r) => r.pref === prefId);
+    expect(mats.length, 'そざい数').toBeGreaterThanOrEqual(FLOOR.materials);
+    expect(recipes.filter((r) => r.tier === 2).length, 'tier2 レシピ数').toBeGreaterThanOrEqual(FLOOR.tier2);
+    expect(recipes.filter((r) => r.tier === 3).length, 'tier3 レシピ数').toBeGreaterThanOrEqual(FLOOR.tier3);
+    expect(recipes.filter((r) => r.tier === 4).length, 'おまつり数').toBe(1);
+    // みず(いど)は どの県にもある = 到着してすぐ できることが1つある
+    expect(mats.some((m) => m.gather.type === 'infra'), 'いど(infra)そざい').toBe(true);
+    expect(enginesOf(prefId).size, 'あそびの種類').toBeGreaterThanOrEqual(FLOOR.engines);
+  });
+
+  it('おまつりの ゲーム種別は 県ごとに ユニーク(47県すべて別のあそび)', () => {
+    const seen = new Map<string, string>();
+    for (const r of D.recipes.filter((x) => x.tier === 4 && x.implemented)) {
+      const kind = r.festGame ?? 'yatai';
+      expect(seen.has(kind), `${kind} が ${seen.get(kind)} と ${r.id} で重複`).toBe(false);
+      seen.set(kind, r.id);
+    }
+  });
+});
+
 describe('地図アセット(地方ごとの県形マップ)', () => {
   it('アクティブ地方に mapFile があり、その地方の全県のパス・ラベル・bbox が揃っている', () => {
     for (const region of D.regions.filter((r) => r.active)) {

@@ -233,9 +233,9 @@ export const GAME_DATA: GameData = {
 
   /* ---------- そざいマスタ(Tier1) ---------- */
   materials: [
-    { id: 'm01', name: 'みず', emoji: '💧', origins: ['ibaraki', 'tochigi', 'chiba', 'gunma', 'saitama', 'tokyo', 'kanagawa', 'aomori', 'iwate', 'miyagi', 'akita', 'yamagata', 'fukushima'], rarity: 'common',
+    { id: 'm01', name: 'みず', emoji: '💧', origins: ['ibaraki', 'tochigi', 'chiba', 'gunma', 'saitama', 'tokyo', 'kanagawa', 'hokkaido', 'aomori', 'iwate', 'miyagi', 'akita', 'yamagata', 'fukushima'], rarity: 'common',
       gather: { type: 'infra', building: 'いど', bEmoji: '⛲', rateSec: 120, max: 3, collectVerb: 'くみあげる' } },
-    { id: 'm02', name: 'こめ', emoji: '🌾', origins: ['ibaraki', 'tochigi', 'chiba', 'akita'], rarity: 'common',
+    { id: 'm02', name: 'こめ', emoji: '🌾', origins: ['ibaraki', 'tochigi', 'chiba', 'akita', 'miyagi', 'fukushima'], rarity: 'common',
       gather: { type: 'plant', verb: 'いねを うえる', growSec: 240, fieldLabel: 'たんぼ',
         harvest: { engine: 'reap', target: '🌾', prompt: 'よこに なぞって いねを かろう! 1れつを ひとふでで かると ボーナス!' },
         care: { target: '🦗', label: 'いなごが きた! タップで おいはらえ!' } } },
@@ -251,7 +251,7 @@ export const GAME_DATA: GameData = {
       gather: { type: 'plant', verb: 'たねを まく', growSec: 600,
         harvest: { engine: 'flick', target: '🍈', prompt: 'メロンを ひっぱって はなして、かごに ころがしこもう!' },
         care: { target: '🌀', label: 'つるが のびすぎ! タップで ととのえよう!' } } },
-    { id: 'm06', name: 'うめ', emoji: '🫒', origins: ['ibaraki'], rarity: 'unique',
+    { id: 'm06', name: 'うめ', emoji: '🫒', origins: ['ibaraki', 'gunma'], rarity: 'local',
       gather: { type: 'plant', verb: 'なえを うえる', growSec: 1200,
         harvest: { engine: 'catch', target: '🫒', prompt: 'おちてくる うめを かごで キャッチ! えだは よけてね' },
         care: { target: '🐛', label: 'むしが えだに ついてる! タップで とろう!' } } },
@@ -265,7 +265,7 @@ export const GAME_DATA: GameData = {
     { id: 'm09', name: 'いわし', emoji: '🐟', origins: ['chiba', 'kanagawa'], rarity: 'local',
       gather: { type: 'timing', verb: 'りょうに でる',
         theme: { intro: 'いわしの むれが やってきた!', prompt: 'さかなを タップして つりあげよう! おおきい さかなほど なんかいも タップ! ぬしを つると ★3!', stopBtn: 'あみを ひく!', marker: '🐟', success: 'たいりょうだ!', stages: ['⛵', '🌊', '🐟'] } } },
-    { id: 'm10', name: 'なし', emoji: '🍐', origins: ['chiba', 'tochigi'], rarity: 'local',
+    { id: 'm10', name: 'なし', emoji: '🍐', origins: ['chiba', 'tochigi', 'fukushima'], rarity: 'local',
       gather: { type: 'plant', verb: 'なえを うえる', growSec: 1500,
         harvest: { engine: 'catch', target: '🍐', prompt: 'おちてくる なしを かごで キャッチ! えだは よけてね' },
         care: { target: '🐝', label: 'はちが みに あつまってる! タップで はらおう!' } } },
@@ -293,7 +293,7 @@ export const GAME_DATA: GameData = {
         care: { target: '🐦', label: 'とりが かいこを ねらってる! タップで おいはらえ!' } } },
 
     /* --- さいたま --- */
-    { id: 'm16', name: 'ちゃば', emoji: '🍃', origins: ['saitama'], rarity: 'unique',
+    { id: 'm16', name: 'ちゃば', emoji: '🍃', origins: ['saitama', 'kanagawa'], rarity: 'local',
       gather: { type: 'plant', verb: 'ちゃのきを うえる', growSec: 300,
         harvest: { engine: 'rhythm', target: '🍃', prompt: 'わっかに わかばが きたら タップ! リズムよく ちゃつみ しよう' },
         care: { target: '🐛', label: 'むしが わかばに ついてる! タップで とろう!' } } },
@@ -336,7 +336,7 @@ export const GAME_DATA: GameData = {
         theme: { intro: 'いい てつが ねむる やまを みつけた!', prompt: 'すうじは「まわりに てついしが いくつ あるか」の ヒント! すいりして ほろう', success: 'ほりあて せいこう!', stages: ['⛰️', '⛏️', '✨'] } } },
 
     /* --- みやぎ --- */
-    { id: 'm25', name: 'えだまめ', emoji: '🫛', origins: ['miyagi', 'yamagata'], rarity: 'local',
+    { id: 'm25', name: 'えだまめ', emoji: '🫛', origins: ['miyagi', 'yamagata', 'akita'], rarity: 'local',
       gather: { type: 'plant', verb: 'たねを まく', growSec: 300,
         harvest: { engine: 'chain', target: '🫛', prompt: 'ぷっくり ふくらんだ さやだけ つもう! ぺたんこは まだ はやいよ' },
         care: { target: '🐛', label: 'むしが さやに ついてる! タップで とろう!' } } },
@@ -368,6 +368,44 @@ export const GAME_DATA: GameData = {
       gather: { type: 'plant', verb: 'なえを うえる', growSec: 360,
         harvest: { engine: 'chain', target: '🍅', prompt: 'まっかに いろづいた トマトだけ つもう! みどりは まだ はやいよ' },
         care: { target: '🐛', label: 'むしが ついてる! タップで とろう!' } } },
+
+    /* --- バランス調整で追加(2026-07): 各県 そざい5種(みず ふくむ)以上に そろえる ---
+       ひとつの そざいを 複数の 産地で 共有する(ねぎ = ふかや/しもにた/しらかみ 等)。
+       産地の追加は origins に足すだけ = データ駆動 */
+    { id: 'm34', name: 'ねぎ', emoji: '🧅', origins: ['saitama', 'gunma', 'akita'], rarity: 'local',
+      gather: { type: 'plant', verb: 'なえを うえる', growSec: 360,
+        harvest: { engine: 'pluck', target: '🧅', prompt: 'そだった ねぎを おさえて、ゆーっくり ひきぬこう! はやいと ちぎれちゃう' },
+        care: { target: '🐛', label: 'むしが はっぱに ついてる! タップで とろう!' } } },
+    { id: 'm35', name: 'すいか', emoji: '🍉', origins: ['kanagawa'], rarity: 'local',
+      gather: { type: 'plant', verb: 'たねを まく', growSec: 660,
+        harvest: { engine: 'flick', target: '🍉', prompt: 'おもい すいかを はじいて、かごに ころがしこもう!' },
+        care: { target: '🐦', label: 'とりが すいかを つついてる! タップで おいはらえ!' } } },
+    { id: 'm36', name: 'かに', emoji: '🦀', origins: ['hokkaido'], rarity: 'unique',
+      gather: { type: 'timing', verb: 'かにりょうに でる',
+        theme: { intro: 'つめたい うみに かにかごを しずめたよ!', prompt: 'かにを タップして ひきあげよう! おおきい かにほど なんかいも タップ! ぬしを あげると ★3!', stopBtn: 'かごを あげる!', marker: '🦀', success: 'たいりょうだ!', stages: ['⛵', '🌊', '🦀'] } } },
+    { id: 'm37', name: 'ほたて', emoji: '🐚', origins: ['aomori'], rarity: 'unique',
+      gather: { type: 'timing', verb: 'いかだに でる',
+        theme: { intro: 'むつわんの ほたての いかだに とうちゃく!', prompt: 'ほたてを タップして ひきあげよう! おおきい ほたてほど なんかいも タップ! ぬしを あげると ★3!', stopBtn: 'ロープを ひく!', marker: '🐚', success: 'たいりょうだ!', stages: ['⛵', '🌊', '🐚'] } } },
+    { id: 'm38', name: 'わかめ', emoji: '☘️', origins: ['iwate'], rarity: 'unique',
+      gather: { type: 'plant', verb: 'たねなわを しずめる', growSec: 480, fieldLabel: 'いかだ',
+        harvest: { engine: 'reap', target: '☘️', prompt: 'よこに なぞって わかめを かりとろう! 1れつを ひとふでで かると ボーナス!' },
+        care: { target: '🐠', label: 'さかなが わかめを たべにきた! タップで おいはらえ!' } } },
+    { id: 'm39', name: 'せり', emoji: '🌱', origins: ['miyagi'], rarity: 'unique',
+      gather: { type: 'plant', verb: 'たねを まく', growSec: 300, fieldLabel: 'みずた',
+        harvest: { engine: 'pluck', target: '🌱', prompt: 'せりは ねっこも おいしい! おさえて ゆーっくり ひきぬこう' },
+        care: { target: '🐛', label: 'むしが はっぱに ついてる! タップで とろう!' } } },
+    { id: 'm40', name: 'べにばな', emoji: '🌺', origins: ['yamagata'], rarity: 'unique',
+      gather: { type: 'plant', verb: 'たねを まく', growSec: 420,
+        harvest: { engine: 'chain', target: '🌺', prompt: 'きいろから あかに かわった はなだけ つもう! きいろは まだ はやいよ' },
+        care: { target: '🐝', label: 'はちが はなに あつまってる! タップで はらおう!' } } },
+    { id: 'm41', name: 'わさび', emoji: '🍀', origins: ['tokyo'], rarity: 'unique',
+      gather: { type: 'plant', verb: 'なえを うえる', growSec: 900, fieldLabel: 'さわ',
+        harvest: { engine: 'pluck', target: '🍀', prompt: 'きれいな みずで そだった わさびを、ゆーっくり ひきぬこう!' },
+        care: { target: '🐌', label: 'かたつむりが はっぱを たべてる! タップで とろう!' } } },
+    { id: 'm42', name: 'うど', emoji: '🎍', origins: ['tokyo'], rarity: 'unique',
+      gather: { type: 'plant', verb: 'かぶを うえる', growSec: 480, fieldLabel: 'むろ',
+        harvest: { engine: 'mine', prompt: 'とうきょうの うどは ちかの あなで そだつよ。ヒントの すうじで ばしょを すいりして ほろう!' },
+        care: { target: '🌀', label: 'むろの ひかりが もれてる! タップで ふさごう!' } } },
 
     /* --- ほっかいどう --- */
     { id: 'm32', name: 'とうもろこし', emoji: '🌽', origins: ['hokkaido'], rarity: 'local',
@@ -545,6 +583,57 @@ export const GAME_DATA: GameData = {
       implemented: true, festGame: 'yukimatsuri',
       ingredients: [{ ref: 'r39', count: 1 }, { ref: 'r40', count: 1 }],
       menu: ['r39', 'r40', 'm33'] },
+
+    /* --- バランス調整で追加(2026-07): 各県 tier2×2・tier3×2 に そろえる --- */
+    /* ぐんま */
+    { id: 'r41', name: 'うめぼし', emoji: '🍙', tier: 2, type: 'kakou', pref: 'gunma',
+      ingredients: [{ ref: 'm06', count: 2, origin: 'gunma' }] },
+    /* さいたま */
+    { id: 'r42', name: 'ねぎの まるやき', emoji: '🔥', tier: 3, type: 'gattai', pref: 'saitama',
+      ingredients: [{ ref: 'm34', count: 2, origin: 'saitama' }, { ref: 'r08', count: 1 }] },
+    /* とうきょう */
+    { id: 'r43', name: 'わさびづけ', emoji: '🫙', tier: 2, type: 'kakou', pref: 'tokyo',
+      ingredients: [{ ref: 'm41', count: 2 }, { ref: 'm01', count: 1 }] },
+    { id: 'r44', name: 'つくだに', emoji: '🍚', tier: 3, type: 'gattai', pref: 'tokyo',
+      ingredients: [{ ref: 'm09', count: 2 }, { ref: 'r07', count: 1 }] },
+    /* かながわ */
+    { id: 'r45', name: 'あしがらちゃ', emoji: '🍵', tier: 2, type: 'kakou', pref: 'kanagawa',
+      ingredients: [{ ref: 'm16', count: 2, origin: 'kanagawa' }, { ref: 'm01', count: 1 }] },
+    { id: 'r46', name: 'よこすか カレー', emoji: '🍛', tier: 3, type: 'gattai', pref: 'kanagawa',
+      ingredients: [{ ref: 'm33', count: 2 }, { ref: 'm01', count: 1 }] },
+    /* ほっかいどう */
+    { id: 'r47', name: 'チーズ', emoji: '🧀', tier: 2, type: 'kakou', pref: 'hokkaido',
+      ingredients: [{ ref: 'm23', count: 2, origin: 'hokkaido' }] },
+    { id: 'r48', name: 'かにめし', emoji: '🍱', tier: 3, type: 'gattai', pref: 'hokkaido',
+      ingredients: [{ ref: 'm36', count: 2 }, { ref: 'm02', count: 1 }] },
+    /* あおもり */
+    { id: 'r49', name: 'ほたての かいやき', emoji: '🐚', tier: 3, type: 'gattai', pref: 'aomori',
+      ingredients: [{ ref: 'm37', count: 2 }, { ref: 'r08', count: 1 }] },
+    { id: 'r50', name: 'アップルパイ', emoji: '🥧', tier: 3, type: 'gattai', pref: 'aomori',
+      ingredients: [{ ref: 'm20', count: 2, origin: 'aomori' }, { ref: 'r39', count: 1 }] },
+    /* いわて */
+    { id: 'r51', name: 'ほしわかめ', emoji: '🍂', tier: 2, type: 'kakou', pref: 'iwate',
+      ingredients: [{ ref: 'm38', count: 2 }] },
+    { id: 'r52', name: 'わかめの おにぎり', emoji: '🍙', tier: 3, type: 'gattai', pref: 'iwate',
+      ingredients: [{ ref: 'm38', count: 1 }, { ref: 'm02', count: 1 }, { ref: 'm01', count: 1 }] },
+    /* みやぎ */
+    { id: 'r53', name: 'ささかまぼこ', emoji: '🍥', tier: 2, type: 'kakou', pref: 'miyagi',
+      ingredients: [{ ref: 'm09', count: 2 }, { ref: 'm01', count: 1 }] },
+    { id: 'r54', name: 'せりなべ', emoji: '🍲', tier: 3, type: 'gattai', pref: 'miyagi',
+      ingredients: [{ ref: 'm39', count: 2 }, { ref: 'r08', count: 1 }] },
+    /* あきた */
+    { id: 'r55', name: 'しょっつる', emoji: '🧴', tier: 2, type: 'kakou', pref: 'akita',
+      ingredients: [{ ref: 'm27', count: 2 }, { ref: 'm01', count: 1 }] },
+    { id: 'r56', name: 'はたはたずし', emoji: '🍣', tier: 3, type: 'gattai', pref: 'akita',
+      ingredients: [{ ref: 'm27', count: 2 }, { ref: 'm02', count: 1, origin: 'akita' }] },
+    /* やまがた */
+    { id: 'r57', name: 'たまこんにゃく', emoji: '🍡', tier: 2, type: 'kakou', pref: 'yamagata',
+      ingredients: [{ ref: 'm14', count: 2 }, { ref: 'r07', count: 1 }] },
+    /* ふくしま */
+    { id: 'r58', name: 'いかにんじん', emoji: '🥕', tier: 3, type: 'gattai', pref: 'fukushima',
+      ingredients: [{ ref: 'm22', count: 2 }, { ref: 'r07', count: 1 }] },
+    { id: 'r59', name: 'ブランドもも', emoji: '👑', tier: 3, type: 'syukaku', pref: 'fukushima',
+      ingredients: [{ ref: 'm30', count: 1, quality: 3 }] },
   ],
 
   /* ---------- ものしりカード(checkは裏取り未了マーク) ---------- */
@@ -638,6 +727,36 @@ export const GAME_DATA: GameData = {
     { target: 'r39', text: 'しぼりたての ぎゅうにゅうから つくる バター。ほっかいどうの ぼくじょうの めぐみだよ。' },
     { target: 'r40', text: 'あまい とうもろこしと ぎゅうにゅうで つくる、あったか〜い スープだよ。' },
     { target: 'rf14', text: 'さっぽろ ゆきまつりでは、ゆきで つくった おおきな ぞうが まちに ずらーっと ならぶよ。' },
+
+    /* --- バランス調整で追加した そざい・めいぶつ(2026-07) --- */
+    { target: 'm34', text: 'ねぎは まちごとに めいさんが あるよ。さいたまの ふかや、ぐんまの しもにたが ゆうめい!', check: '産地表現裏取り' },
+    { target: 'm35', text: 'かながわの みうら はんとうでは、あまい すいかが そだつよ。' },
+    { target: 'm36', text: 'ほっかいどうの つめたい うみには、おおきな かにが たくさん すんでいるよ。' },
+    { target: 'm37', text: 'あおもりの むつわんでは、うみに つるした かごで ほたてを そだてているよ。' },
+    { target: 'm38', text: 'いわての さんりくの うみは わかめの めいさんち。なみに ゆられて そだつよ。' },
+    { target: 'm39', text: 'せんだいの せりは「ねっこまで たべる」のが とくちょう。しゃきしゃきで おいしいよ。' },
+    { target: 'm40', text: 'べにばなは さいた ときは きいろ、だんだん あかく なる ふしぎな はな。やまがたけんの はなだよ。' },
+    { target: 'm41', text: 'わさびは とても きれいな みずの ところでしか そだたないよ。とうきょうの おくたまが めいさんち。' },
+    { target: 'm42', text: 'とうきょうの うどは、ひかりを いれない ちかの あなぐら(むろ)で まっしろに そだてるよ。' },
+    { target: 'r41', text: 'うめを しおに つけて ほすと、すっぱい うめぼしに なるよ。おにぎりに ぴったり!' },
+    { target: 'r42', text: 'ふかやねぎを まるごと やくと、なかが とろとろ あまーくなる さいたまの たべかただよ。' },
+    { target: 'r43', text: 'わさびを こまかく して つけものに。ちょっぴり ぴりっとする おとなの あじ!' },
+    { target: 'r44', text: 'つくだには とうきょうの つくだじまで うまれた、ごはんの おとも だよ。', check: '発祥表現裏取り' },
+    { target: 'r45', text: 'あしがらちゃは かながわの やまで そだつ おちゃ。かおりが いいんだ。' },
+    { target: 'r46', text: 'よこすかは にほんの カレーの まちと よばれているよ。じゃがいもが ごろごろ!', check: '発祥表現裏取り' },
+    { target: 'r47', text: 'ぎゅうにゅうを かためて ねかせると チーズに へんしん! ほっかいどうは チーズづくりが さかん。' },
+    { target: 'r48', text: 'ほっかいどうの おしゃまんべの えきで うられてきた かにめしは、とっても ゆうめいな おべんとうだよ。', check: '駅弁表現裏取り' },
+    { target: 'r49', text: 'ほたてを かいがらの まま みそで やく「かいやき」は、あおもりの きょうどりょうりだよ。' },
+    { target: 'r50', text: 'あおもりの ひろさきは アップルパイの まち。おみせごとに あじが ちがうんだ!', check: '種類数裏取り' },
+    { target: 'r51', text: 'わかめを おひさまで ほすと、ながく ほぞんできる ほしわかめに なるよ。' },
+    { target: 'r52', text: 'わかめを まぜこんだ おにぎりは、うみの かおりが して おいしいよ。' },
+    { target: 'r53', text: 'ささかまぼこは、ささの はっぱの かたちを した みやぎの めいぶつだよ。' },
+    { target: 'r54', text: 'せりなべは、せりを ねっこごと どーんと いれる せんだいの なべりょうりだよ。' },
+    { target: 'r55', text: 'しょっつるは はたはたから つくる あきたの ちょうみりょう。うまみが たっぷり!' },
+    { target: 'r56', text: 'はたはたずしは、はたはたと おこめを いっしょに ねかせて つくる あきたの ごちそうだよ。' },
+    { target: 'r57', text: 'たまこんにゃくは まるい こんにゃくを しょうゆで にた やまがたの おやつ。くしで たべるよ!' },
+    { target: 'r58', text: 'いかにんじんは、にんじんを ほそく きって つける ふくしまの きょうどりょうりだよ。' },
+    { target: 'r59', text: 'たいようを いっぱい あびた ★3の ももだけが、ブランドももに えらばれるよ。' },
   ],
 
   /* ---------- クイズバンク ----------
@@ -678,6 +797,28 @@ export const GAME_DATA: GameData = {
     { id: 'qt65', kind: 'kaitaku', tags: ['fukushima'], q: 'ふくしまけんで たくさん つくられる くだものは?', choices: ['もも', 'パイナップル', 'キウイ'], answer: 0 },
     { id: 'qt66', kind: 'kaitaku', tags: ['fukushima'], q: 'ふくしまけんの おまつりで かつぐのは?', choices: ['おおきな わらじ', 'おおきな だるま', 'おおきな かがみ'], answer: 0 },
     { id: 'qt67', kind: 'kaitaku', tags: ['fukushima'], q: 'ふくしまけんは とうほくの どこに ある?', choices: ['いちばん みなみ', 'いちばん きた', 'うみの うえ'], answer: 0 },
+
+    /* --- バランス調整で追加した そざいの クイズ(2026-07) --- */
+    { id: 'qz01', kind: 'sozai', tags: ['m34', 'r42'], q: 'ねぎは どこを たべる?', choices: ['しろい くきの ところ', 'ねっこの つち', 'はなの たね'], answer: 0 },
+    { id: 'qz02', kind: 'sozai', tags: ['m35'], q: 'すいかは どこに できる?', choices: ['つるの うえ', 'きの うえ', 'つちの なか'], answer: 0 },
+    { id: 'qz03', kind: 'sozai', tags: ['m36', 'r48'], q: 'かには あしが なんぼん?', choices: ['10ぽん', '6ぽん', '4ほん'], answer: 0 },
+    { id: 'qz04', kind: 'sozai', tags: ['m37', 'r49'], q: 'ほたては どこで そだてる?', choices: ['うみに つるした かご', 'たんぼ', 'やまの はたけ'], answer: 0 },
+    { id: 'qz05', kind: 'sozai', tags: ['m38', 'r51'], q: 'わかめは どこで そだつ?', choices: ['うみ', 'かわ', 'つちの なか'], answer: 0 },
+    { id: 'qz06', kind: 'sozai', tags: ['m39', 'r54'], q: 'せんだいの せりは どこまで たべる?', choices: ['ねっこまで', 'はっぱだけ', 'たねだけ'], answer: 0 },
+    { id: 'qz07', kind: 'sozai', tags: ['m40'], q: 'べにばなの はなの いろは どう かわる?', choices: ['きいろ → あか', 'あお → しろ', 'みどりの まま'], answer: 0 },
+    { id: 'qz08', kind: 'sozai', tags: ['m41', 'r43'], q: 'わさびが そだつのは どんな ところ?', choices: ['きれいな みずの ところ', 'あつい すなば', 'くらい へや'], answer: 0 },
+    { id: 'qz09', kind: 'sozai', tags: ['m42'], q: 'とうきょうの うどは どこで そだてる?', choices: ['ちかの あなぐら', 'やまの うえ', 'うみの なか'], answer: 0 },
+    { id: 'qz10', kind: 'bunka', tags: ['r47', 'r39'], q: 'チーズと バターは なにから つくる?', choices: ['ぎゅうにゅう', 'たまご', 'こむぎ'], answer: 0 },
+    { id: 'qz11', kind: 'bunka', tags: ['r53'], q: 'ささかまぼこは なんの かたち?', choices: ['ささの はっぱ', 'まつの き', 'さくらの はな'], answer: 0 },
+    { id: 'qz12', kind: 'bunka', tags: ['r57'], q: 'たまこんにゃくは どうやって たべる?', choices: ['くしに さして', 'コップで のんで', 'パンに ぬって'], answer: 0 },
+    { id: 'qz13', kind: 'bunka', tags: ['r41', 'r03'], q: 'うめぼしの あじは?', choices: ['すっぱい', 'あまい', 'からい'], answer: 0 },
+    { id: 'qz14', kind: 'kaitaku', tags: ['saitama'], q: 'さいたまけんの ふかやで ゆうめいな やさいは?', choices: ['ねぎ', 'すいか', 'わさび'], answer: 0 },
+    { id: 'qz15', kind: 'kaitaku', tags: ['tokyo'], q: 'とうきょうの おくたまで そだつ からい やくみは?', choices: ['わさび', 'こしょう', 'とうがらし'], answer: 0 },
+    { id: 'qz16', kind: 'kaitaku', tags: ['kanagawa'], q: 'かながわの みうらで そだつ あまい くだものは?', choices: ['すいか', 'メロン', 'りんご'], answer: 0 },
+    { id: 'qz17', kind: 'kaitaku', tags: ['hokkaido'], q: 'ほっかいどうの うみで とれる おおきな いきものは?', choices: ['かに', 'くじら', 'いか だけ'], answer: 0 },
+    { id: 'qz18', kind: 'kaitaku', tags: ['aomori'], q: 'あおもりの むつわんで そだてているのは?', choices: ['ほたて', 'こんぶ だけ', 'えび'], answer: 0 },
+    { id: 'qz19', kind: 'kaitaku', tags: ['iwate'], q: 'いわての さんりくの うみの めいさんは?', choices: ['わかめ', 'すいか', 'ちゃば'], answer: 0 },
+    { id: 'qz20', kind: 'kaitaku', tags: ['yamagata'], q: 'やまがたけんの はな「べにばな」は なにに つかう?', choices: ['あかい そめもの', 'たべる あぶら だけ', 'いえを たてる'], answer: 0 },
 
     /* --- ほっかいどう --- */
     { id: 'qh01', kind: 'kaitaku', type: 'shape', tags: ['hokkaido'], q: 'この かたちは どこ?', choices: ['ほっかいどう', 'あおもり', 'いわて'], answer: 0 },
