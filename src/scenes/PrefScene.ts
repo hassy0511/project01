@@ -498,6 +498,15 @@ export class PrefScene extends Phaser.Scene {
       hanagasa: UI_TEXT.fest.introHanagasa,
       waraji: UI_TEXT.fest.introWaraji,
       yukimatsuri: UI_TEXT.fest.introYukimatsuri,
+      minyou: UI_TEXT.fest.introMinyou,
+      owara: UI_TEXT.fest.introOwara,
+      tourou: UI_TEXT.fest.introTourou,
+      kani: UI_TEXT.fest.introKani,
+      himatsuri: UI_TEXT.fest.introHimatsuri,
+      onbashira: UI_TEXT.fest.introOnbashira,
+      karakuri: UI_TEXT.fest.introKarakuri,
+      tako: UI_TEXT.fest.introTako,
+      makiwara: UI_TEXT.fest.introMakiwara,
     };
     modal.addText(INTROS[r.festGame ?? 'yatai'] ?? UI_TEXT.fest.introBody, 15);
     const best = store.state.festBest[r.id];

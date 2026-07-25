@@ -325,6 +325,36 @@ log('とうほく解放 → あおもり ゆきしたにんじん(ゆきはら�
 await d.clickText('← ちず');
 await page.waitForTimeout(600);
 
+/* 12f. ちゅうぶ: おまつり6種で 解放。とやまの しろえび(scoop=すくいとり)を収穫 */
+await d.clickText('🗾 にっぽん');
+await d.waitText('🗾 にっぽん ぜんこく');
+await d.clickText('ちゅうぶ'); // 全開放済みなので入れる(未開放なら トーストのみ)
+await page.waitForTimeout(800);
+await d.waitText('とやま');
+await page.screenshot({ path: `${SHOTS}/chubu-map.png` });
+// map-chubu: viewBox 364x400 → scale=min(460/364,560/400)=1.263, offX≈10, offY=80
+const toyama = (await d.findTexts('とやま'))[0];
+await page.mouse.click(toyama.x, toyama.y);
+await d.waitText('あみを しかける');
+await d.scrollAndClick('あみを しかける');
+await page.evaluate(() => window.__mqAdmin.boostAll());
+await page.waitForTimeout(1600);
+await d.scrollAndClick('しゅうかく!');
+await harvestFlow(async () => {
+  // ざるを むれの なかへ 動かして、ときどき すくいあげる
+  await page.mouse.move(120, 500);
+  await page.mouse.down();
+  for (let i = 0; i < 6; i++) {
+    await page.mouse.move(120 + i * 50, 480 + (i % 2) * 40);
+    await page.waitForTimeout(50);
+  }
+  await page.mouse.up();
+  await page.mouse.click(240, 520); // タップ=すくいあげる
+});
+log('ちゅうぶ解放 → とやま しろえび(すくいとり=scoop アーケード)');
+await d.clickText('← ちず');
+await page.waitForTimeout(600);
+
 /* 13. セーブ検証 */
 const save = await page.evaluate(() => JSON.parse(localStorage.getItem('meisanquest-save-v1')));
 const assert = (cond, msg) => {
@@ -336,7 +366,8 @@ assert(save.fest.includes('rf1'), 'rf1 held');
 assert(save.festBest?.rf1 >= 12, 'festival best score recorded');
 assert(Array.isArray(save.quizRecent) && save.quizRecent.length > 0, 'quiz rotation history recorded');
 assert(save.zukanMat.m22?.aomori >= 1, 'yukishita ninjin swept (tohoku)');
-assert(save.currentRegion === 'tohoku', 'currentRegion tracks last visited region');
+assert(save.zukanMat.m50?.toyama >= 1, 'shiroebi scooped (chubu)');
+assert(save.currentRegion === 'chubu', 'currentRegion tracks last visited region');
 assert(save.zukanProd.r03 && save.zukanProd.r05, 'crafted r03/r05');
 assert(save.zukanProd.r05.jimoto === true, 'r05 jimoto medal');
 assert(save.zukanMat.m04?.ibaraki >= 1, 'satsumaimo mined (ibaraki)');

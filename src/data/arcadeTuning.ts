@@ -36,7 +36,17 @@ export type ArcadeEngine =
   | 'kantou'
   | 'hanagasa'
   | 'waraji'
-  | 'yukimatsuri';
+  | 'yukimatsuri'
+  | 'scoop'
+  | 'minyou'
+  | 'owara'
+  | 'tourou'
+  | 'kani'
+  | 'himatsuri'
+  | 'onbashira'
+  | 'karakuri'
+  | 'tako'
+  | 'makiwara';
 
 export interface ArcadeTuning {
   /** 制限時間(秒) */
@@ -72,6 +82,16 @@ export const ARCADE_TUNING: Record<ArcadeEngine, ArcadeTuning> = {
   hanagasa: { durationSec: 60, star2: 0, star3: 0 }, // はながさおどり(やまがた)
   waraji: { durationSec: 60, star2: 0, star3: 0 }, // おおわらじ(ふくしま)
   yukimatsuri: { durationSec: 60, star2: 0, star3: 0 }, // 雪像づくり(ほっかいどう・さっぽろ)
+  scoop: { durationSec: 45, star2: 300, star3: 700 }, // すくいとり(しらす・しろえび)
+  minyou: { durationSec: 60, star2: 0, star3: 0 }, // だいみんようながし(にいがた)
+  owara: { durationSec: 60, star2: 0, star3: 0 }, // おわら かぜの ぼん(とやま)
+  tourou: { durationSec: 60, star2: 0, star3: 0 }, // とうろう流し(いしかわ)
+  kani: { durationSec: 60, star2: 0, star3: 0 }, // かにまつり(ふくい)
+  himatsuri: { durationSec: 60, star2: 0, star3: 0 }, // よしだの ひまつり(やまなし)
+  onbashira: { durationSec: 60, star2: 0, star3: 0 }, // おんばしら(ながの)
+  karakuri: { durationSec: 60, star2: 0, star3: 0 }, // からくり人形(ぎふ)
+  tako: { durationSec: 60, star2: 0, star3: 0 }, // たこあげ(しずおか)
+  makiwara: { durationSec: 60, star2: 0, star3: 0 }, // まきわら舟(あいち)
 };
 
 /** 実行時チューニング: E2E テストは timeScale を上げて時間を短縮する(__mqAdmin.fastMode) */

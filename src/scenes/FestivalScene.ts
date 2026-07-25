@@ -29,6 +29,15 @@ import { renderKantou } from './minigames/kantouGame';
 import { renderHanagasa } from './minigames/hanagasaGame';
 import { renderWaraji } from './minigames/warajiGame';
 import { renderYukimatsuri } from './minigames/yukimatsuriGame';
+import { renderMinyou } from './minigames/minyouGame';
+import { renderOwara } from './minigames/owaraGame';
+import { renderTourou } from './minigames/tourouGame';
+import { renderKani } from './minigames/kaniGame';
+import { renderHimatsuri } from './minigames/himatsuriGame';
+import { renderOnbashira } from './minigames/onbashiraGame';
+import { renderKarakuri } from './minigames/karakuriGame';
+import { renderTako } from './minigames/takoGame';
+import { renderMakiwara } from './minigames/makiwaraGame';
 import type { MinigameApi } from './minigames/types';
 
 const TOP_H = 48;
@@ -133,6 +142,33 @@ export class FestivalScene extends Phaser.Scene {
         break;
       case 'yukimatsuri':
         renderYukimatsuri(api, UI_TEXT.fest.yukimatsuriPrompt);
+        break;
+      case 'minyou':
+        renderMinyou(api, UI_TEXT.fest.minyouPrompt);
+        break;
+      case 'owara':
+        renderOwara(api, UI_TEXT.fest.owaraPrompt);
+        break;
+      case 'tourou':
+        renderTourou(api, UI_TEXT.fest.tourouPrompt);
+        break;
+      case 'kani':
+        renderKani(api, UI_TEXT.fest.kaniPrompt);
+        break;
+      case 'himatsuri':
+        renderHimatsuri(api, UI_TEXT.fest.himatsuriPrompt);
+        break;
+      case 'onbashira':
+        renderOnbashira(api, UI_TEXT.fest.onbashiraPrompt);
+        break;
+      case 'karakuri':
+        renderKarakuri(api, UI_TEXT.fest.karakuriPrompt);
+        break;
+      case 'tako':
+        renderTako(api, UI_TEXT.fest.takoPrompt);
+        break;
+      case 'makiwara':
+        renderMakiwara(api, UI_TEXT.fest.makiwaraPrompt);
         break;
       default:
         renderFestival(api, UI_TEXT.fest.prompt, this.buildMenu());

@@ -79,17 +79,20 @@ describe('さんちコンプ', () => {
 
   it('全産地で入手して初めてコンプ', () => {
     const s = defaultState();
-    registerMaterial(s, 'm07', 'ibaraki', 2, 1);
-    expect(isSanchiComplete(s, clay)).toBe(false);
-    registerMaterial(s, 'm07', 'tochigi', 2, 1);
-    expect(isSanchiComplete(s, clay)).toBe(true);
+    // 産地が増えても壊れないよう、データの origins を最後の1つまで順に登録して確かめる
+    clay.origins.forEach((origin, i) => {
+      registerMaterial(s, 'm07', origin, 2, 1);
+      expect(isSanchiComplete(s, clay)).toBe(i === clay.origins.length - 1);
+    });
   });
 
   it('markSanchiCompleteOnce は初回だけ true(祝福演出は一度きり)', () => {
     const s = defaultState();
-    registerMaterial(s, 'm07', 'ibaraki', 2, 1);
-    expect(markSanchiCompleteOnce(s, clay)).toBe(false);
-    registerMaterial(s, 'm07', 'tochigi', 2, 1);
+    for (const origin of clay.origins.slice(0, -1)) {
+      registerMaterial(s, 'm07', origin, 2, 1);
+      expect(markSanchiCompleteOnce(s, clay)).toBe(false);
+    }
+    registerMaterial(s, 'm07', clay.origins[clay.origins.length - 1], 2, 1);
     expect(markSanchiCompleteOnce(s, clay)).toBe(true);
     expect(markSanchiCompleteOnce(s, clay)).toBe(false);
   });
