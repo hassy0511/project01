@@ -1,0 +1,49 @@
+<!doctype html>
+<!-- 開発用: めいさんアイコン(src/ui/icons.ts)の 全かたちを 一覧して 目で 確認する。
+     npm run dev して http://localhost:5173/iconsheet.html を開く。dist には 含まれない -->
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>めいさんアイコン 一覧(開発用)</title>
+    <style>
+      body { margin: 0; background: #f7f3e6; font-family: system-ui, sans-serif; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module">
+      import Phaser from 'phaser';
+      import { addIcon, allShapes, ICON_COLORS } from '/src/ui/icons.ts';
+
+      const COLS = 8;
+      const CELL = 108;
+      const shapes = allShapes();
+      const rows = Math.ceil(shapes.length / COLS);
+      const PALETTE = ['red', 'orange', 'green', 'sky', 'purple', 'brown', 'cream', 'gold'];
+
+      new Phaser.Game({
+        type: Phaser.AUTO,
+        parent: 'app',
+        width: COLS * CELL,
+        height: rows * CELL + 40,
+        backgroundColor: '#f7f3e6',
+        scene: {
+          create() {
+            shapes.forEach((shape, i) => {
+              const col = i % COLS;
+              const row = Math.floor(i / COLS);
+              const x = col * CELL + CELL / 2;
+              const y = row * CELL + CELL / 2 + 10;
+              const color = PALETTE[i % PALETTE.length];
+              addIcon(this, x, y - 10, `${shape}:${color}`, 72);
+              this.add
+                .text(x, y + 38, shape, { fontFamily: 'sans-serif', fontSize: '12px', color: '#5a4632' })
+                .setOrigin(0.5);
+            });
+            void ICON_COLORS;
+          },
+        },
+      });
+    </script>
+  </body>
+</html>

@@ -1,5 +1,11 @@
 /* WebAudio合成SFX(アセット不要・ミュート可)。reference/app.js の移植。
-   iOS Safari 対策: 初回タップで resume する(main.ts で pointerdown に紐付け) */
+   iOS Safari 対策 その1: 初回タップで resume する(main.ts で pointerdown に紐付け)
+   iOS Safari 対策 その2: iPad/iPhone は「サイレントスイッチ(消音モード)」で
+     WebAudio の 音が まるごと 消える。それだと 親が 気づけないので、
+     iOS では 出力を MediaStream 経由で <audio> に つなぐ(= メディア再生あつかいに なり、
+     消音スイッチでは 消えず、本体の 音量つまみで 調整できる)。
+     ほかの ブラウザは そのまま ctx.destination に つなぐ(挙動を 変えない)。
+   すべての 音(SFX/BGM)は audioOut() が かえす 1つの ノードに つなぐ */
 
 const MUTE_KEY = 'meisanquest-mute';
 
@@ -33,7 +39,56 @@ export function setMuted(value: boolean): void {
 }
 
 export function resumeAudio(): void {
-  sharedAudioContext();
+  const ctx = sharedAudioContext();
+  if (ctx) audioOut();
+  // <audio> ルートの さいせいも タップの たびに 試す(iOS は 一度 止まると 再開が 必要)
+  mediaEl?.play().catch(() => undefined);
+}
+
+/** iOS(iPad/iPhone)かどうか。iPadOS は Mac を 名乗るので タッチ数でも みる */
+function isIos(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent;
+  return /iP(hone|ad|od)/.test(ua) || (/Macintosh/.test(ua) && (navigator.maxTouchPoints ?? 0) > 1);
+}
+
+let outNode: AudioNode | null = null;
+let mediaEl: HTMLAudioElement | null = null;
+
+/** 音の 出口。SFX/BGM は かならず ここに つなぐ(消音スイッチ対策込み) */
+export function audioOut(): AudioNode | null {
+  const ctx = sharedAudioContext();
+  if (!ctx) return null;
+  if (outNode) return outNode;
+  // つぶれ防止の リミッター(音量を 上げても わりない ように)
+  let head: AudioNode = ctx.destination;
+  try {
+    if (isIos() && typeof ctx.createMediaStreamDestination === 'function' && typeof Audio !== 'undefined') {
+      const msd = ctx.createMediaStreamDestination();
+      const el = new Audio();
+      el.srcObject = msd.stream;
+      el.setAttribute('playsinline', 'true');
+      el.volume = 1;
+      el.play().catch(() => undefined);
+      mediaEl = el;
+      head = msd;
+    }
+  } catch {
+    head = ctx.destination;
+  }
+  try {
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.setValueAtTime(-14, ctx.currentTime);
+    comp.knee.setValueAtTime(12, ctx.currentTime);
+    comp.ratio.setValueAtTime(6, ctx.currentTime);
+    comp.attack.setValueAtTime(0.004, ctx.currentTime);
+    comp.release.setValueAtTime(0.2, ctx.currentTime);
+    comp.connect(head);
+    outNode = comp;
+  } catch {
+    outNode = head;
+  }
+  return outNode;
 }
 
 /** SFX/BGM で共有する AudioContext(ミュート中でも取得・resume は行う) */
@@ -57,9 +112,14 @@ function ac(): AudioContext | null {
   return sharedAudioContext();
 }
 
+/** SFX の 音量そうごう(小さすぎて 聞こえない と 言われたので 上げた) */
+const SFX_GAIN = 2.2;
+
 function tone(freq: number, dur: number, type: OscillatorType, vol: number, when = 0, slide?: number): void {
   const ctx = ac();
   if (!ctx) return;
+  const out = audioOut();
+  if (!out) return;
   try {
     const t0 = ctx.currentTime + when;
     const o = ctx.createOscillator();
@@ -68,10 +128,10 @@ function tone(freq: number, dur: number, type: OscillatorType, vol: number, when
     o.frequency.setValueAtTime(freq, t0);
     if (slide) o.frequency.exponentialRampToValueAtTime(slide, t0 + dur);
     g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(vol, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(Math.min(1, vol * SFX_GAIN), t0 + 0.012);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
     o.connect(g);
-    g.connect(ctx.destination);
+    g.connect(out);
     o.start(t0);
     o.stop(t0 + dur + 0.05);
   } catch {

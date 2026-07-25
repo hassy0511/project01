@@ -101,6 +101,9 @@ export function buildNav(scene: Phaser.Scene, active: NavKey): void {
 export function openSettings(scene: Phaser.Scene): void {
   const modal = new Modal(scene, UI_TEXT.settings.title, true);
   modal.addText(UI_TEXT.settings.version(GAME_DATA.meta.version), 14, TEXT_COLORS.sub);
+  // 音が でない という 相談が いちばん 多いので、せってい に 直接 ヒントを 出す
+  modal.addText(isMuted() ? UI_TEXT.settings.soundOff : UI_TEXT.settings.soundOn, 14, TEXT_COLORS.accent);
+  modal.addText(`${UI_TEXT.settings.soundHintTitle}\n${UI_TEXT.settings.soundHint}`, 12, TEXT_COLORS.sub);
   modal.addButton(
     UI_TEXT.settings.parentMenuBtn,
     COLORS.gray,

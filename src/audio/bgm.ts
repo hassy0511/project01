@@ -3,7 +3,7 @@
    シーンから setBgmTrack() で切り替える(FestivalScene: fest、はなびは night)。
    ミュート(sfx.ts)と連動: ミュート中は鳴らさず、解除で再開する。
    iOS 対策: 初回 pointerdown(main.ts)から startBgm を呼ぶ */
-import { isMuted, onMuteChange, sharedAudioContext } from './sfx';
+import { audioOut, isMuted, onMuteChange, sharedAudioContext } from './sfx';
 
 export type BgmTrackName = 'day' | 'fest' | 'night';
 
@@ -12,6 +12,8 @@ const STEPS_PER_BAR = 8;
 /** 先読みスケジューリング窓(秒)とチェック間隔(ms) */
 const LOOKAHEAD_SEC = 0.35;
 const TICK_MS = 120;
+/** BGM ぜんたいの 音量。実測 0.02〜0.15 しか 出ておらず「鳴ってない」と 言われたので
+    3ばい以上に 上げ、出口に リミッター(sfx.ts の audioOut)を 入れた */
 const MASTER_VOL = 1.0;
 
 /** MIDIノート番号→周波数。0 は休符 */
@@ -30,6 +32,8 @@ interface BgmTrack {
   pluckVol: number;
   /** おまつり打楽器(どん/かっ)を鳴らすか */
   percussion: boolean;
+  /** 小節ぜんたいに うすく のばす パッド(0で無し)。音の すきまを うめて「鳴っている」感を 出す */
+  padVol: number;
 }
 
 /* 曲データ。差し替え・追加でバリエーションが増やせる */
@@ -50,10 +54,11 @@ const TRACKS: Record<BgmTrackName, BgmTrack> = {
     ],
     bassRoots: [48, 45, 41, 43, 48, 45, 41, 43],
     melodyType: 'triangle',
-    melodyVol: 0.085,
-    bassVol: 0.09,
-    pluckVol: 0.035,
+    melodyVol: 0.3,
+    bassVol: 0.26,
+    pluckVol: 0.12,
     percussion: false,
+    padVol: 0.05,
   },
   /* はやしの「おまつりばやし」風: ヨナぬき音階+どん・かっ の打楽器 */
   fest: {
@@ -70,10 +75,11 @@ const TRACKS: Record<BgmTrackName, BgmTrack> = {
     ],
     bassRoots: [48, 48, 41, 43, 48, 45, 43, 48],
     melodyType: 'square',
-    melodyVol: 0.045,
-    bassVol: 0.08,
+    melodyVol: 0.17,
+    bassVol: 0.24,
     pluckVol: 0,
     percussion: true,
+    padVol: 0.04,
   },
   /* しずかな「よるの はなびまち」風: ゆっくり・まばら・低め(Am / F / C / G) */
   night: {
@@ -90,10 +96,11 @@ const TRACKS: Record<BgmTrackName, BgmTrack> = {
     ],
     bassRoots: [45, 41, 48, 43, 45, 41, 48, 43],
     melodyType: 'sine',
-    melodyVol: 0.075,
-    bassVol: 0.08,
-    pluckVol: 0.022,
+    melodyVol: 0.28,
+    bassVol: 0.24,
+    pluckVol: 0.1,
     percussion: false,
+    padVol: 0.06,
   },
 };
 
@@ -131,6 +138,28 @@ function voice(
   }
 }
 
+/** パッド: 小節ぜんたいを ゆったり のばす ハーモニー。
+    voice() は すぐ 減衰するので、パッドは「ゆっくり 立ち上げ → たもつ → はなす」で 音の すきまを うめる */
+function pad(ctx: AudioContext, midi: number, t0: number, dur: number, vol: number): void {
+  if (!master) return;
+  try {
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(freq(midi), t0);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(vol, t0 + 0.25);
+    g.gain.setValueAtTime(vol, t0 + dur * 0.75);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g);
+    g.connect(master);
+    o.start(t0);
+    o.stop(t0 + dur + 0.05);
+  } catch {
+    /* noop */
+  }
+}
+
 /** おまつりの打楽器: どん(たいこ)/ かっ(しめだいこ)。ノイズ+フィルタで合成 */
 function drum(ctx: AudioContext, t0: number, kind: 'don' | 'kachi'): void {
   if (!master) return;
@@ -147,12 +176,12 @@ function drum(ctx: AudioContext, t0: number, kind: 'don' | 'kachi'): void {
     if (kind === 'don') {
       f.type = 'lowpass';
       f.frequency.setValueAtTime(160, t0);
-      g.gain.setValueAtTime(0.22, t0);
+      g.gain.setValueAtTime(0.5, t0);
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.2);
     } else {
       f.type = 'highpass';
       f.frequency.setValueAtTime(3200, t0);
-      g.gain.setValueAtTime(0.05, t0);
+      g.gain.setValueAtTime(0.14, t0);
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.06);
     }
     src.connect(f);
@@ -179,6 +208,13 @@ function scheduleStep(ctx: AudioContext, s: number, t0: number): void {
   const root = tr.bassRoots[bar];
   if (inBar === 0 || inBar === 4) voice(ctx, root, t0, sec * 3.4, 'sine', tr.bassVol);
   if (inBar === 6) voice(ctx, root + 7, t0, sec * 1.6, 'sine', tr.bassVol * 0.8);
+  // パッド: 小節まるごと のばして、音の すきまを うめる
+  if (inBar === 0 && tr.padVol > 0) {
+    const barSec = sec * STEPS_PER_BAR * 1.02; // つぎの小節と すこし かさねて 切れ目を なくす
+    pad(ctx, root + 12, t0, barSec, tr.padVol);
+    pad(ctx, root + 16, t0, barSec, tr.padVol * 0.9);
+    pad(ctx, root + 19, t0, barSec, tr.padVol * 0.8);
+  }
   // うら拍にコードのかけら(3度+5度)を薄く
   if (tr.pluckVol > 0 && (inBar === 2 || inBar === 6)) {
     voice(ctx, root + 16, t0, sec * 1.4, 'triangle', tr.pluckVol);
@@ -215,7 +251,9 @@ export function startBgm(): void {
     master = ctx.createGain();
     master.gain.setValueAtTime(0.0001, ctx.currentTime);
     master.gain.exponentialRampToValueAtTime(MASTER_VOL, ctx.currentTime + 1.2);
-    master.connect(ctx.destination);
+    const out = audioOut();
+    if (!out) return;
+    master.connect(out);
   } catch {
     return;
   }
