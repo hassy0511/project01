@@ -274,7 +274,7 @@ await d.clickText('ちょうせん する!');
 await d.answerQuiz();
 await d.waitText('かいたく せいこう!');
 await d.clickText('ぐんまけんに いく!');
-await d.waitText('くみあげる'); // ぐんまにも いど(みず)がある
+await d.waitText('たねいもを うえる'); // ぐんまの こんにゃくいも(みずの いどは めいすいの さとだけ)
 await page.screenshot({ path: `${SHOTS}/gunma-pref.png` });
 await d.clickText('← ちず');
 await page.waitForTimeout(600);
@@ -294,7 +294,7 @@ await d.waitText('あおもり'); // とうほくの地図に到着
 await page.screenshot({ path: `${SHOTS}/tohoku-map.png` });
 const aomoriLabel = (await d.findTexts('あおもり'))[0];
 await page.mouse.click(aomoriLabel.x, aomoriLabel.y);
-await d.waitText('くみあげる'); // あおもりにも いど(みず)がある
+await d.waitText('なえを うえる'); // あおもりの りんご(みずの いどは めいすいの さとだけ)
 await d.scrollAndClick('たねを まく'); // ゆきしたにんじん
 await page.evaluate(() => window.__mqAdmin.boostAll());
 await page.waitForTimeout(1600);

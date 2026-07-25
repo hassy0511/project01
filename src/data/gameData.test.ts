@@ -181,8 +181,12 @@ describe('地図アセット(public/assets/regions-gen.json)', () => {
 });
 
 /* 県ごとの「あそべる量」の下限。県を増やすときに ここを下回らせない
-   (先に作った県だけ豪華で、あとの県が すかすか になるのを防ぐ) */
-const FLOOR = { materials: 5, tier2: 2, tier3: 2, engines: 4 };
+   (先に作った県だけ豪華で、あとの県が すかすか になるのを防ぐ)。
+   ねらいは「数のバランス」だけ。中身は県ごとに ちがってよい ―
+   むしろ そざいの かぶりは 県の個性を うすめるので、
+   「その県だけの そざい」が1つ以上あることも 下限にする。
+   みず(いど)のような 共通そざいを 全県に置くことは しない(地方に1つの めいすいの さと) */
+const FLOOR = { materials: 5, tier2: 2, tier3: 2, engines: 4, uniqueMaterials: 1 };
 
 describe('県ごとの ボリューム下限(バランス)', () => {
   const activePrefs = D.prefectures.filter((p) => p.active);
@@ -204,9 +208,26 @@ describe('県ごとの ボリューム下限(バランス)', () => {
     expect(recipes.filter((r) => r.tier === 2).length, 'tier2 レシピ数').toBeGreaterThanOrEqual(FLOOR.tier2);
     expect(recipes.filter((r) => r.tier === 3).length, 'tier3 レシピ数').toBeGreaterThanOrEqual(FLOOR.tier3);
     expect(recipes.filter((r) => r.tier === 4).length, 'おまつり数').toBe(1);
-    // みず(いど)は どの県にもある = 到着してすぐ できることが1つある
-    expect(mats.some((m) => m.gather.type === 'infra'), 'いど(infra)そざい').toBe(true);
     expect(enginesOf(prefId).size, 'あそびの種類').toBeGreaterThanOrEqual(FLOOR.engines);
+    // その県だけの そざい(= 県の個性)
+    const only = mats.filter((m) => m.origins.length === 1);
+    expect(only.length, `その県だけの そざい(いま: ${only.map((m) => m.name).join('・') || 'なし'})`).toBeGreaterThanOrEqual(
+      FLOOR.uniqueMaterials,
+    );
+  });
+
+  it('みず(いど)は 地方に1つの「めいすいの さと」だけ(全県に置かない)', () => {
+    const water = D.materials.find((m) => m.id === 'm01');
+    expect(water).toBeDefined();
+    const byRegion = new Map<string, string[]>();
+    for (const pid of water!.origins) {
+      const region = findPref(D, pid)?.region ?? '?';
+      byRegion.set(region, [...(byRegion.get(region) ?? []), pid]);
+    }
+    // 各地方に 1県だけ(0県だと その地方で みずを つかう めいぶつが つくれない)
+    for (const region of D.regions.filter((r) => r.active)) {
+      expect(byRegion.get(region.id)?.length ?? 0, `${region.id} の めいすいの さと`).toBe(1);
+    }
   });
 
   it('おまつりの ゲーム種別は 県ごとに ユニーク(47県すべて別のあそび)', () => {
