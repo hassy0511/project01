@@ -47,7 +47,14 @@ export type ArcadeEngine =
   | 'onbashira'
   | 'karakuri'
   | 'tako'
-  | 'makiwara';
+  | 'makiwara'
+  | 'ishidori'
+  | 'kabuki'
+  | 'gion'
+  | 'danjiri'
+  | 'fukuotoko'
+  | 'yamayaki'
+  | 'ougi';
 
 export interface ArcadeTuning {
   /** 制限時間(秒) */
@@ -94,6 +101,13 @@ export const ARCADE_TUNING: Record<ArcadeEngine, ArcadeTuning> = {
   karakuri: { durationSec: 60, star2: 0, star3: 0 }, // からくり人形(ぎふ)
   tako: { durationSec: 60, star2: 0, star3: 0 }, // たこあげ(しずおか)
   makiwara: { durationSec: 60, star2: 0, star3: 0 }, // まきわら舟(あいち)
+  ishidori: { durationSec: 60, star2: 0, star3: 0 }, // いしどりまつり(みえ)
+  kabuki: { durationSec: 60, star2: 0, star3: 0 }, // こどもかぶき(しが)
+  gion: { durationSec: 60, star2: 0, star3: 0 }, // ぎおんまつり つじまわし(きょうと)
+  danjiri: { durationSec: 60, star2: 0, star3: 0 }, // だんじり やりまわし(おおさか)
+  fukuotoko: { durationSec: 60, star2: 0, star3: 0 }, // ふくおとこえらび(ひょうご)
+  yamayaki: { durationSec: 60, star2: 0, star3: 0 }, // わかくさやま やまやき(なら)
+  ougi: { durationSec: 60, star2: 0, star3: 0 }, // なちの おうぎまつり(わかやま)
 };
 
 /** 実行時チューニング: E2E テストは timeScale を上げて時間を短縮する(__mqAdmin.fastMode) */

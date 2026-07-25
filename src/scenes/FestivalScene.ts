@@ -38,6 +38,13 @@ import { renderOnbashira } from './minigames/onbashiraGame';
 import { renderKarakuri } from './minigames/karakuriGame';
 import { renderTako } from './minigames/takoGame';
 import { renderMakiwara } from './minigames/makiwaraGame';
+import { renderIshidori } from './minigames/ishidoriGame';
+import { renderKabuki } from './minigames/kabukiGame';
+import { renderGion } from './minigames/gionGame';
+import { renderDanjiri } from './minigames/danjiriGame';
+import { renderFukuotoko } from './minigames/fukuotokoGame';
+import { renderYamayaki } from './minigames/yamayakiGame';
+import { renderOugi } from './minigames/ougiGame';
 import type { MinigameApi } from './minigames/types';
 
 const TOP_H = 48;
@@ -169,6 +176,27 @@ export class FestivalScene extends Phaser.Scene {
         break;
       case 'makiwara':
         renderMakiwara(api, UI_TEXT.fest.makiwaraPrompt);
+        break;
+      case 'ishidori':
+        renderIshidori(api, UI_TEXT.fest.ishidoriPrompt);
+        break;
+      case 'kabuki':
+        renderKabuki(api, UI_TEXT.fest.kabukiPrompt);
+        break;
+      case 'gion':
+        renderGion(api, UI_TEXT.fest.gionPrompt);
+        break;
+      case 'danjiri':
+        renderDanjiri(api, UI_TEXT.fest.danjiriPrompt);
+        break;
+      case 'fukuotoko':
+        renderFukuotoko(api, UI_TEXT.fest.fukuotokoPrompt);
+        break;
+      case 'yamayaki':
+        renderYamayaki(api, UI_TEXT.fest.yamayakiPrompt);
+        break;
+      case 'ougi':
+        renderOugi(api, UI_TEXT.fest.ougiPrompt);
         break;
       default:
         renderFestival(api, UI_TEXT.fest.prompt, this.buildMenu());
