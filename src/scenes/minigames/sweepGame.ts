@@ -4,6 +4,7 @@
    まれに「きんいろ」の山があり、深く はらうと 大得点(C要素)。
    既存動詞との違い = 「こする(みがく)」動作が本体。とうほく=雪ワールドの看板動詞 */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -38,7 +39,7 @@ interface Spot {
   depth: number;
   scrubbed: number;
   snowG?: Phaser.GameObjects.Graphics;
-  crop?: Phaser.GameObjects.Text;
+  crop?: Phaser.GameObjects.Image;
   ring?: Phaser.GameObjects.Arc;
   timer?: Phaser.Time.TimerEvent;
 }
@@ -158,7 +159,7 @@ export function renderSweep(api: MinigameApi, target: string, prompt: string): v
     s.stage = 'revealed';
     s.snowG?.destroy();
     s.snowG = undefined;
-    s.crop = scene.add.text(s.x, s.y, target, { fontSize: s.gold ? '44px' : '34px' }).setOrigin(0.5).setScale(0);
+    s.crop = addIcon(scene, s.x, s.y, target, s.gold ? 46 : 36).setScale(0).setName('mg-target');
     if (s.gold) s.crop.setTint(0xffd34d);
     area.add(s.crop);
     scene.tweens.add({ targets: s.crop, scale: 1, ease: 'Back.easeOut', duration: 300 });

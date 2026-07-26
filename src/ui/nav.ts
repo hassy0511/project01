@@ -88,9 +88,10 @@ export function buildNav(scene: Phaser.Scene, active: NavKey): void {
   });
 
   const sndIcon = (): string => (isMuted() ? 'sound-off:gray' : 'sound-on:navy');
-  const snd = addIcon(scene, GAME_W - 100, NAV_H / 2, sndIcon(), NAV_TOOL_ICON).setInteractive({
-    useHandCursor: true,
-  });
+  // name は E2E から アイコンを 見つける ための 目じるし(画面には 出ない)
+  const snd = addIcon(scene, GAME_W - 100, NAV_H / 2, sndIcon(), NAV_TOOL_ICON)
+    .setName('nav-sound')
+    .setInteractive({ useHandCursor: true });
   snd.on('pointerup', () => {
     setMuted(!isMuted());
     setIcon(snd, sndIcon());
@@ -98,9 +99,9 @@ export function buildNav(scene: Phaser.Scene, active: NavKey): void {
   });
   c.add(snd);
 
-  const gear = addIcon(scene, GAME_W - 44, NAV_H / 2, 'gear:gray', NAV_TOOL_ICON).setInteractive({
-    useHandCursor: true,
-  });
+  const gear = addIcon(scene, GAME_W - 44, NAV_H / 2, 'gear:gray', NAV_TOOL_ICON)
+    .setName('nav-gear')
+    .setInteractive({ useHandCursor: true });
   gear.on('pointerup', () => openSettings(scene));
   c.add(gear);
 }

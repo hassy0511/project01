@@ -30,10 +30,10 @@ await page.evaluate(() => window.__mqAdmin.fastMode());
 await d.waitText('スキップ');
 await page.screenshot({ path: `${SHOTS}/story-intro.png` });
 await d.clickText('スキップ');
-await d.waitText('🗾 にっぽん ぜんこく');
+await d.waitText('にっぽん ぜんこく');
 await d.clickText('かんとう');
 await page.waitForTimeout(600);
-await d.waitText('🗾 にっぽん'); // 地図に到着
+await d.waitText('にっぽん'); // 地図に到着
 log('導入ストーリー(スキップ)→ にほんぜんこく → かんとう');
 
 /** 収穫一連(しゅうかく!→アーケード→クイズ正解→もどる→トリビア) */
@@ -73,7 +73,7 @@ await page.waitForTimeout(1600);
 await d.scrollAndClick('しゅうかく!');
 await harvestFlow(async () => {
   // 落下中の実の真下へかごを動かす
-  const t = await d.findTexts('🫒');
+  const t = await d.findNames('mg-target');
   if (t.length) await page.mouse.move(t[0].x, 700);
 });
 log('うめ(キャッチ アーケード)');
@@ -152,7 +152,7 @@ await d.clickText('ちずを みる!');
 await d.dismissTrivia();
 await page.waitForTimeout(1200);
 await page.screenshot({ path: `${SHOTS}/map-after-festival.png` });
-log('うめまつり開催(やたいラッシュ)→ 地図に🏮');
+log('うめまつり開催(やたいラッシュ)→ 地図に ぼんぼり');
 
 /* 9. ちば開拓: わざと間違えて失敗 → 再挑戦で成功(失敗しても何度でも挑める) */
 await page.mouse.click(10 + 260 * 1.263, 80 + 290 * 1.263);
@@ -170,19 +170,19 @@ await page.evaluate(() => window.__mqAdmin.boostAll());
 await page.waitForTimeout(1600);
 await d.scrollAndClick('しゅうかく!');
 await harvestFlow(async () => {
-  const t = await d.findTexts('🌾');
+  const t = await d.findNames('mg-target');
   if (t.length) await page.mouse.click(t[0].x, t[0].y);
 });
 log('ちばの こめ(いねかり=reap アーケード)');
 await d.scrollAndClick('りょうに でる');
 await harvestFlow(async () => {
-  const t = await d.findTexts('🐟');
+  const t = await d.findNames('mg-target');
   if (t.length) await page.mouse.click(t[0].x, t[0].y);
 });
 log('ちば開拓 → いわし(フィッシング アーケード)');
 
 /* 10. おせわ(defense): メロン50%成長 → 害虫防衛 → careDone 記録 */
-await d.clickText('← ちず');
+await d.clickText('ちずへ');
 await page.waitForTimeout(600);
 await page.mouse.click(10 + 276 * 1.263, 80 + 155 * 1.263); // いばらき(開拓済み)
 await d.waitText('くみあげる');
@@ -191,7 +191,7 @@ await page.evaluate(() => window.__mqAdmin.halfGrow());
 await page.waitForTimeout(1600);
 await d.scrollAndClick('おせわに いく!');
 await d.playArcade(async () => {
-  const t = await d.findTexts('🌀');
+  const t = await d.findNames('mg-pest');
   if (t.length) await page.mouse.click(t[0].x, t[0].y);
 });
 await d.waitText('くみあげる', 12000); // おせわ完了 → 県画面へ戻る
@@ -213,22 +213,22 @@ log('メロン(フリック アーケード。クイズ不正解でも★1保証
 
 
 /* 12b. にほんぜんこく画面: ロック中エリアはトースト、かんとうから地図へ戻れる */
-await d.clickText('← ちず');
+await d.clickText('ちずへ');
 await page.waitForTimeout(600);
-await d.clickText('🗾 にっぽん');
-await d.waitText('🗾 にっぽん ぜんこく');
+await d.clickText('にっぽん');
+await d.waitText('にっぽん ぜんこく');
 await d.clickText('ちゅうぶ'); // まだ雲の中(トーストのみ、遷移しない)
-await d.waitText('🗾 にっぽん ぜんこく');
+await d.waitText('にっぽん ぜんこく');
 await page.screenshot({ path: `${SHOTS}/region-select.png` });
 await d.clickText('かんとう');
 await page.waitForTimeout(600);
-await d.waitText('🗾 にっぽん'); // 地図に戻った(にっぽんボタンが見える)
+await d.waitText('にっぽん'); // 地図に戻った(にっぽんボタンが見える)
 log('にほんぜんこく画面(エリア選択UI)');
 
 /* 12c. せってい → 保護者ゲート(かけ算テンキー) → 保護者メニュー → プライバシー表示 */
-await d.clickText('⚙️');
-await d.waitText('🔒 おうちのひと メニュー');
-await d.clickText('🔒 おうちのひと メニュー');
+await d.clickName('nav-gear');
+await d.waitText('おうちのひと メニュー');
+await d.clickText('おうちのひと メニュー');
 await d.waitText('保護者の方へ');
 const gateQ = await page.evaluate(() => {
   let v = null;
@@ -253,7 +253,7 @@ for (const ch of String(Number(gm[1]) * Number(gm[2]))) {
 await d.clickText('OK');
 await d.waitText('保護者メニュー');
 await page.screenshot({ path: `${SHOTS}/parent-menu.png` });
-await d.clickText('📄 プライバシーポリシー');
+await d.clickText('プライバシーポリシー');
 await d.waitText('プライバシーポリシー');
 await d.clickText('とじる');
 await page.waitForTimeout(300);
@@ -274,7 +274,7 @@ await page.evaluate(() => window.__mqAdmin.boostAll());
 await page.waitForTimeout(1600);
 await d.scrollAndClick('しゅうかく!');
 await harvestFlow(async () => {
-  const t = await d.findTexts('🧶');
+  const t = await d.findNames('mg-target');
   if (!t.length) return;
   const f = t[0];
   await page.mouse.move(f.x, f.y);
@@ -286,16 +286,16 @@ await harvestFlow(async () => {
   await page.mouse.up();
 });
 log('ぐんまの まゆ(つみとり アーケード)');
-await d.clickText('← ちず');
+await d.clickText('ちずへ');
 await page.waitForTimeout(600);
 log('ぐんま開拓(新関東エリア)');
 
 /* 12e. とうほく: おまつり3回までは くもの中(トースト)。全開放後は入れて、
    あおもりの ゆきしたにんじん(sweep=こすって雪はらい)を収穫できる */
-await d.clickText('🗾 にっぽん');
-await d.waitText('🗾 にっぽん ぜんこく');
+await d.clickText('にっぽん');
+await d.waitText('にっぽん ぜんこく');
 await d.clickText('ほっかいどう・とうほく'); // まだ festBest は 1種 → 解放されずトースト
-await d.waitText('🗾 にっぽん ぜんこく');
+await d.waitText('にっぽん ぜんこく');
 await page.evaluate(() => window.__mqAdmin.unlockAll());
 await page.waitForTimeout(400);
 await d.clickText('ほっかいどう・とうほく'); // 開拓済みの県ができたので入れる
@@ -310,7 +310,7 @@ await page.evaluate(() => window.__mqAdmin.boostAll());
 await page.waitForTimeout(1600);
 await d.scrollAndClick('しゅうかく!');
 await harvestFlow(async () => {
-  // 雪の山を こする(1れつめの あたりを 左右に なぞる)→ でてきた🥕を タップ
+  // 雪の山を こする(1れつめの あたりを 左右に なぞる)→ でてきた みのりを タップ
   await page.mouse.move(70, 245);
   await page.mouse.down();
   for (let i = 0; i < 10; i++) {
@@ -318,16 +318,16 @@ await harvestFlow(async () => {
     await page.waitForTimeout(35);
   }
   await page.mouse.up();
-  const carrots = await d.findTexts('🥕');
+  const carrots = await d.findNames('mg-target');
   for (const c of carrots.slice(0, 2)) await page.mouse.click(c.x, c.y);
 });
 log('とうほく解放 → あおもり ゆきしたにんじん(ゆきはらい=sweep アーケード)');
-await d.clickText('← ちず');
+await d.clickText('ちずへ');
 await page.waitForTimeout(600);
 
 /* 12f. ちゅうぶ: おまつり6種で 解放。とやまの しろえび(scoop=すくいとり)を収穫 */
-await d.clickText('🗾 にっぽん');
-await d.waitText('🗾 にっぽん ぜんこく');
+await d.clickText('にっぽん');
+await d.waitText('にっぽん ぜんこく');
 await d.clickText('ちゅうぶ'); // 全開放済みなので入れる(未開放なら トーストのみ)
 await page.waitForTimeout(800);
 await d.waitText('とやま');
@@ -352,7 +352,7 @@ await harvestFlow(async () => {
   await page.mouse.click(240, 520); // タップ=すくいあげる
 });
 log('ちゅうぶ解放 → とやま しろえび(すくいとり=scoop アーケード)');
-await d.clickText('← ちず');
+await d.clickText('ちずへ');
 await page.waitForTimeout(600);
 
 /* 13. セーブ検証 */

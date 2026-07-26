@@ -3,6 +3,7 @@
    一度タップされた魚は「回遊」を始める(画面内で折り返す)が、タップのたびに加速し、
    次のタップが遅れると逃げる。★3は ぬしを つりあげないと取れない */
 import Phaser from 'phaser';
+import { iconTexture } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, impactRing, missShake, padHitArea, screenFlash } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -22,7 +23,8 @@ const TAP_SPEEDUP = 1.32;
 const BOSS_TIMES = [0.28, 0.66] as const;
 
 interface FishSpec {
-  emoji: string;
+  /** さかなの 絵(アイコンキー) */
+  icon: string;
   pts: number;
   taps: number;
   speed: [number, number];
@@ -31,12 +33,12 @@ interface FishSpec {
 }
 
 const FISH_TYPES: FishSpec[] = [
-  { emoji: '🐟', pts: 10, taps: 1, speed: [95, 150], size: 30, weight: 0.55 },
-  { emoji: '🐠', pts: 25, taps: 2, speed: [70, 110], size: 38, weight: 0.32 },
-  { emoji: '🐡', pts: 50, taps: 3, speed: [55, 85], size: 46, weight: 0.13 },
+  { icon: 'fish:sky', pts: 10, taps: 1, speed: [95, 150], size: 30, weight: 0.55 },
+  { icon: 'fish:amber', pts: 25, taps: 2, speed: [70, 110], size: 38, weight: 0.32 },
+  { icon: 'pufferfish:cream', pts: 50, taps: 3, speed: [55, 85], size: 46, weight: 0.13 },
 ];
 
-const BOSS: FishSpec = { emoji: '🐋', pts: 120, taps: 4, speed: [60, 90], size: 64, weight: 0 };
+const BOSS: FishSpec = { icon: 'whale:blue', pts: 120, taps: 4, speed: [60, 90], size: 64, weight: 0 };
 
 export function renderFish(api: MinigameApi, prompt: string): void {
   const { scene, area } = api;
@@ -65,7 +67,7 @@ export function renderFish(api: MinigameApi, prompt: string): void {
   scene.tweens.add({ targets: boat, y: BOAT_Y + 5, angle: 1.6, duration: 1600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
 
   interface Swimmer {
-    obj: Phaser.GameObjects.Text;
+    obj: Phaser.GameObjects.Image;
     spec: FishSpec;
     vx: number;
     tapsLeft: number;
@@ -106,8 +108,10 @@ export function renderFish(api: MinigameApi, prompt: string): void {
     const speedBoost = Phaser.Math.Linear(1, 1.5, session.progress());
     const speed = Phaser.Math.Between(spec.speed[0], spec.speed[1]) * (isBoss ? 1 : speedBoost);
     const obj = scene.add
-      .text(fromLeft ? -40 : GAME_W + 40, depth, spec.emoji, { fontSize: `${spec.size}px` })
-      .setOrigin(0.5);
+      .image(fromLeft ? -40 : GAME_W + 40, depth, iconTexture(scene, spec.icon))
+      .setDisplaySize(spec.size, spec.size)
+      .setOrigin(0.5)
+      .setName('mg-target');
     padHitArea(obj, isBoss ? 18 : 12); // 泳ぐ的は見た目より当たり判定を広く(子供の指)
     obj.setFlipX(fromLeft);
     area.add(obj);

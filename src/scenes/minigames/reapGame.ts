@@ -5,6 +5,7 @@
    タイミングを見て なぞるかの判断が入る(まっすぐ引くだけにならない)。
    刈った列は少しずつ生えてくるので、45秒間 刈りつづける */
 import Phaser from 'phaser';
+import { addIcon, iconTexture } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, floatUp, missShake, padHitArea } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -39,19 +40,19 @@ const BIRD_FLY_FROM_MS = 1700;
 const BIRD_FLY_TO_MS = 1100;
 
 interface Stalk {
-  obj: Phaser.GameObjects.Text;
+  obj: Phaser.GameObjects.Image;
   alive: boolean;
   strokeId: number; // どの一筆で刈られたか
 }
 
 interface Frog {
-  obj: Phaser.GameObjects.Text;
+  obj: Phaser.GameObjects.Image;
   row: number;
   col: number;
   hopTimer?: Phaser.Time.TimerEvent;
 }
 
-export function renderReap(api: MinigameApi, targetEmoji: string, prompt: string): void {
+export function renderReap(api: MinigameApi, targetIcon: string, prompt: string): void {
   const { scene, area } = api;
   // たんぼ背景: 空+水を張った田(横縞)
   const g = scene.add.graphics();
@@ -129,7 +130,7 @@ export function renderReap(api: MinigameApi, targetEmoji: string, prompt: string
   };
 
   const placeFrog = (r: number, col: number): void => {
-    const obj = scene.add.text(stalkX(col), frogY(r), '🐸', { fontSize: '30px' }).setOrigin(0.5);
+    const obj = addIcon(scene, stalkX(col), frogY(r), 'frog:green', 32).setName('mg-frog');
     padHitArea(obj, 10); // タップで逃がしやすく(子供の指)
     area.add(obj);
     const frog: Frog = { obj, row: r, col };
@@ -166,7 +167,7 @@ export function renderReap(api: MinigameApi, targetEmoji: string, prompt: string
     const y = ROW_Y0 + r * ROW_GAP;
     rows[r] = [];
     for (let c = 0; c < STALKS_PER_ROW; c++) {
-      const obj = scene.add.text(stalkX(c), y, targetEmoji, { fontSize: '36px' }).setOrigin(0.5, 0.8);
+      const obj = addIcon(scene, stalkX(c), y, targetIcon, 38).setOrigin(0.5, 0.8).setName('mg-target');
       area.add(obj);
       if (animate) {
         obj.setScale(0);
@@ -210,7 +211,8 @@ export function renderReap(api: MinigameApi, targetEmoji: string, prompt: string
     const { r, st } = targets[Math.floor(Math.random() * targets.length)];
     const fromLeft = Math.random() < 0.5;
     const bird = scene.add
-      .text(fromLeft ? -40 : GAME_W + 40, frogY(r) - 130, '🐦', { fontSize: '32px' })
+      .image(fromLeft ? -40 : GAME_W + 40, frogY(r) - 130, iconTexture(scene, 'bird:teal'))
+      .setDisplaySize(34, 34)
       .setOrigin(0.5);
     bird.setFlipX(!fromLeft);
     padHitArea(bird, 12);

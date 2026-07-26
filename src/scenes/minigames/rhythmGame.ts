@@ -4,6 +4,7 @@
    ときどき ながれてくる「きんの わかば」= ばっちりで 大得点 が C 要素。
    タップ位置は問わない=タイミングだけの遊び(dashi のゲージと親戚だが「ながれてくる的」型) */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -80,10 +81,10 @@ export function renderRhythm(api: MinigameApi, target: string, prompt: string): 
   bk.lineStyle(3, 0x7a4f26, 1);
   for (let i = 0; i < 3; i++) bk.strokeRoundedRect(-42, -30 + i * 18, 84, 10, 5);
   basket.add(bk);
-  basket.add(scene.add.text(0, -40, '🧺', { fontSize: '26px' }).setOrigin(0.5));
+  basket.add(addIcon(scene, 0, -40, 'basket:tan', 28));
   area.add(basket);
   // つみこ(茶摘みの人)
-  const picker = scene.add.text(TARGET_X - 74, LEAF_Y + 40, '👒', { fontSize: '34px' }).setOrigin(0.5);
+  const picker = addIcon(scene, TARGET_X - 74, LEAF_Y + 40, 'person-worker:tan', 36);
   area.add(picker);
   scene.tweens.add({ targets: picker, y: picker.y - 6, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
 
@@ -103,7 +104,7 @@ export function renderRhythm(api: MinigameApi, target: string, prompt: string): 
   const spawnLeaf = (gold: boolean): void => {
     if (session.isEnded()) return;
     const c = scene.add.container(GAME_W + 30, LEAF_Y);
-    const t = scene.add.text(0, 0, target, { fontSize: gold ? '38px' : '32px' }).setOrigin(0.5);
+    const t = addIcon(scene, 0, 0, target, gold ? 40 : 34).setName('mg-target');
     if (gold) t.setTint(0xffd34d);
     c.add(t);
     if (gold) {

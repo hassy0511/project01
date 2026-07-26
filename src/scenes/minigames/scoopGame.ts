@@ -5,6 +5,7 @@
    すくいあげずに 待ちすぎると、なみで こぼれる(ためた ぶんが へるだけ=成功保証)。
    catch(落ちてくる実を受ける)との違い = 「ためて、いいタイミングで あげる」リスク判断 */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -32,7 +33,7 @@ const WAVE_WARN_MS = 1000;
 const GOLD_EVERY_MS = 14000;
 
 interface Fry {
-  obj: Phaser.GameObjects.Text;
+  obj: Phaser.GameObjects.Image;
   vx: number;
   vy: number;
   gold: boolean;
@@ -61,7 +62,7 @@ export function renderScoop(api: MinigameApi, target: string, prompt: string): v
   bg.fillTriangle(300, 190, 380, 96, 460, 190);
   bg.fillStyle(0xffffff, 0.9);
   bg.fillTriangle(352, 130, 380, 96, 408, 130);
-  area.add(scene.add.text(90, 168, '⛵', { fontSize: '26px' }).setOrigin(0.5));
+  area.add(addIcon(scene, 90, 168, 'boat:navy', 28));
 
   api.sign(prompt);
   const session = new ArcadeSession(api, {
@@ -116,11 +117,13 @@ export function renderScoop(api: MinigameApi, target: string, prompt: string): v
     const n = gold ? 6 : 3 + Math.floor(Math.random() * 3);
     const baseY = 300 + Math.random() * 170;
     for (let i = 0; i < n; i++) {
-      const obj = scene.add
-        .text(fromLeft ? -30 - i * 26 : GAME_W + 30 + i * 26, baseY + (Math.random() * 46 - 23), target, {
-          fontSize: gold ? '26px' : '20px',
-        })
-        .setOrigin(0.5);
+      const obj = addIcon(
+        scene,
+        fromLeft ? -30 - i * 26 : GAME_W + 30 + i * 26,
+        baseY + (Math.random() * 46 - 23),
+        target,
+        gold ? 28 : 22,
+      ).setName('mg-target');
       if (gold) obj.setTint(0xffd34d);
       obj.setFlipX(!fromLeft);
       area.add(obj);

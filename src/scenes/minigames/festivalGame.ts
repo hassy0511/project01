@@ -10,13 +10,14 @@ import { SFX } from '../../audio/sfx';
 import { burst, firework, floatUp, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { FONT, GAME_W, TEXT_COLORS } from '../../ui/theme';
+import { addIcon, setIcon } from '../../ui/icons';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
 
 /** やたいに ならぶ しなもの(FestivalScene が recipe.menu から組み立てる) */
 export interface StallItem {
   ref: string;
-  emoji: string;
+  icon: string;
   name: string;
 }
 
@@ -49,12 +50,24 @@ const VIP_PATIENCE_MULT = 0.85;
 /** フィナーレ(はなび)開始: のこり秒 */
 const FINALE_SEC = 10;
 
-const FACES = ['🧒', '👧', '👦', '👩', '👨', '👵', '👴'] as const;
-const VIP_FACE = '🦊';
+/** おきゃくさんの かお(アイコンキー)。おとな・こども・おとしよりを 色で 見わける */
+const FACES = [
+  'person-child:amber',
+  'person-child:pink',
+  'person-child:sky',
+  'person:pink',
+  'person:navy',
+  'person:gray',
+  'person:teal',
+] as const;
+/** とくべつな おきゃくさん(きつねの おめん) */
+const VIP_FACE = 'foxmask:orange';
+const FACE_SMILE = 'face-smile:cream';
+const FACE_SAD = 'face-sad:cream';
 
 interface Customer {
   cont: Phaser.GameObjects.Container;
-  face: Phaser.GameObjects.Text;
+  face: Phaser.GameObjects.Image;
   bar: Phaser.GameObjects.Graphics;
   want: StallItem;
   slot: number;
@@ -98,7 +111,7 @@ export function renderFestival(api: MinigameApi, prompt: string, menu: StallItem
     g.fillStyle(0xe05b5b, 1);
     for (let k = 0; k < 3; k++) g.fillRect(-STALL_W / 2 + 8 + k * 38, -STALL_H / 2 + 4, 20, 12);
     c.add(g);
-    c.add(scene.add.text(0, -12, item.emoji, { fontSize: '44px' }).setOrigin(0.5));
+    c.add(addIcon(scene, 0, -12, item.icon, 46));
     c.add(
       scene.add
         .text(0, 36, item.name, {
@@ -146,17 +159,15 @@ export function renderFestival(api: MinigameApi, prompt: string, menu: StallItem
       bub.strokeRoundedRect(-27, -94, 54, 46, 12);
       bub.fillTriangle(-7, -50, 7, -50, 0, -40);
       cont.add(bub);
-      cont.add(scene.add.text(0, -71, want.emoji, { fontSize: '26px' }).setOrigin(0.5));
+      cont.add(addIcon(scene, 0, -71, want.icon, 30));
       if (vip) {
-        const spark = scene.add.text(24, -92, '✨', { fontSize: '16px' }).setOrigin(0.5);
+        const spark = addIcon(scene, 24, -92, 'sparkle:gold', 18);
         cont.add(spark);
         scene.tweens.add({ targets: spark, alpha: 0.3, duration: 320, yoyo: true, repeat: -1 });
       }
       const bar = scene.add.graphics();
       cont.add(bar);
-      const face = scene.add.text(0, 0, vip ? VIP_FACE : FACES[Math.floor(Math.random() * FACES.length)], {
-        fontSize: '40px',
-      }).setOrigin(0.5);
+      const face = addIcon(scene, 0, 0, vip ? VIP_FACE : FACES[Math.floor(Math.random() * FACES.length)], 42);
       cont.add(face);
       area.add(cont);
 
@@ -204,7 +215,7 @@ export function renderFestival(api: MinigameApi, prompt: string, menu: StallItem
     session.resetCombo();
     SFX.bad();
     scene.tweens.killTweensOf(cu.face);
-    cu.face.setText('😢');
+    setIcon(cu.face, FACE_SAD);
     cu.bar.clear();
     floatUp(scene, cu.cont.x, cu.cont.y + api.areaY - 60, UI_TEXT.fest.sadLeave, '#c04545');
     scene.tweens.add({
@@ -237,7 +248,7 @@ export function renderFestival(api: MinigameApi, prompt: string, menu: StallItem
     const remainRatio = 1 - (now - cu.arrivedAt) / cu.patienceMs;
     cu.bar.clear();
     // しなものが やたいから おきゃくさんへ とんでいく
-    const food = scene.add.text(fromX, STALL_Y - 26, item.emoji, { fontSize: '30px' }).setOrigin(0.5);
+    const food = addIcon(scene, fromX, STALL_Y - 26, item.icon, 32);
     area.add(food);
     SFX.pop();
     scene.tweens.add({
@@ -251,7 +262,7 @@ export function renderFestival(api: MinigameApi, prompt: string, menu: StallItem
         if (session.isEnded()) return;
         SFX.good();
         scene.tweens.killTweensOf(cu.face);
-        cu.face.setText('😋');
+        setIcon(cu.face, FACE_SMILE);
         burst(scene, cu.cont.x, cu.cont.y + api.areaY - 10, cu.vip ? 16 : 8);
         session.addPoints(cu.vip ? VIP_PTS : SERVE_PTS, cu.cont.x, cu.cont.y + api.areaY - 46);
         if (remainRatio >= QUICK_RATIO) {
@@ -395,7 +406,7 @@ function drawFestivalNight(scene: Phaser.Scene, area: Phaser.GameObjects.Contain
     const t = (i + 0.5) / 5;
     const x = t * GAME_W;
     const y = 118 + Math.sin(Math.PI * t) * sag + 16;
-    const lantern = scene.add.text(x, y, '🏮', { fontSize: '26px' }).setOrigin(0.5, 0.2);
+    const lantern = addIcon(scene, x, y, 'lantern:crimson', 28).setOrigin(0.5, 0.2);
     area.add(lantern);
     scene.tweens.add({
       targets: lantern,

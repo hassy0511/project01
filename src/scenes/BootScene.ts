@@ -5,7 +5,11 @@ import { UI_TEXT } from '../data/uiText';
 import { loadMapAsset } from '../game/mapData';
 import { installAdminApi, store } from '../game/store';
 import { makeParticleTextures } from '../ui/effects';
+import { addIcon } from '../ui/icons';
 import { FONT, GAME_H, GAME_W, TEXT_COLORS, COLORS } from '../ui/theme';
+
+/** よみこみ中の ぴっけの 大きさ(px) */
+const PIKKE_SIZE = 44;
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -15,8 +19,9 @@ export class BootScene extends Phaser.Scene {
   create(): void {
     setupHiDpi(this);
     this.cameras.main.setBackgroundColor(COLORS.ground);
+    addIcon(this, GAME_W / 2, GAME_H / 2 - 28, 'chick:amber', PIKKE_SIZE);
     this.add
-      .text(GAME_W / 2, GAME_H / 2, `🐤\n${UI_TEXT.loading}`, {
+      .text(GAME_W / 2, GAME_H / 2 + 16, UI_TEXT.loading, {
         fontFamily: FONT,
         fontSize: '22px',
         color: TEXT_COLORS.main,

@@ -3,6 +3,7 @@
    時間経過で岩が増え、かごが左右に動き出す。
    引っぱるほど実が「ぐぐっ」と張りつめる(手応えレイヤー)。岩バウンスは失敗ではなく物理 */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -78,7 +79,7 @@ export function renderFlick(api: MinigameApi, target: string, prompt: string): v
     });
   });
 
-  let fruit: Phaser.GameObjects.Text;
+  let fruit: Phaser.GameObjects.Image;
   let vx = 0;
   let vy = 0;
   let rolling = false;
@@ -91,7 +92,7 @@ export function renderFlick(api: MinigameApi, target: string, prompt: string): v
     rolling = false;
     vx = 0;
     vy = 0;
-    fruit = scene.add.text(GAME_W / 2, START_Y, target, { fontSize: '44px' }).setOrigin(0.5).setScale(0);
+    fruit = addIcon(scene, GAME_W / 2, START_Y, target, 46).setScale(0).setName('mg-target');
     area.add(fruit);
     scene.tweens.add({ targets: fruit, scale: 1, ease: 'Back.easeOut', duration: 240 });
   };

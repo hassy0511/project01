@@ -4,6 +4,7 @@
    ときどき実る「まぼろしの おおつぶ」(ながく ひっぱる+大得点)が C 要素。
    chain(色の見分け)との違い = 指の「うごかしかた」そのものが本体 */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -41,7 +42,7 @@ interface Spot {
   y: number;
   stage: Stage;
   big: boolean;
-  obj?: Phaser.GameObjects.Text;
+  obj?: Phaser.GameObjects.Image;
   ring?: Phaser.GameObjects.Arc;
   timer?: Phaser.Time.TimerEvent;
 }
@@ -101,7 +102,7 @@ export function renderPluck(api: MinigameApi, target: string, prompt: string): v
   const sprout = (s: Spot): void => {
     if (session.isEnded()) return;
     s.stage = 'unripe';
-    s.obj = scene.add.text(s.x, s.y, target, { fontSize: '34px' }).setOrigin(0.5).setScale(0);
+    s.obj = addIcon(scene, s.x, s.y, target, 36).setScale(0).setName('mg-target');
     s.obj.setTint(TINT_UNRIPE);
     area.add(s.obj);
     scene.tweens.add({ targets: s.obj, scale: 0.8, ease: 'Back.easeOut', duration: 260 });
@@ -128,7 +129,7 @@ export function renderPluck(api: MinigameApi, target: string, prompt: string): v
       clearSpot(s);
       s.stage = 'ripe';
       s.big = true;
-      s.obj = scene.add.text(s.x, s.y - 8, target, { fontSize: '34px' }).setOrigin(0.5).setScale(0);
+      s.obj = addIcon(scene, s.x, s.y - 8, target, 36).setScale(0).setName('mg-target');
       area.add(s.obj);
       scene.tweens.add({ targets: s.obj, scale: 1.6, ease: 'Back.easeOut', duration: 400 });
       s.ring = scene.add.circle(s.x, s.y - 8, 40).setStrokeStyle(4, 0xffd34d, 0.9);

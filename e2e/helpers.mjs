@@ -49,6 +49,44 @@ export function makeDriver(page, shotsDir) {
     await page.waitForTimeout(250);
   }
 
+  /** name を つけた オブジェクト(アイコンボタン)の ワールド座標 */
+  const findNames = (name) =>
+    page.evaluate((nm) => {
+      const out = [];
+      for (const scene of window.__game.scene.getScenes(true)) {
+        const walk = (list) => {
+          for (const o of list) {
+            if (o.list) walk(o.list);
+            if (o.name === nm && o.visible) {
+              const m = o.getWorldTransformMatrix();
+              out.push({ x: m.tx, y: m.ty });
+            }
+          }
+        };
+        walk(scene.children.list);
+      }
+      out.sort((a, b) => a.y - b.y || a.x - b.x);
+      return out;
+    }, name);
+
+  /** name で アイコンボタンを クリックする(絵文字を やめたので 文字では さがせない) */
+  async function clickName(name, nth = 0) {
+    const t0 = Date.now();
+    for (;;) {
+      const found = await findNames(name);
+      if (found[nth]) {
+        await page.mouse.click(found[nth].x, found[nth].y);
+        await page.waitForTimeout(250);
+        return;
+      }
+      if (Date.now() - t0 > 8000) {
+        await page.screenshot({ path: `${shotsDir}/99-fail.png` });
+        throw new Error(`name not found: ${name} nth=${nth}`);
+      }
+      await page.waitForTimeout(150);
+    }
+  }
+
   async function answerQuiz() {
     await page.waitForFunction(() => window.__mq?.kind === 'quiz', null, { timeout: 8000 });
     const correct = await page.evaluate(() => {
@@ -138,6 +176,8 @@ export function makeDriver(page, shotsDir) {
 
   return {
     findTexts,
+    findNames,
+    clickName,
     waitText,
     clickText,
     answerQuiz,

@@ -8,6 +8,7 @@
      ぜんぶ はずすと ボーナス。きんいろの おおつぶは 大とくてん(C要素)。
    pluck(ゆっくり=安全)とちがい、こちらは はやすぎ・おそすぎの 両方が だめ = 速度ゾーンの遊び */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -36,7 +37,7 @@ const BUNCH_MAX = 6;
 const GOLD_CHANCE = 0.22;
 
 interface Shell {
-  obj: Phaser.GameObjects.Text;
+  obj: Phaser.GameObjects.Image;
   gold: boolean;
   peeled: boolean;
   dx: number;
@@ -66,9 +67,9 @@ export function renderShell(api: MinigameApi, target: string, prompt: string): v
   deck.fillStyle(0x6b4a2a, 1);
   for (let i = 0; i < 8; i++) deck.fillRect(30 + i * 55, DECK_Y - 26, 6, 30);
   area.add(deck);
-  const basket = scene.add.text(GAME_W - 62, DECK_Y - 52, '🧺', { fontSize: '30px' }).setOrigin(0.5);
+  const basket = addIcon(scene, GAME_W - 62, DECK_Y - 52, 'basket:tan', 32);
   area.add(basket);
-  const worker = scene.add.text(56, DECK_Y - 52, '🧑‍🌾', { fontSize: '28px' }).setOrigin(0.5);
+  const worker = addIcon(scene, 56, DECK_Y - 52, 'person-worker:sky', 30);
   area.add(worker);
   scene.tweens.add({ targets: worker, y: worker.y - 4, duration: 700, yoyo: true, repeat: -1 });
 
@@ -114,7 +115,7 @@ export function renderShell(api: MinigameApi, target: string, prompt: string): v
       const dx = Math.cos(a) * (18 + Math.random() * 12);
       const dy = Math.sin(a) * (14 + Math.random() * 10);
       const gold = Math.random() < GOLD_CHANCE;
-      const obj = scene.add.text(dx, dy, target, { fontSize: gold ? '32px' : '26px' }).setOrigin(0.5);
+      const obj = addIcon(scene, dx, dy, target, gold ? 34 : 28).setName('mg-target');
       if (gold) obj.setTint(0xffd34d);
       bunch.add(obj);
       shells.push({ obj, gold, peeled: false, dx, dy });

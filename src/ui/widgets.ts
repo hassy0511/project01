@@ -105,7 +105,7 @@ export class Modal {
     this.cursorY = 40;
 
     if (closable) {
-      const x = addIcon(scene, MODAL_W / 2 - 24, 14, 'cross:gray', 22).setInteractive({ useHandCursor: true });
+      const x = addIcon(scene, MODAL_W / 2 - 24, 14, 'cross:gray', 24).setInteractive({ useHandCursor: true });
       x.on('pointerup', () => this.close());
       this.box.add(x);
     }
@@ -231,8 +231,9 @@ export function makeGuideRow(
   return { container: c, height: h };
 }
 
-/** ほしの 大きさと 間かく(できばえの 見た目の かなめ。ここだけで ととのえる) */
-const STAR_SIZE = 46;
+/** ほしの 大きさと 間かく(できばえの 見た目の かなめ。ここだけで ととのえる)。
+    ポンと 出る tween が 1.1ばいまで はみ出すので、置き場の 高さ 48(SessionScene)に おさまる 42 に する */
+const STAR_SIZE = 42;
 const STAR_GAP = 50;
 
 /** できばえの ほしを 1つずつ ポンと 出す(中心原点・幅約150) */
@@ -243,10 +244,13 @@ export function makeStarRow(scene: Phaser.Scene, stars: number): Phaser.GameObje
     const s = addIcon(scene, (i - 1) * STAR_GAP, 0, on ? 'star:gold' : 'star-empty:tan', STAR_SIZE);
     c.add(s);
     if (on) {
+      // アイコンは 表示サイズに あわせて 縮小ずみ。scale:1 に すると テクスチャの ドット数まで
+      // でっかく なって しまうので、もとの scale へ もどす
+      const base = s.scale;
       s.setScale(0);
       scene.tweens.add({
         targets: s,
-        scale: 1,
+        scale: base,
         ease: 'Back.easeOut',
         duration: 260,
         delay: 250 + i * 280,

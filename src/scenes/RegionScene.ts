@@ -60,7 +60,7 @@ export class RegionScene extends Phaser.Scene {
     c.add(back);
     c.add(
       this.add
-        .text(GAME_W / 2, TOP_H / 2, `🗾 ${UI_TEXT.region.title}`, {
+        .text(GAME_W / 2, TOP_H / 2, UI_TEXT.region.title, {
           fontFamily: FONT,
           fontSize: '18px',
           color: TEXT_COLORS.main,

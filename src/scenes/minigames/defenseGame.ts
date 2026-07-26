@@ -7,6 +7,7 @@ import { burst, impactRing, missShake, squashStretch } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { FONT, GAME_W, TEXT_COLORS } from '../../ui/theme';
 import { drawMeadow } from '../../ui/scenery';
+import { addIcon } from '../../ui/icons';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
 
@@ -17,8 +18,8 @@ const BOP_PTS = 10;
 
 export function renderDefense(
   api: MinigameApi,
-  cropEmoji: string,
-  pestEmoji: string,
+  cropIcon: string,
+  pestIcon: string,
   prompt: string,
   onResult: (bopped: number, leaked: number) => void,
 ): void {
@@ -34,7 +35,7 @@ export function renderDefense(
   cg.fillStyle(0x8bc063, 1);
   cg.fillTriangle(-16, 8, 0, -26, 16, 8);
   crop.add(cg);
-  crop.add(scene.add.text(0, -10, cropEmoji, { fontSize: '40px' }).setOrigin(0.5));
+  crop.add(addIcon(scene, 0, -10, cropIcon, 42));
   area.add(crop);
   scene.tweens.add({ targets: crop, scale: { from: 0.98, to: 1.03 }, duration: 900, yoyo: true, repeat: -1 });
 
@@ -42,7 +43,7 @@ export function renderDefense(
   let leaked = 0;
 
   interface Pest {
-    obj: Phaser.GameObjects.Text;
+    obj: Phaser.GameObjects.Image;
     speed: number;
   }
   const pests: Pest[] = [];
@@ -76,9 +77,8 @@ export function renderDefense(
     const x = side === 0 ? -24 : side === 1 ? GAME_W + 24 : 60 + Math.random() * (GAME_W - 120);
     const y = side === 2 ? AREA_H + 24 : 140 + Math.random() * (AREA_H - 220);
     const speed = Phaser.Math.Linear(46, 96, session.progress()) * (0.85 + Math.random() * 0.3);
-    const obj = scene.add
-      .text(x, y, pestEmoji, { fontSize: '36px' })
-      .setOrigin(0.5)
+    const obj = addIcon(scene, x, y, pestIcon, 38)
+      .setName('mg-pest')
       .setInteractive({ useHandCursor: true });
     area.add(obj);
     const pest: Pest = { obj, speed };

@@ -2,6 +2,7 @@
    金の実はボーナス、枝はハズレ(コンボが切れる)。時間経過で落下が速く・多くなる。
    かごは指へ吸い付くように追従しつつ慣性で傾く(手応えレイヤー) */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, impactRing, missShake, squashStretch } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -42,7 +43,7 @@ export function renderCatch(api: MinigameApi, target: string, prompt: string): v
   tree.add(tg);
   // 木に実の飾り
   for (const [fx, fy] of [[-50, -50], [40, -60], [0, -80], [-15, -35], [55, -30]] as const) {
-    tree.add(scene.add.text(fx, fy, target, { fontSize: '18px' }).setOrigin(0.5));
+    tree.add(addIcon(scene, fx, fy, target, 20));
   }
   area.add(tree);
 
@@ -98,8 +99,9 @@ export function renderCatch(api: MinigameApi, target: string, prompt: string): v
     const isGold = kindRoll < 0.1;
     const isJunk = !isGold && kindRoll < 0.26;
     const x = GAME_W / 2 + (Math.random() - 0.5) * 220;
-    const label = isJunk ? '🪵' : target;
-    const item = scene.add.text(x, TREE_Y - 40, label, { fontSize: isGold ? '38px' : '32px' }).setOrigin(0.5);
+    // じゃまもの(ながれてくる まるた)は target とは べつの 絵に する
+    const key = isJunk ? 'log:tan' : target;
+    const item = addIcon(scene, x, TREE_Y - 40, key, isGold ? 40 : 34).setName('mg-target');
     if (isGold) {
       item.setTint(0xffd34d);
       scene.tweens.add({ targets: item, angle: 360, duration: 900, repeat: -1 });

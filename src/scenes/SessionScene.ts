@@ -18,6 +18,7 @@ import { showTriviaOnce } from '../ui/trivia';
 import { COLORS, DEPTH, FONT, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { makeStarRow, Modal, showToast } from '../ui/widgets';
 import { confetti, screenFlash } from '../ui/effects';
+import { addIcon } from '../ui/icons';
 import { renderCatch } from './minigames/catchGame';
 import { renderChain } from './minigames/chainGame';
 import { renderReap } from './minigames/reapGame';
@@ -47,6 +48,8 @@ export class SessionScene extends Phaser.Scene {
   private star3Locked = false;
   private phase: 'game' | 'quiz' | 'done' = 'game';
   private area?: Phaser.GameObjects.Container;
+  /** ヘッダーの「もどる」。けっかの モーダルが 出たら かくす(おしても なにも おきない ボタンを のこさない) */
+  private backBtn?: Phaser.GameObjects.Text;
 
   constructor() {
     super('SessionScene');
@@ -79,8 +82,8 @@ export class SessionScene extends Phaser.Scene {
       this.mode === 'care'
         ? UI_TEXT.session.careTitle
         : this.mode === 'harvest'
-          ? UI_TEXT.session.harvestTitle(m.emoji, m.name)
-          : UI_TEXT.session.instantTitle(m.emoji, m.name, g.type === 'timing' || g.type === 'dig' ? g.verb : '');
+          ? UI_TEXT.session.harvestTitle('', m.name)
+          : UI_TEXT.session.instantTitle('', m.name, g.type === 'timing' || g.type === 'dig' ? g.verb : '');
     const head = this.add.container(0, 0).setDepth(DEPTH.header);
     head.add(this.add.rectangle(GAME_W / 2, TOP_H / 2, GAME_W, TOP_H, COLORS.headerBg));
     const back = this.add
@@ -94,6 +97,7 @@ export class SessionScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true });
     back.on('pointerup', () => this.scene.start('PrefScene', { prefId: this.prefId }));
     head.add(back);
+    this.backBtn = back;
     head.add(
       this.add
         .text(GAME_W / 2 + 10, TOP_H / 2, title, {
@@ -151,32 +155,33 @@ export class SessionScene extends Phaser.Scene {
     const api = this.minigameApi();
     const g = this.material.gather;
     const engine = this.engineOf();
-    const targetEmoji = (g.type === 'plant' ? g.harvest.target : undefined) ?? this.material.emoji;
+    // ミニゲームには 「絵」ではなく **アイコンキー** を わたす(絵文字は つかわない)
+    const targetIcon = (g.type === 'plant' ? g.harvest.targetIcon : undefined) ?? this.material.icon;
     const prompt =
       g.type === 'plant' ? g.harvest.prompt : g.type === 'dig' || g.type === 'timing' ? g.theme.prompt : '';
 
     if (engine === 'care' && g.type === 'plant') {
-      renderDefense(api, this.material.emoji, g.care.target, g.care.label, () => undefined);
+      renderDefense(api, this.material.icon, g.care.targetIcon, g.care.label, () => undefined);
     } else if (engine === 'catch') {
-      renderCatch(api, targetEmoji, prompt);
+      renderCatch(api, targetIcon, prompt);
     } else if (engine === 'chain') {
-      renderChain(api, targetEmoji, prompt);
+      renderChain(api, targetIcon, prompt);
     } else if (engine === 'reap') {
-      renderReap(api, targetEmoji, prompt);
+      renderReap(api, targetIcon, prompt);
     } else if (engine === 'pluck') {
-      renderPluck(api, targetEmoji, prompt);
+      renderPluck(api, targetIcon, prompt);
     } else if (engine === 'rhythm') {
-      renderRhythm(api, targetEmoji, prompt);
+      renderRhythm(api, targetIcon, prompt);
     } else if (engine === 'sweep') {
-      renderSweep(api, targetEmoji, prompt);
+      renderSweep(api, targetIcon, prompt);
     } else if (engine === 'scoop') {
-      renderScoop(api, targetEmoji, prompt);
+      renderScoop(api, targetIcon, prompt);
     } else if (engine === 'shell') {
-      renderShell(api, targetEmoji, prompt);
+      renderShell(api, targetIcon, prompt);
     } else if (engine === 'mine') {
-      renderMine(api, prompt, this.material.emoji);
+      renderMine(api, prompt, this.material.icon);
     } else if (engine === 'flick') {
-      renderFlick(api, targetEmoji, prompt);
+      renderFlick(api, targetIcon, prompt);
     } else {
       renderFish(api, prompt);
     }
@@ -290,8 +295,13 @@ export class SessionScene extends Phaser.Scene {
       screenFlash(this, 0xfff2c4, 0.35);
       confetti(this);
     }
+    // けっかが 出たら ヘッダーの もどるは かくす(モーダルが 下を ふさぐので おせない)
+    this.backBtn?.setVisible(false).disableInteractive();
+    // クイズの ばんめんを かたづける(モーダルの したに もんだいが のこると ごちゃごちゃする)
+    this.area?.destroy();
+    this.area = undefined;
     const modal = new Modal(this, UI_TEXT.session.resultTitle);
-    modal.add(this.add.text(0, 0, this.material.emoji, { fontSize: '56px' }).setOrigin(0.5), 62);
+    modal.add(addIcon(this, 0, 0, this.material.icon, 58), 62);
     modal.addText(successWord, 18);
     modal.add(makeStarRow(this, stars), 48);
     modal.addText(UI_TEXT.session.scoreLine(score), 16, TEXT_COLORS.accent);

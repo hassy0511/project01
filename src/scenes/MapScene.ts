@@ -1,6 +1,7 @@
 /* 地図画面: 実形パスの地方地図(かんとう/とうほく…)・雲(未開拓)・開拓フロー・ぴっけの案内。
    どの地方を表示するかは scene data の regionId(なければ前回の地方)で決まる */
 import Phaser from 'phaser';
+import { addIcon } from '../ui/icons';
 import { setupHiDpi } from '../ui/display';
 import { GAME_DATA, prefTitle, type Prefecture } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';
@@ -218,7 +219,7 @@ export class MapScene extends Phaser.Scene {
         });
       }
       if (done) {
-        root.add(this.add.text(lx + 22, ly - 20, '🏮', { fontSize: `${16 / scale}px` }).setOrigin(0.5));
+        root.add(addIcon(this, lx + 22, ly - 20, 'lantern:crimson', 18 / scale));
       }
     }
   }
@@ -262,7 +263,7 @@ export class MapScene extends Phaser.Scene {
         SFX.fanfare();
         confetti(this);
         const done = new Modal(this, UI_TEXT.kaitaku.successTitle);
-        const big = this.add.text(0, 0, '🎉', { fontSize: '56px' }).setOrigin(0.5);
+        const big = addIcon(this, 0, 0, 'sparkle:gold', 58);
         done.add(big, 62);
         done.addText(UI_TEXT.kaitaku.successBody(prefTitle(p)), 19);
         const g2 = makeGuideRow(this, UI_TEXT.kaitaku.successGuide, 'happy');

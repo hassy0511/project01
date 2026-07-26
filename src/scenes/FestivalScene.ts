@@ -111,7 +111,7 @@ export class FestivalScene extends Phaser.Scene {
     head.add(back);
     head.add(
       this.add
-        .text(GAME_W / 2 + 10, TOP_H / 2, `${r.emoji} ${r.name}`, {
+        .text(GAME_W / 2 + 10, TOP_H / 2, r.name, {
           fontFamily: FONT,
           fontSize: '16px',
           color: TEXT_COLORS.main,
@@ -277,7 +277,7 @@ export class FestivalScene extends Phaser.Scene {
     const items: StallItem[] = [];
     for (const ref of refs) {
       const e = findEntity(GAME_DATA, ref);
-      if (e) items.push({ ref, emoji: e.emoji, name: e.name });
+      if (e) items.push({ ref, icon: e.icon, name: e.name });
     }
     return items;
   }

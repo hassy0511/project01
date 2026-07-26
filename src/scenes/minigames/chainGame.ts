@@ -2,6 +2,7 @@
    と変化していく。「食べごろ」の実だけを素早く摘む。青いうちに触るとコンボが切れる。
    同じ形の実を色で見分けるのが本体(時間経過で食べごろの窓が短くなる) */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, impactRing, missShake } from '../../ui/effects';
 import { GAME_W } from '../../ui/theme';
@@ -22,7 +23,7 @@ interface Spot {
   x: number;
   y: number;
   stage: Stage;
-  obj?: Phaser.GameObjects.Text;
+  obj?: Phaser.GameObjects.Image;
   ring?: Phaser.GameObjects.Arc;
   timer?: Phaser.Time.TimerEvent;
 }
@@ -79,7 +80,7 @@ export function renderChain(api: MinigameApi, target: string, prompt: string): v
   const sprout = (s: Spot): void => {
     if (session.isEnded()) return;
     s.stage = 'unripe';
-    s.obj = scene.add.text(s.x, s.y, target, { fontSize: '34px' }).setOrigin(0.5).setScale(0);
+    s.obj = addIcon(scene, s.x, s.y, target, 36).setScale(0);
     s.obj.setTint(TINT_UNRIPE);
     area.add(s.obj);
     scene.tweens.add({ targets: s.obj, scale: 0.8, ease: 'Back.easeOut', duration: 260 });
