@@ -2,7 +2,7 @@
    かたちの ていぎファイル(food.ts / actors.ts / nature.ts / props.ts / ui.ts)は
    ここから import して、`Record<string, IconDraw>` を export する。
    64x64 の ローカル座標で 描く(テクスチャ生成側で 2ばいに 拡大される)。 */
-import Phaser from 'phaser';
+import type Phaser from 'phaser';
 
 export type G = Phaser.GameObjects.Graphics;
 /** かたち1つの 描画関数。c = [ほんたい色, こい色] */

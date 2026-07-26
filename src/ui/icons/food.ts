@@ -43,31 +43,36 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     shine(g, 22, 24, 3, 2);
   },
   strawberry: (g, c) => {
+    // からだ: かたが まるく、さきが とがった かたち(たこ形に 見えない ように 上を まるめる)
     fill(g, c[0]);
+    g.fillEllipse(24, 30, 26, 26);
+    g.fillEllipse(40, 30, 26, 26);
+    g.fillEllipse(32, 34, 40, 30);
     g.beginPath();
-    g.moveTo(32, 58);
-    g.lineTo(12, 30);
-    g.lineTo(20, 18);
-    g.lineTo(44, 18);
-    g.lineTo(52, 30);
+    g.moveTo(13, 34);
+    g.lineTo(51, 34);
+    g.lineTo(32, 59);
     g.closePath();
     g.fillPath();
     line(g, c[1]);
-    g.strokePath();
+    g.strokeEllipse(32, 38, 40, 42);
+    // たね
     g.fillStyle(0xfff3c4, 0.95);
     for (const [x, y] of [
-      [24, 28],
-      [34, 26],
-      [42, 32],
-      [28, 38],
-      [37, 40],
-      [32, 48],
+      [24, 30],
+      [40, 30],
+      [32, 36],
+      [22, 42],
+      [42, 42],
+      [32, 50],
     ] as const)
-      g.fillCircle(x, y, 1.8);
+      g.fillCircle(x, y, 2);
+    // へた(みどりの ほし)
     fill(g, 0x4a8a3a);
-    g.fillTriangle(20, 18, 32, 8, 44, 18);
+    for (const dx of [-11, 0, 11]) g.fillTriangle(32, 24, 32 + dx, 10, 32 + dx * 0.35 + 5, 24);
     line(g, 0x2f6b2a, 1.6);
-    g.strokeTriangle(20, 18, 32, 8, 44, 18);
+    for (const dx of [-11, 0, 11]) g.strokeTriangle(32, 24, 32 + dx, 10, 32 + dx * 0.35 + 5, 24);
+    stem(g, 32, 12, 7);
   },
   melon: (g, c) => {
     ellipseOutlined(g, 32, 34, 46, 44, c);

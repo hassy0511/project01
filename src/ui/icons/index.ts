@@ -16,22 +16,11 @@
    あたらしい かたちを たすときは、その ファイルに 1つ 関数を 足すだけ(ここは いじらない)。 */
 import Phaser from 'phaser';
 import { ICON_COLORS, S, type IconDraw } from './kit';
-import { FOOD_ICONS } from './food';
-import { ACTOR_ICONS } from './actors';
-import { NATURE_ICONS } from './nature';
-import { PROP_ICONS } from './props';
-import { UI_ICONS } from './ui';
+import { DRAW } from './registry';
 
 export { ICON_COLORS } from './kit';
+export { allShapes, hasShape } from './registry';
 export type IconKey = string;
-
-const DRAW: Record<string, IconDraw> = {
-  ...FOOD_ICONS,
-  ...ACTOR_ICONS,
-  ...NATURE_ICONS,
-  ...PROP_ICONS,
-  ...UI_ICONS,
-};
 
 /** テクスチャは 見た目の 2ばいの ドットで 焼く(HiDPI で ぼやけない ように) */
 const RES = 2;
@@ -62,12 +51,12 @@ export function addIcon(scene: Phaser.Scene, x: number, y: number, key: IconKey,
   return scene.add.image(x, y, iconTexture(scene, key)).setOrigin(0.5).setDisplaySize(size, size);
 }
 
-/** かたちの 名前 一覧(開発用の 一覧ページ・テストで つかう) */
-export function allShapes(): string[] {
-  return Object.keys(DRAW).sort();
+/** すでに おいた アイコンの 絵を べつの かたちに 差しかえる(状態が かわる ときに つかう。
+    もとの 大きさ・回転は そのまま たもつ) */
+export function setIcon(img: Phaser.GameObjects.Image, key: IconKey, size?: number): void {
+  const w = size ?? img.displayWidth;
+  img.setTexture(iconTexture(img.scene, key));
+  img.setDisplaySize(w, w);
 }
 
-/** そのかたちが あるか(データ整合性テスト用) */
-export function hasShape(name: string): boolean {
-  return Boolean(DRAW[name]);
-}
+
