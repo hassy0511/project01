@@ -84,5 +84,5 @@ reference/      # v0.4 HTML試作版(参照用。編集禁止)
 - docs/MIGRATION_PLAN.md — v0.4 からの移植手順とマイルストーン
 - docs/ART_DIRECTION.md — 絵の方針(外部に絵を頼むときの指示書)
 - docs/ART_ASSET_LIST.md — 必要な絵の全リスト(`npm run art:list` で再生成)
-- docs/CODEX_ART_PROMPT.md — 絵を外部AI(Codex)に頼むときの依頼文。納品物は `npm run art:check` で検査
+- docs/CODEX_ART_PROMPT.md — 絵を外部AI(Codex)に頼むときの依頼文。images 2.0 で下絵PNG→それを再現するSVG の2段構え。納品物は `npm run art:check` で検査
 - docs/TUTORIAL_PLAN.md — あそびかたの伝え方(設計案)

@@ -14,7 +14,8 @@
      §7 背景は viewBox と 要素数 だけ
 
    しらべ「られない」こと(人の 目で 見る):
-     32px で わかるか / 似た ものと 区別が つくか / 絵柄が そろって いるか
+     32px で わかるか / 似た ものと 区別が つくか / 絵柄が そろって いるか /
+     下絵(docs/art-ref/*.png)と 同じ ものに 見えるか
      → npm run dev → iconsheet.html?size=32 */
 import fs from 'fs';
 import path from 'path';
@@ -23,6 +24,7 @@ const ICON_DIR = 'src/ui/icons';
 const ICON_FILES = ['food.ts', 'actors.ts', 'nature.ts', 'props.ts', 'ui.ts'];
 const ART_ICON_DIR = 'public/art/icons';
 const ART_BG_DIR = 'public/art/bg';
+const ART_REF_DIR = 'docs/art-ref';
 const MINIGAME_DIR = 'src/scenes/minigames';
 
 /* ---------- 期待される 名まえ ---------- */
@@ -151,6 +153,9 @@ const scan = (dir, kind, expected, prefix = '') => {
     const { bad, warn } = checkOne(path.join(dir, f), kind);
     for (const b of bad) problems.push(`${dir}/${f}: ${b}`);
     for (const w of warn) warnings.push(`${dir}/${f}: ${w}`);
+    // 下絵(PNG)なしで SVG だけ 出て いたら しらせる(ART_DIRECTION §8-0)
+    const ref = path.join(ART_REF_DIR, `${prefix}${name}.png`);
+    if (!fs.existsSync(ref)) warnings.push(`${dir}/${f}: 下絵 ${ref} が ない(先に 下絵を 作る)`);
   }
   return files;
 };
