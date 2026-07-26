@@ -8,12 +8,12 @@ import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, confetti, floatUp, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { GAME_W } from '../../ui/theme';
+import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { CROWD } from './crowd';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const HAND_Y = 560;
 /** 傾き: 得点帯・ぴったり帯・よろけ */
 const OK_DEG = 16;

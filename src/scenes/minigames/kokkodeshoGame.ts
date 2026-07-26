@@ -10,11 +10,11 @@ import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, cameraPulse, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { FONT, GAME_W } from '../../ui/theme';
+import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const CX = GAME_W / 2;
 const HOLD_Y = 470;
 /** ゲージ */

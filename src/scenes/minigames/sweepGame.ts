@@ -8,12 +8,12 @@ import { addIcon, iconScale } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { GAME_W } from '../../ui/theme';
+import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const HIT_RADIUS = 46;
 const PTS = 10;
 const GOLD_PTS = 40;

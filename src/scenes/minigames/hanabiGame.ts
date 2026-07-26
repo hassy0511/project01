@@ -7,11 +7,11 @@ import Phaser from 'phaser';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, floatUp, TX_DOT, TX_GLOW } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { DEPTH, GAME_W } from '../../ui/theme';
+import { DEPTH, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const LAUNCH_Y = 620;
 /** ジャスト判定: わっかの中心から この距離まで */
 const JUST_R = 30;

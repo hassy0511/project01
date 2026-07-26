@@ -9,11 +9,11 @@ import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, confetti, floatUp, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { GAME_W } from '../../ui/theme';
+import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const STREET_Y = 430;
 const STEP_PTS = 8;
 const TRIP_STALL_MS = 450;

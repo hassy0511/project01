@@ -7,11 +7,11 @@ import Phaser from 'phaser';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, floatUp, impactRing, squashStretch, TX_DOT } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { GAME_W } from '../../ui/theme';
+import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const SWING_Y = 168;
 const BASE_Y = 596; // 台の上面
 const DARUMA_H = 54; // 1段ぶんの高さ

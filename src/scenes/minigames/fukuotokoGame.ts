@@ -8,14 +8,14 @@
 import Phaser from 'phaser';
 import { addIcon, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
-import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
+import { bigImpact, burst, confetti, fillBar, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { GAME_W } from '../../ui/theme';
+import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const RUNNER_X = 120;
 const GROUND_Y = 470;
 /** コース(m) */
@@ -95,7 +95,7 @@ export function renderFukuotoko(api: MinigameApi, prompt: string): void {
     meter.fillStyle(0xffffff, 0.3);
     meter.fillRoundedRect(50, 176, GAME_W - 100, 16, 8);
     meter.fillStyle(0xffd34d, 1);
-    meter.fillRoundedRect(50, 176, Math.max(6, ((GAME_W - 100) * dist) / COURSE_M), 16, 8);
+    fillBar(meter, 50, 176, ((GAME_W - 100) * dist) / COURSE_M, 16, 8);
     meterText.setText(UI_TEXT.fest.fukuotokoMeter(Math.floor(dist), COURSE_M, goals));
   };
   drawMeter();

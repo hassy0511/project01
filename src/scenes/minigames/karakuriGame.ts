@@ -10,12 +10,12 @@ import { addIcon, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { GAME_W } from '../../ui/theme';
+import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { CROWD } from './crowd';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const DOLL_Y = 210;
 /** 糸の 下端(ここを つかんで 下へ ひく) */
 const HANDLE_Y = 470;

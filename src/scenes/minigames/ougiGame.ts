@@ -8,14 +8,14 @@
 import Phaser from 'phaser';
 import { addIcon, iconScale } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
-import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
+import { bigImpact, burst, confetti, fillBar, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { GAME_W } from '../../ui/theme';
+import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const TORCH_X = GAME_W / 2;
 const TORCH_Y = 470;
 /** ふりの はんてい */
@@ -103,7 +103,7 @@ export function renderOugi(api: MinigameApi, prompt: string): void {
     gauge.fillStyle(0xffffff, 0.25);
     gauge.fillRoundedRect(70, 590, GAME_W - 140, 18, 9);
     gauge.fillStyle(flame > 0.85 ? 0xffd34d : 0xff8a3d, 1);
-    gauge.fillRoundedRect(70, 590, Math.max(6, (GAME_W - 140) * flame), 18, 9);
+    fillBar(gauge, 70, 590, (GAME_W - 140) * flame, 18, 9);
     gaugeText.setText(UI_TEXT.fest.ougiFlame(Math.round(flame * 100), greeted));
     flameObj.setScale(iconScale(flameObj, 0.7 + flame * 0.9));
     flameObj.setAlpha(0.6 + flame * 0.4);

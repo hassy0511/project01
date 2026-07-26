@@ -7,13 +7,13 @@ import { addIcon, iconScale, resetIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { FONT, GAME_W } from '../../ui/theme';
+import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { drawBasket, drawMeadow } from '../../ui/scenery';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const BASKET_Y = 150;
 const START_Y = 580;
 const GOAL_PTS = 25;

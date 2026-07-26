@@ -9,12 +9,12 @@ import { addIcon, iconScale } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { GAME_W } from '../../ui/theme';
+import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const ZARU_Y = 380;
 const ZARU_R = 52;
 /** ざるの さいだい容量と 1ぴきの点 */

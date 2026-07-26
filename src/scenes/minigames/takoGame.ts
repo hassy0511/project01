@@ -7,16 +7,18 @@
 import Phaser from 'phaser';
 import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
-import { bigImpact, burst, confetti, floatUp, missShake } from '../../ui/effects';
+import { bigImpact, burst, confetti, fillBar, floatUp, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { GAME_W } from '../../ui/theme';
+import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import { CROWD } from './crowd';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const GROUND_Y = 600;
+/** はりメーターの たかさ。あんない文(y=54から2ぎょう)と かさならない ところに おく */
+const METER_Y = 112;
 /** たこの 高さ(0=地上, 1=いちばん上) */
 const RISE_PER_SEC = 0.42;
 const FALL_PER_SEC = 0.3;
@@ -106,9 +108,9 @@ export function renderTako(api: MinigameApi, prompt: string): void {
     // 糸の はりメーター
     meter.clear();
     meter.fillStyle(0xffffff, 0.85);
-    meter.fillRoundedRect(GAME_W / 2 - 110, 66, 220, 16, 8);
+    fillBar(meter, GAME_W / 2 - 110, METER_Y, 220, 16, 8);
     meter.fillStyle(tension > 0.75 ? 0xd94f4f : 0x9ccb6f, 1);
-    meter.fillRoundedRect(GAME_W / 2 - 110, 66, 220 * tension, 16, 8);
+    fillBar(meter, GAME_W / 2 - 110, METER_Y, 220 * tension, 16, 8);
   };
   drawAll();
 

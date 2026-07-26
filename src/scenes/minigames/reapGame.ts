@@ -9,12 +9,12 @@ import { addIcon, iconScale, iconTexture } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, floatUp, missShake, padHitArea } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { GAME_W } from '../../ui/theme';
+import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const ROWS = 4;
 const STALKS_PER_ROW = 6;
 const ROW_Y0 = 180;

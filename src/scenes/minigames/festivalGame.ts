@@ -7,9 +7,9 @@
    - ラスト10秒は フィナーレ: はなびが あがる なか、来客ラッシュを さばききろう */
 import Phaser from 'phaser';
 import { SFX } from '../../audio/sfx';
-import { burst, firework, floatUp, missShake } from '../../ui/effects';
+import { burst, fillBar, firework, floatUp, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { FONT, GAME_W, TEXT_COLORS } from '../../ui/theme';
+import { FONT, GAME_AREA_H, GAME_W, TEXT_COLORS } from '../../ui/theme';
 import { addIcon, setIcon } from '../../ui/icons';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
@@ -21,7 +21,7 @@ export interface StallItem {
   name: string;
 }
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const SKY_H = 330;
 const SLOT_XS = [72, 184, 296, 408] as const;
 const SLOT_Y = 385;
@@ -335,7 +335,7 @@ export function renderFestival(api: MinigameApi, prompt: string, menu: StallItem
       cu.bar.fillStyle(0xffffff, 0.85);
       cu.bar.fillRoundedRect(-23, -44, 46, 7, 3.5);
       cu.bar.fillStyle(ratio > 0.5 ? 0x6fbf44 : ratio > 0.25 ? 0xff9f40 : 0xe05b5b, 1);
-      cu.bar.fillRoundedRect(-23, -44, Math.max(5, 46 * ratio), 7, 3.5);
+      fillBar(cu.bar, -23, -44, 46 * ratio, 7, 3.5);
     }
   };
   scene.events.on(Phaser.Scenes.Events.UPDATE, onUpdate);

@@ -6,12 +6,12 @@ import { addIcon, iconScale } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, impactRing, missShake, squashStretch } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { FONT, GAME_W } from '../../ui/theme';
+import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { drawBasket, drawMeadow } from '../../ui/scenery';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const TREE_Y = 190;
 const BASKET_Y = 590;
 const CATCH_RADIUS = 62;

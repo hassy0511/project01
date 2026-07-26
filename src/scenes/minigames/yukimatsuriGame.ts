@@ -8,11 +8,11 @@ import { addIcon, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { GAME_W } from '../../ui/theme';
+import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const GRID = 5;
 const CELL = 74;
 const GRID_X = (GAME_W - GRID * CELL) / 2;

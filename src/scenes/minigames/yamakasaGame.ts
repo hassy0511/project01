@@ -8,13 +8,13 @@
 import Phaser from 'phaser';
 import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
-import { bigImpact, burst, confetti, floatUp, impactRing } from '../../ui/effects';
+import { bigImpact, burst, confetti, fillBar, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { FONT, GAME_W } from '../../ui/theme';
+import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const RUNNERS = 4;
 const RUN_PTS = 4;
 const LAP_M = 40;
@@ -92,7 +92,7 @@ export function renderYamakasa(api: MinigameApi, prompt: string): void {
       g.fillStyle(0xffffff, 0.7);
       g.fillRoundedRect(POS[i] - 24, 540, 48, 12, 6);
       g.fillStyle(power[i] < LOW ? 0xe05b5b : power[i] < 0.6 ? 0xffd34d : 0x6fbf44, 1);
-      g.fillRoundedRect(POS[i] - 24, 540, Math.max(4, 48 * power[i]), 12, 6);
+      fillBar(g, POS[i] - 24, 540, 48 * power[i], 12, 6);
       runners[i].setAlpha(i === active ? 1 : 0.65);
     }
   };
@@ -122,7 +122,7 @@ export function renderYamakasa(api: MinigameApi, prompt: string): void {
     meter.fillStyle(0xffffff, 0.6);
     meter.fillRoundedRect(50, 168, GAME_W - 100, 14, 7);
     meter.fillStyle(0xe05b5b, 1);
-    meter.fillRoundedRect(50, 168, Math.max(5, ((GAME_W - 100) * dist) / LAP_M), 14, 7);
+    fillBar(meter, 50, 168, ((GAME_W - 100) * dist) / LAP_M, 14, 7);
     info.setText(UI_TEXT.fest.yamakasaInfo(Math.floor(dist), LAP_M, laps));
   };
   drawMeter();

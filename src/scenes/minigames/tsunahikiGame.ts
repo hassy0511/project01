@@ -11,12 +11,12 @@ import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { FONT, GAME_W } from '../../ui/theme';
+import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const CY = 340;
 /** つなの ふさの いち(-1 = あいて / +1 = こちら) */
 const WIN_AT = 0.85;

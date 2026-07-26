@@ -7,12 +7,12 @@ import { iconTexture } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, impactRing, missShake, padHitArea, screenFlash } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { FONT, GAME_W } from '../../ui/theme';
+import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { drawSea } from '../../ui/scenery';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const SEA_TOP = 190;
 const BOAT_Y = 168;
 /** タップ間の猶予(これを過ぎると逃げる) */

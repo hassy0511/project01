@@ -6,7 +6,7 @@ import { scaledDuration, type ArcadeEngine } from '../../data/arcadeTuning';
 import { setHook } from '../../game/testHooks';
 import { UI_TEXT } from '../../data/uiText';
 import { SFX } from '../../audio/sfx';
-import { floatUp } from '../../ui/effects';
+import { fillBar, floatUp } from '../../ui/effects';
 import { FONT, GAME_W, TEXT_COLORS } from '../../ui/theme';
 import type { MinigameApi } from './types';
 
@@ -130,7 +130,7 @@ export class ArcadeSession {
     const barX = GAME_W - 150;
     this.timerFill.clear();
     this.timerFill.fillStyle(ratio < 0.2 ? 0xe05b5b : 0x6fbf44, 1);
-    this.timerFill.fillRoundedRect(barX, 4 + HUD_H / 2 - 7, Math.max(8, 100 * ratio), 14, 7);
+    fillBar(this.timerFill, barX, 4 + HUD_H / 2 - 7, 100 * ratio, 14, 7);
   }
 
   /**

@@ -5,13 +5,13 @@ import Phaser from 'phaser';
 import { SFX } from '../../audio/sfx';
 import { burst, impactRing, missShake, squashStretch } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { FONT, GAME_W, TEXT_COLORS } from '../../ui/theme';
+import { FONT, GAME_AREA_H, GAME_W, TEXT_COLORS } from '../../ui/theme';
 import { drawMeadow } from '../../ui/scenery';
 import { addIcon } from '../../ui/icons';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const CROP_X = GAME_W / 2;
 const CROP_Y = 400;
 const BOP_PTS = 10;

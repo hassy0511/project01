@@ -8,14 +8,14 @@
 import Phaser from 'phaser';
 import { addIcon, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
-import { bigImpact, burst, confetti, floatUp, impactRing } from '../../ui/effects';
+import { bigImpact, burst, confetti, fillBar, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { FONT, GAME_W } from '../../ui/theme';
+import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const HORSE_X = 170;
 const HORSE_Y = 420;
 const GOAL_M = 30;
@@ -88,12 +88,12 @@ export function renderKazariuma(api: MinigameApi, prompt: string): void {
     gauge.fillStyle(0xffffff, 0.7);
     gauge.fillRoundedRect(60, 148, GAME_W - 120, 16, 8);
     gauge.fillStyle(calm > 0.5 ? 0x6fbf44 : calm > 0.2 ? 0xffd34d : 0xe05b5b, 1);
-    gauge.fillRoundedRect(60, 148, Math.max(5, (GAME_W - 120) * calm), 16, 8);
+    fillBar(gauge, 60, 148, (GAME_W - 120) * calm, 16, 8);
     // すすんだ ぶん
     gauge.fillStyle(0xffffff, 0.5);
     gauge.fillRoundedRect(60, 210, GAME_W - 120, 10, 5);
     gauge.fillStyle(0x8a6a4a, 1);
-    gauge.fillRoundedRect(60, 210, Math.max(4, ((GAME_W - 120) * dist) / GOAL_M), 10, 5);
+    fillBar(gauge, 60, 210, ((GAME_W - 120) * dist) / GOAL_M, 10, 5);
     info.setText(UI_TEXT.fest.umaInfo(Math.floor(dist), GOAL_M, goals));
     setIcon(mood, calm > 0.55 ? 'note:purple' : calm > 0.2 ? 'splash:sky' : 'face-angry:cream');
     mood.x = horse.x;

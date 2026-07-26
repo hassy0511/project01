@@ -6,13 +6,13 @@
 import Phaser from 'phaser';
 import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
-import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
+import { bigImpact, burst, confetti, fillBar, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { FONT, GAME_W } from '../../ui/theme';
+import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 const CX = GAME_W / 2;
 const DAI_Y = 300;
 const SHOULDERS = 4;
@@ -101,7 +101,7 @@ export function renderChousa(api: MinigameApi, prompt: string): void {
       g.fillRoundedRect(x - 22, y - 78, 44, 14, 7);
       const p = power[i];
       g.fillStyle(p > LIFT_LINE ? 0x6fbf44 : p > 0.35 ? 0xffd34d : 0xe05b5b, 1);
-      g.fillRoundedRect(x - 22, y - 78, Math.max(4, 44 * p), 14, 7);
+      fillBar(g, x - 22, y - 78, 44 * p, 14, 7);
     }
   };
   drawGauges();

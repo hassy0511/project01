@@ -34,6 +34,25 @@ export function makeParticleTextures(scene: Phaser.Scene): void {
   g.destroy();
 }
 
+/* ---------- ゲージ ---------- */
+
+/** ゲージの なかみを ぬる。
+    はばが かどの まるみより みじかいと、まるみが はみ出して
+    「みどりの ぎざぎざ」みたいな へんな かたちが 出て しまう。
+    (はままつの たこあげで はりが 0 の とき、あんない文の うえに 出ていた)
+    まるみを はばの はんぶんまでに おさえ、はば0なら なにも かかない。 */
+export function fillBar(
+  g: Phaser.GameObjects.Graphics,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r = h / 2,
+): void {
+  if (w <= 0.5) return;
+  g.fillRoundedRect(x, y, w, h, Math.max(0, Math.min(r, w / 2, h / 2)));
+}
+
 /* ---------- ヒットストップ ---------- */
 
 let hitStopActive = false;

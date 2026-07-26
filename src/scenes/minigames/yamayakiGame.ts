@@ -10,11 +10,11 @@ import { addIcon, iconScale, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { GAME_W } from '../../ui/theme';
+import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
 
-const AREA_H = 660;
+const AREA_H = GAME_AREA_H;
 /** くさむらの ます(山のしゃめん) */
 const COLS = 6;
 const ROWS = 5;

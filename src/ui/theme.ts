@@ -3,6 +3,15 @@
 export const GAME_W = 480;
 export const GAME_H = 800;
 
+/** ミニゲームの ヘッダー(もどる・タイトル)の たかさ */
+export const TOP_H = 48;
+/** ミニゲームの えが はじまる たかさ(ヘッダー+すきま) */
+export const GAME_AREA_Y = TOP_H + 4;
+/** ミニゲームの えを かける たかさ。
+    ここより 小さく すると 画面の 下に シーンの 背景色(おまつりは こん色)が
+    帯に なって 出て しまう。はままつの すなはまの 下に 紺色の 帯が 出ていた。 */
+export const GAME_AREA_H = GAME_H - GAME_AREA_Y;
+
 export const FONT = "'Hiragino Maru Gothic ProN','BIZ UDPGothic','Yu Gothic UI','Meiryo',sans-serif";
 
 export const COLORS = {
