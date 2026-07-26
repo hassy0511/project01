@@ -41,7 +41,7 @@ export function renderTsunahiki(api: MinigameApi, prompt: string): void {
   bg.fillEllipse(GAME_W - 50, 190, 130, 80);
   area.add(bg);
   area.add(addIcon(scene, 40, 150, 'hibiscus:pink', 26));
-  area.add(addIcon(scene, GAME_W - 40, 160, 'tree:green', 28));
+  area.add(addIcon(scene, GAME_W - 40, 158, 'palm:deepgreen', 34));
 
   api.sign(prompt);
   const session = new ArcadeSession(api, {
@@ -56,7 +56,7 @@ export function renderTsunahiki(api: MinigameApi, prompt: string): void {
   /* ---------- つな ---------- */
   const rope = scene.add.graphics();
   area.add(rope);
-  const fusa = addIcon(scene, GAME_W / 2, CY, 'flag:pink', 34);
+  const fusa = addIcon(scene, GAME_W / 2, CY, 'tassel:crimson', 34);
   area.add(fusa);
   // ひきて(ひだり=あいて / みぎ=こちら)
   const foes: Phaser.GameObjects.Image[] = [];
@@ -169,7 +169,7 @@ export function renderTsunahiki(api: MinigameApi, prompt: string): void {
         holdScoreAt = Date.now();
         session.addPoints(HOLD_PTS, fusa.x, CY + api.areaY - 80);
         impactRing(scene, fusa.x, CY + api.areaY, 0x9ccb6f, 10);
-        floatUp(scene, fusa.x, CY + api.areaY - 110, UI_TEXT.fest.tsunaHold, '#3f7d2c');
+        floatUp(scene, fusa.x, CY + api.areaY + 96, UI_TEXT.fest.tsunaHold, '#3f7d2c');
       }
     } else {
       pos -= (FOE_BASE + 0.05 * session.progress()) * dt;

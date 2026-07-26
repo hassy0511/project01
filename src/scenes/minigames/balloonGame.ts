@@ -72,14 +72,14 @@ export function renderBalloon(api: MinigameApi, prompt: string): void {
 
   /* ---------- ききゅう ---------- */
   const balloon = scene.add.container(70, 300);
-  balloon.add(addIcon(scene, 0, 0, 'balloon:red', 54));
+  balloon.add(addIcon(scene, 0, 0, 'balloon:red', 54).setName('mg-balloon'));
   const flame = addIcon(scene, 0, 26, 'fire:orange', 18).setVisible(false);
   balloon.add(flame);
   area.add(balloon);
 
   /* ---------- もくひょう ---------- */
   let targetX = 300;
-  const target = addIcon(scene, targetX, GROUND_Y + 20, 'target:red', 32);
+  const target = addIcon(scene, targetX, GROUND_Y + 20, 'target:red', 32).setName('mg-goal');
   area.add(target);
   const ring = scene.add.graphics();
   area.add(ring);

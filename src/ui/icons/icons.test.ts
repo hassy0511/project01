@@ -21,7 +21,7 @@ const collectIconKeys = (): { where: string; key: string }[] => {
     }
     if (!v || typeof v !== 'object') return;
     for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
-      const isIconField = /^(icon|targetIcon|bIcon|markerIcon)$/.test(k);
+      const isIconField = /^(icon|targetIcon|unripeIcon|turningIcon|bIcon|markerIcon)$/.test(k);
       if (isIconField && typeof val === 'string') out.push({ where: `${path}.${k}`, key: val });
       else if (k === 'stageIcons' && Array.isArray(val)) {
         val.forEach((s, i) => {

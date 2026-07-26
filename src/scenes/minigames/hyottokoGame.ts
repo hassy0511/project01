@@ -51,7 +51,7 @@ export function renderHyottoko(api: MinigameApi, prompt: string): void {
   });
 
   /* ---------- おどりて(でっかい おめん) ---------- */
-  const dancer = addIcon(scene, CX, 300, 'mask:red', 80).setAlpha(0.25);
+  const dancer = addIcon(scene, CX, 300, 'mask:red', 80).setAlpha(0.25).setName('mg-dancer');
   area.add(dancer);
   const cueText = scene.add
     .text(CX, 190, '', { fontFamily: FONT, fontSize: '20px', color: '#ffe8b0', fontStyle: 'bold' })
@@ -67,7 +67,7 @@ export function renderHyottoko(api: MinigameApi, prompt: string): void {
     g.fillStyle(0xfff4dc, 1);
     g.fillRoundedRect(-52, -52, 104, 104, 18);
     c.add(g);
-    c.add(addIcon(scene, 0, -6, MASKS[i], 46));
+    c.add(addIcon(scene, 0, -6, MASKS[i], 46).setName('mg-mask'));
     c.add(
       scene.add
         .text(0, 36, UI_TEXT.fest.hyottokoNames[i], { fontFamily: FONT, fontSize: '13px', color: '#5a4632' })

@@ -79,7 +79,8 @@ export function renderKagura(api: MinigameApi, prompt: string): void {
       const dirs: Dir[] = ['up', 'down', 'left', 'right'];
       const dir = dirs[Math.floor(Math.random() * 4)];
       const obj = addIcon(scene, x, y, 'dragon:green', 44).setAlpha(0.25);
-      const arrow = addIcon(scene, x, y - 52, ARROW[dir], 26).setVisible(false);
+      const arrow = addIcon(scene, x, y - 52, ARROW[dir], 26).setVisible(false).setName('mg-arrow');
+      arrow.setData('dir', dir);
       area.add(obj);
       area.add(arrow);
       heads.push({ obj, arrow, dir, x, y, alive: true, active: false });

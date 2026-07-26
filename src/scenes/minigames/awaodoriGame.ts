@@ -96,7 +96,8 @@ export function renderAwaodori(api: MinigameApi, prompt: string): void {
   const spawn = (): void => {
     if (session.isEnded()) return;
     const kind: Kind = Math.random() < 0.55 ? 'hand' : 'foot';
-    const obj = addIcon(scene, GAME_W - 30, BAR_Y, kind === 'hand' ? 'hand-clap:tan' : 'foot:tan', 30);
+    const obj = addIcon(scene, GAME_W - 30, BAR_Y, kind === 'hand' ? 'hand-clap:tan' : 'foot:tan', 30).setName('mg-note');
+    obj.setData('kind', kind);
     area.add(obj);
     notes.push({ obj, x: GAME_W - 30, kind, done: false });
   };

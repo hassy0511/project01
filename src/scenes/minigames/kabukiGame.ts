@@ -115,7 +115,7 @@ export function renderKabuki(api: MinigameApi, prompt: string): void {
     }
     const show = showLeft > 0;
     if (show) showLeft--;
-    const obj = addIcon(scene, BAR_X0, BAR_Y, show ? 'sparkle:gold' : 'mask:violet', show ? 30 : 26);
+    const obj = addIcon(scene, BAR_X0, BAR_Y, show ? 'sparkle:gold' : 'mask:violet', show ? 30 : 26).setName('mg-cue');
     if (show) obj.setTint(0xffd34d);
     area.add(obj);
     cues.push({ obj, x: BAR_X0, done: false, show });

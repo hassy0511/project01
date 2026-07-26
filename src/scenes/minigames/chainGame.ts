@@ -2,7 +2,7 @@
    と変化していく。「食べごろ」の実だけを素早く摘む。青いうちに触るとコンボが切れる。
    同じ形の実を色で見分けるのが本体(時間経過で食べごろの窓が短くなる) */
 import Phaser from 'phaser';
-import { addIcon } from '../../ui/icons';
+import { addIcon, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, impactRing, missShake } from '../../ui/effects';
 import { GAME_W } from '../../ui/theme';
@@ -28,7 +28,15 @@ interface Spot {
   timer?: Phaser.Time.TimerEvent;
 }
 
-export function renderChain(api: MinigameApi, target: string, prompt: string): void {
+/** そだちの 3だんかい。unripe / turning が データに あれば その アイコンを つかい、
+    なければ もとの アイコンの 色を かえて あらわす(こい色の ものは 見わけが つかないので
+    データで 指定する) */
+export interface RipenIcons {
+  unripe?: string;
+  turning?: string;
+}
+
+export function renderChain(api: MinigameApi, target: string, prompt: string, ripen0: RipenIcons = {}): void {
   const { scene, area } = api;
   drawMeadow(scene, area, AREA_H);
   api.sign(prompt);
@@ -80,8 +88,8 @@ export function renderChain(api: MinigameApi, target: string, prompt: string): v
   const sprout = (s: Spot): void => {
     if (session.isEnded()) return;
     s.stage = 'unripe';
-    s.obj = addIcon(scene, s.x, s.y, target, 36).setScale(0);
-    s.obj.setTint(TINT_UNRIPE);
+    s.obj = addIcon(scene, s.x, s.y, ripen0.unripe ?? target, 36).setScale(0).setName('mg-fruit');
+    if (!ripen0.unripe) s.obj.setTint(TINT_UNRIPE);
     area.add(s.obj);
     scene.tweens.add({ targets: s.obj, scale: 0.8, ease: 'Back.easeOut', duration: 260 });
     schedule(s, 1200 + Math.random() * 1400, () => turn(s));
@@ -90,7 +98,8 @@ export function renderChain(api: MinigameApi, target: string, prompt: string): v
   const turn = (s: Spot): void => {
     if (!s.obj) return;
     s.stage = 'turning';
-    s.obj.setTint(TINT_TURNING);
+    if (ripen0.turning) setIcon(s.obj, ripen0.turning, 36);
+    else s.obj.setTint(TINT_TURNING);
     scene.tweens.add({ targets: s.obj, scale: 0.92, duration: 300 });
     schedule(s, 900 + Math.random() * 900, () => ripen(s));
   };
@@ -99,6 +108,7 @@ export function renderChain(api: MinigameApi, target: string, prompt: string): v
     if (!s.obj) return;
     s.stage = 'ripe';
     s.obj.clearTint();
+    setIcon(s.obj, target, 36); // 3だんかいの どれから でも 食べごろの すがたに そろえる
     scene.tweens.add({ targets: s.obj, scale: { from: 1.15, to: 1 }, ease: 'Back.easeOut', duration: 220 });
     // 「いま食べごろ!」の合図リング
     s.ring = scene.add.circle(s.x, s.y, 30).setStrokeStyle(3, 0xffffff, 0.8);

@@ -159,17 +159,19 @@ export class SessionScene extends Phaser.Scene {
     const targetIcon = (g.type === 'plant' ? g.harvest.targetIcon : undefined) ?? this.material.icon;
     const prompt =
       g.type === 'plant' ? g.harvest.prompt : g.type === 'dig' || g.type === 'timing' ? g.theme.prompt : '';
+    // そだちの とちゅうの すがた(データに あれば つかう)
+    const ripen: { unripeIcon?: string; turningIcon?: string } = g.type === 'plant' ? g.harvest : {};
 
     if (engine === 'care' && g.type === 'plant') {
       renderDefense(api, this.material.icon, g.care.targetIcon, g.care.label, () => undefined);
     } else if (engine === 'catch') {
       renderCatch(api, targetIcon, prompt);
     } else if (engine === 'chain') {
-      renderChain(api, targetIcon, prompt);
+      renderChain(api, targetIcon, prompt, { unripe: ripen.unripeIcon, turning: ripen.turningIcon });
     } else if (engine === 'reap') {
       renderReap(api, targetIcon, prompt);
     } else if (engine === 'pluck') {
-      renderPluck(api, targetIcon, prompt);
+      renderPluck(api, targetIcon, prompt, ripen.unripeIcon);
     } else if (engine === 'rhythm') {
       renderRhythm(api, targetIcon, prompt);
     } else if (engine === 'sweep') {

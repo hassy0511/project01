@@ -63,7 +63,7 @@ export function renderUshioni(api: MinigameApi, prompt: string): void {
       [110, 340],
     ] as const;
     for (const [x, y] of spots) {
-      const obj = addIcon(scene, x, y, 'house:teal', 40);
+      const obj = addIcon(scene, x, y, 'house:teal', 40).setName('mg-gate');
       area.add(obj);
       gates.push({ obj, x, y, done: false });
     }
@@ -94,7 +94,7 @@ export function renderUshioni(api: MinigameApi, prompt: string): void {
   for (const dx of [-60, -20, 20, 60]) body.add(addIcon(scene, dx, 52, 'person:teal', 20));
   area.add(body);
 
-  const head = addIcon(scene, GAME_W / 2, BODY_Y - 120, 'cow:dark', 46);
+  const head = addIcon(scene, GAME_W / 2, BODY_Y - 120, 'cow:dark', 46).setName('mg-head');
   area.add(head);
 
   let dragging = false;

@@ -242,6 +242,41 @@ describe('県ごとの ボリューム(全県そろえる)', () => {
   });
 });
 
+describe('そだちの だんかいが 見わけられるか', () => {
+  /** まだ はやい すがたは 「うすい みどりに 色を かける」だけで あらわしている。
+      もとの 色が みどり系・こい色だと 色を かけても かわらないので、
+      その ときは unripeIcon(chain は turningIcon も)を データで 指定させる。
+      (2026-07: ブルーベリーの みが まっくろで 見わけられなかった 件の 再発防止) */
+  const AMBIGUOUS = ['lime', 'green', 'deepgreen', 'teal', 'navy', 'violet', 'purple', 'dark'];
+
+  it('みどり系・こい色の みは まだはやい すがたを もっている', () => {
+    for (const m of D.materials) {
+      const g = m.gather;
+      if (g.type !== 'plant') continue;
+      const h = g.harvest;
+      if (h.engine !== 'chain' && h.engine !== 'pluck') continue;
+      const color = (h.targetIcon ?? m.icon).split(':')[1];
+      if (!AMBIGUOUS.includes(color)) continue;
+      expect(h.unripeIcon, `${m.name}(${h.targetIcon ?? m.icon}): unripeIcon が ない`).toBeTruthy();
+      if (h.engine === 'chain') {
+        expect(h.turningIcon, `${m.name}: turningIcon が ない`).toBeTruthy();
+      }
+    }
+  });
+
+  it('まだはやい・いろづきかけの すがたは 食べごろと ちがう', () => {
+    for (const m of D.materials) {
+      const g = m.gather;
+      if (g.type !== 'plant') continue;
+      const h = g.harvest;
+      const ripe = h.targetIcon ?? m.icon;
+      if (h.unripeIcon) expect(h.unripeIcon, `${m.name} の まだはやい`).not.toBe(ripe);
+      if (h.turningIcon) expect(h.turningIcon, `${m.name} の いろづきかけ`).not.toBe(ripe);
+      if (h.unripeIcon && h.turningIcon) expect(h.unripeIcon).not.toBe(h.turningIcon);
+    }
+  });
+});
+
 describe('そざいの あそび方が 実物と あっているか', () => {
   /** つるして そだてる貝・かご漁の いきもの は「釣りざお」ゲームにしない
       (2026-07: かき・ほたてが 魚釣りゲームになっていた不整合の再発防止) */

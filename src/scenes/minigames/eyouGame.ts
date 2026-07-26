@@ -68,7 +68,7 @@ export function renderEyou(api: MinigameApi, prompt: string): void {
   let carried = 0;
   const light = scene.add.graphics();
   area.add(light);
-  const shingi = addIcon(scene, 0, 0, 'log:tan', 34).setVisible(false);
+  const shingi = addIcon(scene, 0, 0, 'log:tan', 34).setVisible(false).setName('mg-shingi');
   area.add(shingi);
   const holder = addIcon(scene, GAME_W / 2, FLOOR_Y - 30, 'person:gray', 40);
   area.add(holder);

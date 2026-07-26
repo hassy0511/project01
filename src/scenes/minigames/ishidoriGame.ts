@@ -4,6 +4,7 @@
    まちがった がっきを たたくと おとが ずれて コンボが きれる(得点は へらない=成功保証)。
    おわりの「いちばん」= さいごの 10びょうは 得点2ばい */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, cameraPulse, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -62,7 +63,7 @@ export function renderIshidori(api: MinigameApi, prompt: string): void {
   });
 
   /* ---------- がっき ---------- */
-  const makeInst = (x: number, emoji: string, label: string): Phaser.GameObjects.Container => {
+  const makeInst = (x: number, icon: string, label: string): Phaser.GameObjects.Container => {
     const c = scene.add.container(x, INST_Y);
     const ring = scene.add.graphics();
     ring.lineStyle(5, 0xffffff, 0.25);
@@ -71,7 +72,7 @@ export function renderIshidori(api: MinigameApi, prompt: string): void {
     const glow = scene.add.graphics();
     c.add(glow);
     c.setData('glow', glow);
-    c.add(scene.add.text(0, 0, emoji, { fontSize: '54px' }).setOrigin(0.5));
+    c.add(addIcon(scene, 0, 0, icon, 54));
     c.add(
       scene.add
         .text(0, 74, label, { fontFamily: 'sans-serif', fontSize: '15px', color: '#ffe8b0', fontStyle: 'bold' })

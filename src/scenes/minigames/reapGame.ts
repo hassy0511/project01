@@ -212,6 +212,7 @@ export function renderReap(api: MinigameApi, targetIcon: string, prompt: string)
     const fromLeft = Math.random() < 0.5;
     const bird = scene.add
       .image(fromLeft ? -40 : GAME_W + 40, frogY(r) - 130, iconTexture(scene, 'bird:teal'))
+      .setName('mg-bird')
       .setDisplaySize(34, 34)
       .setOrigin(0.5);
     bird.setFlipX(!fromLeft);

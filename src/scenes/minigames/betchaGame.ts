@@ -79,7 +79,7 @@ export function renderBetcha(api: MinigameApi, prompt: string): void {
       const x = 50 + Math.random() * (GAME_W - 100);
       const y = FIELD_TOP + 30 + Math.random() * (FIELD_BOTTOM - FIELD_TOP - 60);
       const a = Math.random() * Math.PI * 2;
-      const obj = addIcon(scene, x, y, 'person-child:amber', 32);
+      const obj = addIcon(scene, x, y, 'person-child:amber', 32).setName('mg-kid');
       area.add(obj);
       kids.push({ obj, x, y, vx: Math.cos(a), vy: Math.sin(a), caught: false });
     }

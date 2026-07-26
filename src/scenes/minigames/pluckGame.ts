@@ -4,7 +4,7 @@
    ときどき実る「まぼろしの おおつぶ」(ながく ひっぱる+大得点)が C 要素。
    chain(色の見分け)との違い = 指の「うごかしかた」そのものが本体 */
 import Phaser from 'phaser';
-import { addIcon } from '../../ui/icons';
+import { addIcon, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -47,7 +47,7 @@ interface Spot {
   timer?: Phaser.Time.TimerEvent;
 }
 
-export function renderPluck(api: MinigameApi, target: string, prompt: string): void {
+export function renderPluck(api: MinigameApi, target: string, prompt: string, unripeIcon?: string): void {
   const { scene, area } = api;
   drawMeadow(scene, area, AREA_H);
   api.sign(prompt);
@@ -102,8 +102,8 @@ export function renderPluck(api: MinigameApi, target: string, prompt: string): v
   const sprout = (s: Spot): void => {
     if (session.isEnded()) return;
     s.stage = 'unripe';
-    s.obj = addIcon(scene, s.x, s.y, target, 36).setScale(0).setName('mg-target');
-    s.obj.setTint(TINT_UNRIPE);
+    s.obj = addIcon(scene, s.x, s.y, unripeIcon ?? target, 36).setScale(0).setName('mg-target');
+    if (!unripeIcon) s.obj.setTint(TINT_UNRIPE);
     area.add(s.obj);
     scene.tweens.add({ targets: s.obj, scale: 0.8, ease: 'Back.easeOut', duration: 260 });
     schedule(s, RIPEN_MIN_MS + Math.random() * (RIPEN_MAX_MS - RIPEN_MIN_MS), () => ripen(s));
@@ -113,6 +113,7 @@ export function renderPluck(api: MinigameApi, target: string, prompt: string): v
     if (!s.obj) return;
     s.stage = 'ripe';
     s.obj.clearTint();
+    setIcon(s.obj, target, 36); // まだ はやい すがたから 食べごろの すがたへ
     scene.tweens.add({ targets: s.obj, scale: { from: 1.15, to: 1 }, ease: 'Back.easeOut', duration: 220 });
     // ゆらゆら(つみごろの合図)
     scene.tweens.add({ targets: s.obj, angle: { from: -5, to: 5 }, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
