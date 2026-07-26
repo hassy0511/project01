@@ -1,4 +1,4 @@
-/* 下部ナビ(ちず/ずかん/もちもの)+ ヘッダー + せってい(管理者⏩・保護者ゲートリセット) */
+/* 下部ナビ(ちず/ずかん/もちもの)+ ヘッダー + せってい(管理者の 早送り・保護者ゲートリセット) */
 import Phaser from 'phaser';
 import { GAME_DATA } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';

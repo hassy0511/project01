@@ -45,7 +45,7 @@ const BANNER_DECO_DEFAULT: IconKey[] = ['tree:deepgreen'];
 /** はたけの みため(まだ うえていない / そだちちゅう) */
 const FIELD_ICON: IconKey = 'field:brown';
 const SPROUT_ICON: IconKey = 'leaf:lime';
-/** できばえの ★ アイコン */
+/** できばえの ほし アイコン */
 const STAR_ICON: IconKey = 'star:gold';
 const STAR_SIZE = 12;
 
@@ -234,7 +234,7 @@ export class PrefScene extends Phaser.Scene {
     return c;
   }
 
-  /** カードの 絵+なまえ+せつめい。stars を わたすと せつめいの うしろに ★アイコンを ならべる。
+  /** カードの 絵+なまえ+せつめい。stars を わたすと せつめいの うしろに ほしアイコンを ならべる。
       もどり値は 絵の Image(ゆれる 演出などに つかう) */
   private cardTexts(
     c: Phaser.GameObjects.Container,
@@ -296,7 +296,7 @@ export class PrefScene extends Phaser.Scene {
     const now = Date.now();
     const g = m.gather;
     const known = s.zukanMat[m.id]?.[this.prefId];
-    // ★は アイコンで ならべるので、ことばだけ もらう
+    // ほしは アイコンで ならべるので、ことばだけ もらう
     const starsTxt = known ? UI_TEXT.pref.bestStars('').trimEnd() : UI_TEXT.pref.notObtained;
     const starsN = known ?? 0;
     const badge = RARITY_LABEL[m.rarity] ? ` ${RARITY_LABEL[m.rarity]}` : '';
@@ -469,7 +469,7 @@ export class PrefScene extends Phaser.Scene {
       );
     });
     modal.add(row, 40);
-    // つかう そざいの 一覧(できばえは ★アイコン)
+    // つかう そざいの 一覧(できばえは ほしアイコン)
     const usedBox = this.add.container(0, 0);
     const lineH = 20;
     used.forEach((it, i) => {

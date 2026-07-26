@@ -13,7 +13,7 @@ const CELL_W = 148;
 const CELL_H = 110;
 /** データに 絵が ない ときの 絵 */
 const UNKNOWN_ICON: IconKey = 'question:gray';
-/** できばえの ★ アイコン */
+/** できばえの ほし アイコン */
 const STAR_ICON: IconKey = 'star:gold';
 const STAR_SIZE = 11;
 
@@ -65,7 +65,7 @@ export class InvScene extends Phaser.Scene {
       g.fillRoundedRect(-CELL_W / 2, -CELL_H / 2, CELL_W, CELL_H, 12);
       g.strokeRoundedRect(-CELL_W / 2, -CELL_H / 2, CELL_W, CELL_H, 12);
       c.add(g);
-      c.add(this.add.text(0, -CELL_H / 2 + 26, e?.emoji ?? '❓', { fontSize: '28px' }).setOrigin(0.5));
+      c.add(addIcon(this, 0, -CELL_H / 2 + 26, e?.icon ?? UNKNOWN_ICON, 28));
       c.add(
         this.add
           .text(0, -CELL_H / 2 + 56, `${e?.name ?? ref} ×${groups.get(key)}`, {
@@ -76,16 +76,22 @@ export class InvScene extends Phaser.Scene {
           })
           .setOrigin(0.5),
       );
-      const stars = Number(q) ? '★'.repeat(Number(q)) : '';
-      c.add(
-        this.add
-          .text(0, -CELL_H / 2 + 82, `${UI_TEXT.recipe.originChip(prefName)}${stars ? ` ${stars}` : ''}`, {
-            fontFamily: FONT,
-            fontSize: '11px',
-            color: TEXT_COLORS.sub,
-          })
-          .setOrigin(0.5),
-      );
+      // 「〜さん ほし」の 行(ほしは アイコン)。文と ほしを まとめて 中央に そろえる
+      const stars = Number(qs) || 0;
+      const sy = -CELL_H / 2 + 82;
+      const chip = this.add
+        .text(0, sy, UI_TEXT.recipe.originChip(prefName), {
+          fontFamily: FONT,
+          fontSize: '11px',
+          color: TEXT_COLORS.sub,
+        })
+        .setOrigin(0, 0.5);
+      const total = chip.width + (stars ? 4 + stars * STAR_SIZE : 0);
+      chip.x = -total / 2;
+      c.add(chip);
+      for (let i = 0; i < stars; i++) {
+        c.add(addIcon(this, -total / 2 + chip.width + 4 + i * STAR_SIZE + STAR_SIZE / 2, sy, STAR_ICON, STAR_SIZE));
+      }
       scroll.content.add(c);
     });
     scroll.setContentHeight(10 + Math.ceil(keys.length / cols) * (CELL_H + 8) + 12);

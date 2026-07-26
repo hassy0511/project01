@@ -1,6 +1,6 @@
 /* ずかん: そざい / さんぶつ / めいぶつ / でんとう のタブ+グリッド。
-   そざいセルは「さいこう★+さんち n/m」の要約だけ表示し、
-   タップで産地ごとの★一覧モーダルを開く(県が増えても破綻しない) */
+   そざいセルは「さいこうほし+さんち n/m」の要約だけ表示し、
+   タップで産地ごとのほし一覧モーダルを開く(県が増えても破綻しない) */
 import Phaser from 'phaser';
 import { setupHiDpi } from '../ui/display';
 import { findPref, GAME_DATA, type Material } from '../data/gameData';
@@ -19,7 +19,7 @@ const CELL_W = 148;
 const CELL_H = 130;
 /** まだ てにいれていない ものの 絵 */
 const UNKNOWN_ICON: IconKey = 'question:gray';
-/** できばえの ★ アイコン */
+/** できばえの ほし アイコン */
 const STAR_ICON: IconKey = 'star:gold';
 
 export class ZukanScene extends Phaser.Scene {
@@ -94,7 +94,7 @@ export class ZukanScene extends Phaser.Scene {
           cells.push(this.cell(UNKNOWN_ICON, UI_TEXT.zukan.unknown, '', false));
           continue;
         }
-        // 要約表示: さいこう★(アイコン) / さんち n/m(県が増えても そざいごとに1セルのまま)
+        // 要約表示: さいこうほし(アイコン) / さんち n/m(県が増えても そざいごとに1セルのまま)
         const gotOrigins = m.origins.filter((o) => rec[o]);
         const best = gotOrigins.reduce((mx, o) => Math.max(mx, rec[o] ?? 0), 0);
         const comp = gotOrigins.length === m.origins.length;
@@ -143,13 +143,13 @@ export class ZukanScene extends Phaser.Scene {
     this.scroll.setContentHeight(gridTop + Math.ceil(cells.length / cols) * (CELL_H + 8) + 12);
   }
 
-  /** そざいの くわしい ずかん: 産地ごとの★一覧(タップで開く) */
+  /** そざいの くわしい ずかん: 産地ごとのほし一覧(タップで開く) */
   private openMatDetail(m: Material): void {
     const rec = store.state.zukanMat[m.id] ?? {};
     const modal = new Modal(this, m.name, true);
     modal.add(addIcon(this, 0, 0, m.icon, 48), 54);
     modal.addText(UI_TEXT.zukan.detailHead, 14, TEXT_COLORS.accent);
-    // 産地ごとの できばえ: なまえは 右づめ、★は アイコンで ならべる
+    // 産地ごとの できばえ: なまえは 右づめ、ほしは アイコンで ならべる
     const rows = this.add.container(0, 0);
     const lineH = 22;
     m.origins.forEach((o, i) => {
@@ -204,7 +204,7 @@ export class ZukanScene extends Phaser.Scene {
         .setOrigin(0.5),
     );
     if (stars > 0) {
-      // 「さいこう ★★」の 行(★は アイコン)
+      // 「さいこう ほし」の 行(ほしは アイコン)
       const label = this.add
         .text(0, 0, UI_TEXT.pref.bestStars('').trimEnd(), {
           fontFamily: FONT,
