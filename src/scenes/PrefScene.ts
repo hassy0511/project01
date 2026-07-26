@@ -25,6 +25,7 @@ import { showTriviaOnce } from '../ui/trivia';
 import { COLORS, DEPTH, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { makeButton, makeGuideRow, Modal, ScrollArea, showToast } from '../ui/widgets';
 import { confetti, wobble } from '../ui/effects';
+import { addIcon, type IconKey } from '../ui/icons';
 
 const CARD_W = 452;
 const CARD_H = 80;
@@ -32,6 +33,21 @@ const CARD_GAP = 10;
 const BANNER_H = 88;
 const TOP_H = 48;
 const SCROLL_TOP = TOP_H + BANNER_H + 8;
+
+/** 風景バナーの かざり(県ごと)。ない県は 木ひとつ */
+const BANNER_DECO: Record<string, IconKey[]> = {
+  ibaraki: ['sakura:pink', 'well:sky'],
+  tochigi: ['mountain:sky', 'strawberry:red'],
+  chiba: ['wave:teal', 'boat:cream'],
+};
+const BANNER_DECO_DEFAULT: IconKey[] = ['tree:deepgreen'];
+
+/** はたけの みため(まだ うえていない / そだちちゅう) */
+const FIELD_ICON: IconKey = 'field:brown';
+const SPROUT_ICON: IconKey = 'leaf:lime';
+/** できばえの ★ アイコン */
+const STAR_ICON: IconKey = 'star:gold';
+const STAR_SIZE = 12;
 
 const fmtWait = (sec: number): string =>
   sec < 60 ? UI_TEXT.pref.soonWait : UI_TEXT.pref.minutesWait(Math.ceil(sec / 60));
@@ -127,7 +143,7 @@ export class PrefScene extends Phaser.Scene {
   }
 
   private buildBanner(): void {
-    // 風景バナー(暫定): 県色の丘+空+絵文字
+    // 風景バナー(暫定): 県色の丘+空+かざりアイコン
     const g = this.add.graphics();
     g.fillStyle(COLORS.sky, 1);
     g.fillRect(0, TOP_H, GAME_W, BANNER_H);
@@ -136,11 +152,9 @@ export class PrefScene extends Phaser.Scene {
     g.fillEllipse(GAME_W * 0.7, TOP_H + BANNER_H + 18, GAME_W * 1.1, 70);
     g.fillStyle(c, 0.45);
     g.fillEllipse(GAME_W * 0.2, TOP_H + BANNER_H + 22, GAME_W * 0.9, 60);
-    this.add.text(GAME_W - 52, TOP_H + 24, '☀️', { fontSize: '26px' }).setOrigin(0.5);
-    const deco: Record<string, string> = { ibaraki: '🌸⛲', tochigi: '⛰️🍓', chiba: '🌊⛵' };
-    this.add
-      .text(24, TOP_H + BANNER_H - 30, deco[this.prefId] ?? '🌳', { fontSize: '26px' })
-      .setOrigin(0, 0.5);
+    addIcon(this, GAME_W - 52, TOP_H + 24, 'sun:gold', 26);
+    const deco = BANNER_DECO[this.prefId] ?? BANNER_DECO_DEFAULT;
+    deco.forEach((key, i) => addIcon(this, 24 + 13 + i * 28, TOP_H + BANNER_H - 30, key, 26));
   }
 
   private prefProgress(): { got: number; total: number } {
@@ -220,8 +234,17 @@ export class PrefScene extends Phaser.Scene {
     return c;
   }
 
-  private cardTexts(c: Phaser.GameObjects.Container, emoji: string, name: string, sub: string): void {
-    c.add(this.add.text(-CARD_W / 2 + 36, 0, emoji, { fontSize: '34px' }).setOrigin(0.5));
+  /** カードの 絵+なまえ+せつめい。stars を わたすと せつめいの うしろに ★アイコンを ならべる。
+      もどり値は 絵の Image(ゆれる 演出などに つかう) */
+  private cardTexts(
+    c: Phaser.GameObjects.Container,
+    icon: IconKey,
+    name: string,
+    sub: string,
+    stars = 0,
+  ): Phaser.GameObjects.Image {
+    const img = addIcon(this, -CARD_W / 2 + 36, 0, icon, 34);
+    c.add(img);
     c.add(
       this.add
         .text(-CARD_W / 2 + 70, -14, name, {
@@ -232,16 +255,19 @@ export class PrefScene extends Phaser.Scene {
         })
         .setOrigin(0, 0.5),
     );
-    c.add(
-      this.add
-        .text(-CARD_W / 2 + 70, 12, sub, {
-          fontFamily: FONT,
-          fontSize: '12px',
-          color: TEXT_COLORS.sub,
-          wordWrap: { width: 240 },
-        })
-        .setOrigin(0, 0.5),
-    );
+    const subT = this.add
+      .text(-CARD_W / 2 + 70, 12, sub, {
+        fontFamily: FONT,
+        fontSize: '12px',
+        color: TEXT_COLORS.sub,
+        wordWrap: { width: 240 },
+      })
+      .setOrigin(0, 0.5);
+    c.add(subT);
+    for (let i = 0; i < stars; i++) {
+      c.add(addIcon(this, subT.x + subT.width + 8 + i * (STAR_SIZE + 1), 12, STAR_ICON, STAR_SIZE));
+    }
+    return img;
   }
 
   private cardButton(
@@ -270,7 +296,9 @@ export class PrefScene extends Phaser.Scene {
     const now = Date.now();
     const g = m.gather;
     const known = s.zukanMat[m.id]?.[this.prefId];
-    const starsTxt = known ? UI_TEXT.pref.bestStars('★'.repeat(known)) : UI_TEXT.pref.notObtained;
+    // ★は アイコンで ならべるので、ことばだけ もらう
+    const starsTxt = known ? UI_TEXT.pref.bestStars('').trimEnd() : UI_TEXT.pref.notObtained;
+    const starsN = known ?? 0;
     const badge = RARITY_LABEL[m.rarity] ? ` ${RARITY_LABEL[m.rarity]}` : '';
 
     if (g.type === 'infra') {
@@ -280,7 +308,7 @@ export class PrefScene extends Phaser.Scene {
       const sub =
         UI_TEXT.pref.stock(st, g.max) + (st >= g.max ? UI_TEXT.pref.stockFull : UI_TEXT.pref.stockNext(fmtWait(nextSec)));
       const c = this.cardBase(y);
-      this.cardTexts(c, g.bEmoji, `${m.name}の ${g.building}`, sub);
+      this.cardTexts(c, g.bIcon, `${m.name}の ${g.building}`, sub);
       this.cardButton(c, g.collectVerb, st > 0 ? COLORS.primary : COLORS.gray, () => {
         const got = collectInfra(s, m, this.prefId, Date.now());
         if (got <= 0) {
@@ -289,7 +317,7 @@ export class PrefScene extends Phaser.Scene {
         }
         store.save();
         SFX.collect();
-        showToast(this, UI_TEXT.pref.collected(m.emoji, m.name, got));
+        showToast(this, UI_TEXT.pref.collected('', m.name, got).trimStart());
         showTriviaOnce(this, m.id, () => this.rebuildCards());
       });
       return c;
@@ -299,12 +327,12 @@ export class PrefScene extends Phaser.Scene {
       const view = plotState(s.plots[plotKey(this.prefId, m.id)], g, now);
       if (view.st === 'empty') {
         const c = this.cardBase(y);
-        this.cardTexts(c, '🟫', UI_TEXT.pref.fieldName(m.name, g.fieldLabel) + badge, starsTxt);
+        this.cardTexts(c, FIELD_ICON, UI_TEXT.pref.fieldName(m.name, g.fieldLabel) + badge, starsTxt, starsN);
         this.cardButton(c, g.verb, COLORS.primary, () => {
           plantSeed(s, m.id, this.prefId, Date.now());
           store.save();
           SFX.plant();
-          showToast(this, UI_TEXT.pref.planted(m.emoji, m.name));
+          showToast(this, UI_TEXT.pref.planted('', m.name).trimStart());
           this.rebuildCards();
         });
         return c;
@@ -312,7 +340,7 @@ export class PrefScene extends Phaser.Scene {
       if (view.st === 'growing') {
         const remain = Math.ceil((g.growSec * 1000 - (now - view.plot.plantedAt)) / 1000);
         const c = this.cardBase(y);
-        this.cardTexts(c, '🌱', m.name + badge, UI_TEXT.pref.growing(fmtWait(remain)));
+        this.cardTexts(c, SPROUT_ICON, m.name + badge, UI_TEXT.pref.growing(fmtWait(remain)));
         // 成長バー
         const bar = this.add.graphics();
         bar.fillStyle(COLORS.barBg, 1);
@@ -332,8 +360,8 @@ export class PrefScene extends Phaser.Scene {
         return c;
       }
       const c = this.cardBase(y, true);
-      this.cardTexts(c, m.emoji, m.name + badge, UI_TEXT.pref.ready);
-      wobble(this, c.list[1] as Phaser.GameObjects.Text); // 実がぷるんと揺れる
+      const img = this.cardTexts(c, m.icon, m.name + badge, UI_TEXT.pref.ready);
+      wobble(this, img); // 実がぷるんと揺れる
       this.cardButton(c, UI_TEXT.pref.harvestBtn, COLORS.primary, () =>
         this.scene.start('SessionScene', { matId: m.id, prefId: this.prefId, mode: 'harvest' }),
       );
@@ -342,7 +370,7 @@ export class PrefScene extends Phaser.Scene {
 
     // timing / dig: 待ちなしミニゲーム
     const c = this.cardBase(y);
-    this.cardTexts(c, m.emoji, m.name + badge, starsTxt);
+    this.cardTexts(c, m.icon, m.name + badge, starsTxt, starsN);
     this.cardButton(c, g.verb, COLORS.primary, () =>
       this.scene.start('SessionScene', { matId: m.id, prefId: this.prefId, mode: 'instant' }),
     );
@@ -357,7 +385,7 @@ export class PrefScene extends Phaser.Scene {
     const extra =
       (ing.origin ? `(${findPref(GAME_DATA, ing.origin)?.name ?? ''}${UI_TEXT.recipe.originChip('').replace('さん', '')}さん)` : '') +
       (ing.quality ? `(${UI_TEXT.recipe.star3Chip})` : '');
-    return `${e.emoji}${e.name}${extra} ${have}/${ing.count}`;
+    return `${e.name}${extra} ${have}/${ing.count}`;
   }
 
   private buildRecipeCard(r: Recipe, y: number): Phaser.GameObjects.Container {
@@ -367,7 +395,7 @@ export class PrefScene extends Phaser.Scene {
     const owned = s.recipes.includes(r.id);
     if (!owned) {
       const c = this.cardBase(y);
-      this.cardTexts(c, '❓', UI_TEXT.recipe.unknownName, UI_TEXT.recipe.sleeping(TIER_LABEL[r.tier]));
+      this.cardTexts(c, 'question:gray', UI_TEXT.recipe.unknownName, UI_TEXT.recipe.sleeping(TIER_LABEL[r.tier]));
       this.cardButton(c, UI_TEXT.recipe.searchBtn, COLORS.orange, () => this.startRecipeGet(r));
       return c;
     }
@@ -376,7 +404,7 @@ export class PrefScene extends Phaser.Scene {
     const jimoto = crafted?.jimoto ? ` ${UI_TEXT.recipe.jimotoChip}` : '';
     const ings = r.ingredients.map((ing) => this.ingChipText(ing)).join('  ');
     const c = this.cardBase(y);
-    this.cardTexts(c, r.emoji, `${r.name}〔${TIER_LABEL[r.tier]}〕${jimoto}`, ings);
+    this.cardTexts(c, r.icon, `${r.name}〔${TIER_LABEL[r.tier]}〕${jimoto}`, ings);
     const ok = craftable(s.inv, r);
     this.cardButton(c, UI_TEXT.recipe.craftBtn, ok ? COLORS.primary : COLORS.gray, () => {
       if (craftable(store.state.inv, r)) this.openCraft(r);
@@ -401,12 +429,12 @@ export class PrefScene extends Phaser.Scene {
         SFX.fanfare();
         confetti(this);
         const done = new Modal(this, UI_TEXT.recipe.getTitle);
-        done.add(this.add.text(0, 0, r.emoji, { fontSize: '54px' }).setOrigin(0.5), 60);
+        done.add(addIcon(this, 0, 0, r.icon, 54), 60);
         done.addText(UI_TEXT.recipe.found(r.name), 18);
         const ings = r.ingredients
           .map((g) => {
             const e = findEntity(GAME_DATA, g.ref);
-            return e ? `${e.emoji}${e.name}×${g.count}` : '';
+            return e ? `${e.name}×${g.count}` : '';
           })
           .join('、');
         done.addText(UI_TEXT.recipe.ingredients(ings), 14, TEXT_COLORS.sub);
@@ -424,23 +452,46 @@ export class PrefScene extends Phaser.Scene {
   private openCraft(r: Recipe): void {
     const used = pickConsume(store.state.inv, r);
     const modal = new Modal(this, UI_TEXT.craft.confirmTitle, true);
-    modal.add(this.add.text(0, 0, r.emoji, { fontSize: '50px' }).setOrigin(0.5), 56);
+    modal.add(addIcon(this, 0, 0, r.icon, 50), 56);
     modal.addText(UI_TEXT.craft.confirm(r.name), 18);
-    const vis = r.ingredients
-      .map((g) => {
-        const e = findEntity(GAME_DATA, g.ref);
-        return e ? `${e.emoji}×${g.count}` : '';
-      })
-      .join(' + ');
-    modal.addText(`${vis} ➡ ${r.emoji}`, 17);
-    const usedTxt = used
-      .map((it) => {
-        const e = findEntity(GAME_DATA, it.ref);
-        const origin = findPref(GAME_DATA, it.origin)?.name ?? '';
-        return `${e?.emoji ?? ''}${e?.name ?? ''}(${UI_TEXT.recipe.originChip(origin)})${it.quality ? ' ' + '★'.repeat(it.quality) : ''}`;
-      })
-      .join('\n');
-    modal.addText(usedTxt, 13, TEXT_COLORS.sub);
+    // ざいりょうの 絵を よこに ならべる(できるもの の 絵は 上に 出ている)
+    const row = this.add.container(0, 0);
+    const step = 76;
+    r.ingredients.forEach((g, i) => {
+      const e = findEntity(GAME_DATA, g.ref);
+      if (!e) return;
+      const cx = (i - (r.ingredients.length - 1) / 2) * step;
+      row.add(addIcon(this, cx - 14, 0, e.icon, 34));
+      row.add(
+        this.add
+          .text(cx + 8, 0, `×${g.count}`, { fontFamily: FONT, fontSize: '17px', color: TEXT_COLORS.main })
+          .setOrigin(0, 0.5),
+      );
+    });
+    modal.add(row, 40);
+    // つかう そざいの 一覧(できばえは ★アイコン)
+    const usedBox = this.add.container(0, 0);
+    const lineH = 20;
+    used.forEach((it, i) => {
+      const e = findEntity(GAME_DATA, it.ref);
+      const origin = findPref(GAME_DATA, it.origin)?.name ?? '';
+      const ly = (i - (used.length - 1) / 2) * lineH;
+      const q = it.quality ?? 0;
+      const t = this.add
+        .text(0, ly, `${e?.name ?? ''}(${UI_TEXT.recipe.originChip(origin)})`, {
+          fontFamily: FONT,
+          fontSize: '13px',
+          color: TEXT_COLORS.sub,
+        })
+        .setOrigin(0.5);
+      const total = t.width + (q ? 6 + q * (STAR_SIZE - 1) : 0);
+      t.x = -total / 2 + t.width / 2;
+      usedBox.add(t);
+      for (let s = 0; s < q; s++) {
+        usedBox.add(addIcon(this, -total / 2 + t.width + 6 + s * (STAR_SIZE - 1) + 5, ly, STAR_ICON, STAR_SIZE - 1));
+      }
+    });
+    modal.add(usedBox, used.length * lineH);
     modal.addButton(UI_TEXT.craft.doIt, COLORS.primary, () => {
       const { jimoto } = applyCraft(store.state, r);
       store.save();
@@ -448,7 +499,7 @@ export class PrefScene extends Phaser.Scene {
       confetti(this);
       modal.close();
       const done = new Modal(this, UI_TEXT.craft.doneTitle);
-      done.add(this.add.text(0, 0, r.emoji, { fontSize: '54px' }).setOrigin(0.5), 60);
+      done.add(addIcon(this, 0, 0, r.icon, 54), 60);
       done.addText(UI_TEXT.craft.done(r.name), 18);
       if (jimoto) done.addText(UI_TEXT.craft.jimotoBanner, 15, TEXT_COLORS.accent);
       done.addButton(UI_TEXT.recipe.yay, COLORS.primary, () => {
@@ -466,12 +517,12 @@ export class PrefScene extends Phaser.Scene {
     const held = s.fest.includes(r.id);
     const c = this.cardBase(y, held);
     if (!r.implemented) {
-      this.cardTexts(c, r.emoji, `${r.name}〔${TIER_LABEL[4]}〕`, UI_TEXT.fest.preparing);
+      this.cardTexts(c, r.icon, `${r.name}〔${TIER_LABEL[4]}〕`, UI_TEXT.fest.preparing);
       return c;
     }
     // まつり名は長いのでタイトルは名前だけにし、開催ずみバッジは下段に置く(ボタンと重ねない)
     const ings = r.ingredients.map((ing) => this.ingChipText(ing)).join('  ');
-    this.cardTexts(c, r.emoji, r.name, held ? `${UI_TEXT.fest.held}  ${ings}` : ings);
+    this.cardTexts(c, r.icon, r.name, held ? `${UI_TEXT.fest.held}  ${ings}` : ings);
     const ok = craftable(s.inv, r);
     this.cardButton(c, held ? UI_TEXT.fest.againBtn : UI_TEXT.fest.openBtn, ok ? COLORS.orange : COLORS.gray, () => {
       if (craftable(store.state.inv, r)) this.startFestival(r);
@@ -482,7 +533,7 @@ export class PrefScene extends Phaser.Scene {
 
   private startFestival(r: Recipe): void {
     const modal = new Modal(this, r.name, true);
-    modal.add(this.add.text(0, 0, r.emoji, { fontSize: '54px' }).setOrigin(0.5), 60);
+    modal.add(addIcon(this, 0, 0, r.icon, 54), 60);
     const INTROS: Record<string, string> = {
       yatai: UI_TEXT.fest.introBody,
       daruma: UI_TEXT.fest.introDaruma,

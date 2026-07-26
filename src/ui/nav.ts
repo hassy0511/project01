@@ -5,11 +5,18 @@ import { UI_TEXT } from '../data/uiText';
 import { store } from '../game/store';
 import { isMuted, setMuted, SFX } from '../audio/sfx';
 import { COLORS, DEPTH, FONT, GAME_H, GAME_W, TEXT_COLORS } from './theme';
+import { addIcon, setIcon } from './icons';
 import { Modal, showToast } from './widgets';
 import { showParentGate } from './parentGate';
 
 export const NAV_H = 72;
 export const HEADER_H = 56;
+
+/** ナビの アイコン・文字の 大きさ(ベタ書き きんし) */
+const NAV_ICON = 26;
+const NAV_ICON_Y = 26;
+const NAV_LABEL_Y = 48;
+const NAV_TOOL_ICON = 30;
 
 export type NavKey = 'map' | 'zukan' | 'inv';
 
@@ -27,8 +34,9 @@ export function zukanProgress(): { got: number; total: number } {
 export function buildHeader(scene: Phaser.Scene): void {
   const c = scene.add.container(0, 0).setDepth(DEPTH.header);
   const bg = scene.add.rectangle(GAME_W / 2, HEADER_H / 2, GAME_W, HEADER_H, COLORS.headerBg);
+  const pikke = addIcon(scene, 28, HEADER_H / 2, 'chick:amber', 34);
   const title = scene.add
-    .text(16, HEADER_H / 2, `🐤 ${GAME_DATA.meta.title}`, {
+    .text(50, HEADER_H / 2, GAME_DATA.meta.title, {
       fontFamily: FONT,
       fontSize: '19px',
       color: TEXT_COLORS.main,
@@ -43,7 +51,7 @@ export function buildHeader(scene: Phaser.Scene): void {
       color: TEXT_COLORS.sub,
     })
     .setOrigin(1, 0.5);
-  c.add([bg, title, count]);
+  c.add([bg, pikke, title, count]);
 }
 
 /** 画面下部ナビバー */
@@ -53,45 +61,46 @@ export function buildNav(scene: Phaser.Scene, active: NavKey): void {
   bg.setStrokeStyle(2, COLORS.panelLine);
   c.add(bg);
 
-  const entries: { key: NavKey; label: string; emoji: string }[] = [
-    { key: 'map', label: UI_TEXT.nav.map, emoji: '🗾' },
-    { key: 'zukan', label: UI_TEXT.nav.zukan, emoji: '📖' },
-    { key: 'inv', label: UI_TEXT.nav.inv, emoji: '🎒' },
+  const entries: { key: NavKey; label: string; icon: string; iconOff: string }[] = [
+    { key: 'map', label: UI_TEXT.nav.map, icon: 'pin:red', iconOff: 'pin:gray' },
+    { key: 'zukan', label: UI_TEXT.nav.zukan, icon: 'book:teal', iconOff: 'book:gray' },
+    { key: 'inv', label: UI_TEXT.nav.inv, icon: 'bag:brown', iconOff: 'bag:gray' },
   ];
   entries.forEach((e, i) => {
     const x = 70 + i * 110;
     const isActive = e.key === active;
+    const icon = addIcon(scene, x, NAV_ICON_Y, isActive ? e.icon : e.iconOff, NAV_ICON);
     const t = scene.add
-      .text(x, NAV_H / 2, `${e.emoji}\n${e.label}`, {
+      .text(x, NAV_LABEL_Y, e.label, {
         fontFamily: FONT,
         fontSize: '14px',
         color: isActive ? TEXT_COLORS.good : TEXT_COLORS.sub,
         align: 'center',
         fontStyle: isActive ? 'bold' : 'normal',
       })
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true });
-    t.on('pointerup', () => {
+      .setOrigin(0.5);
+    // アイコンと 文字を まとめて おせる ように、見えない あたり判定を かぶせる
+    const hit = scene.add.zone(x, NAV_H / 2, 92, NAV_H - 8).setInteractive({ useHandCursor: true });
+    hit.on('pointerup', () => {
       if (e.key !== active) scene.scene.start(NAV_SCENES[e.key]);
     });
-    c.add(t);
+    c.add([icon, t, hit]);
   });
 
-  const snd = scene.add
-    .text(GAME_W - 100, NAV_H / 2, isMuted() ? '🔇' : '🔊', { fontSize: '26px' })
-    .setOrigin(0.5)
-    .setInteractive({ useHandCursor: true });
+  const sndIcon = (): string => (isMuted() ? 'sound-off:gray' : 'sound-on:navy');
+  const snd = addIcon(scene, GAME_W - 100, NAV_H / 2, sndIcon(), NAV_TOOL_ICON).setInteractive({
+    useHandCursor: true,
+  });
   snd.on('pointerup', () => {
     setMuted(!isMuted());
-    snd.setText(isMuted() ? '🔇' : '🔊');
+    setIcon(snd, sndIcon());
     if (!isMuted()) SFX.good();
   });
   c.add(snd);
 
-  const gear = scene.add
-    .text(GAME_W - 44, NAV_H / 2, '⚙️', { fontSize: '26px' })
-    .setOrigin(0.5)
-    .setInteractive({ useHandCursor: true });
+  const gear = addIcon(scene, GAME_W - 44, NAV_H / 2, 'gear:gray', NAV_TOOL_ICON).setInteractive({
+    useHandCursor: true,
+  });
   gear.on('pointerup', () => openSettings(scene));
   c.add(gear);
 }

@@ -1,8 +1,9 @@
-/* 共通UI部品: ボタン・モーダル・トースト・ガイド(ぴっけ)・★演出・スクロール
-   見た目は M2 暫定(絵文字ベース)。M3/M4 で差し替える */
+/* 共通UI部品: ボタン・モーダル・トースト・ガイド(ぴっけ)・ほし演出・スクロール
+   絵は ぜんぶ ui/icons の ベクターアイコン(絵文字は つかわない) */
 import Phaser from 'phaser';
 import { COLORS, DEPTH, FONT, GAME_H, GAME_W, TEXT_COLORS } from './theme';
 import { SFX } from '../audio/sfx';
+import { addIcon } from './icons';
 
 export interface ButtonOpts {
   x: number;
@@ -104,10 +105,7 @@ export class Modal {
     this.cursorY = 40;
 
     if (closable) {
-      const x = scene.add
-        .text(MODAL_W / 2 - 24, 14, '✕', { fontFamily: FONT, fontSize: '20px', color: TEXT_COLORS.sub })
-        .setOrigin(0.5)
-        .setInteractive({ useHandCursor: true });
+      const x = addIcon(scene, MODAL_W / 2 - 24, 14, 'cross:gray', 22).setInteractive({ useHandCursor: true });
       x.on('pointerup', () => this.close());
       this.box.add(x);
     }
@@ -195,9 +193,16 @@ export function showToast(scene: Phaser.Scene, msg: string): void {
 
 export type MascotMood = 'normal' | 'happy' | 'wow';
 
-const MOOD_EMOJI: Record<MascotMood, string> = { normal: '🐤', happy: '🐥', wow: '🐣' };
+/** ぴっけ(たんけんヒヨコ)の かお。wow は たまごから とびだす かたちで おどろきを 出す */
+const MOOD_ICON: Record<MascotMood, string> = {
+  normal: 'chick:amber',
+  happy: 'chick:yellow',
+  wow: 'chick-egg:amber',
+};
+/** ぴっけの 大きさ(吹き出しの 高さ 56 に おさまる ように すこし 大きめ) */
+const MASCOT_SIZE = 46;
 
-/** ぴっけ+吹き出し(暫定: 絵文字)。中心原点、幅 w */
+/** ぴっけ+吹き出し。中心原点、幅 w */
 export function makeGuideRow(
   scene: Phaser.Scene,
   text: string,
@@ -205,7 +210,7 @@ export function makeGuideRow(
   w = 420,
 ): { container: Phaser.GameObjects.Container; height: number } {
   const c = scene.add.container(0, 0);
-  const pikke = scene.add.text(-w / 2 + 28, 0, MOOD_EMOJI[mood], { fontSize: '40px' }).setOrigin(0.5);
+  const pikke = addIcon(scene, -w / 2 + 28, 0, MOOD_ICON[mood], MASCOT_SIZE);
   const bubbleW = w - 76;
   const t = scene.add
     .text(-w / 2 + 66 + bubbleW / 2, 0, text, {
@@ -226,18 +231,16 @@ export function makeGuideRow(
   return { container: c, height: h };
 }
 
-/** ★を1つずつ ポン♪ と出す(中心原点・幅約150) */
+/** ほしの 大きさと 間かく(できばえの 見た目の かなめ。ここだけで ととのえる) */
+const STAR_SIZE = 46;
+const STAR_GAP = 50;
+
+/** できばえの ほしを 1つずつ ポンと 出す(中心原点・幅約150) */
 export function makeStarRow(scene: Phaser.Scene, stars: number): Phaser.GameObjects.Container {
   const c = scene.add.container(0, 0);
   for (let i = 0; i < 3; i++) {
     const on = i < stars;
-    const s = scene.add
-      .text((i - 1) * 48, 0, '★', {
-        fontFamily: FONT,
-        fontSize: '40px',
-        color: on ? '#f0b429' : '#ddd5c2',
-      })
-      .setOrigin(0.5);
+    const s = addIcon(scene, (i - 1) * STAR_GAP, 0, on ? 'star:gold' : 'star-empty:tan', STAR_SIZE);
     c.add(s);
     if (on) {
       s.setScale(0);

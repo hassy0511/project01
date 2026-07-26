@@ -3,15 +3,17 @@
    シーンから setBgmTrack() で切り替える(FestivalScene: fest、はなびは night)。
    ミュート(sfx.ts)と連動: ミュート中は鳴らさず、解除で再開する。
    iOS 対策: 初回 pointerdown(main.ts)から startBgm を呼ぶ */
-import { audioOut, isMuted, onMuteChange, sharedAudioContext } from './sfx';
+import { audioOut, isMuted, onAudioResume, onMuteChange, sharedAudioContext } from './sfx';
 
 export type BgmTrackName = 'day' | 'fest' | 'night';
 
 /** 1ステップ=8分音符 */
 const STEPS_PER_BAR = 8;
 /** 先読みスケジューリング窓(秒)とチェック間隔(ms) */
-const LOOKAHEAD_SEC = 0.35;
-const TICK_MS = 120;
+/* モバイルは 画面を 見ていない あいだ setInterval が 1びょうに 間引かれる。
+   先読みが みじかいと そこで 音が 途切れるので ゆとりを もたせる */
+const LOOKAHEAD_SEC = 1.4;
+const TICK_MS = 250;
 /** BGM ぜんたいの 音量。実測 0.02〜0.15 しか 出ておらず「鳴ってない」と 言われたので
     3ばい以上に 上げ、出口に リミッター(sfx.ts の audioOut)を 入れた */
 const MASTER_VOL = 1.0;
@@ -303,7 +305,25 @@ export function setBgmTrack(name: BgmTrackName): void {
   }
 }
 
-// 🔊トグルに連動: ミュートで止め、解除で流す
+/* 中断(他アプリ・画面ロック)から もどったら、出口を つなぎなおして 曲を 続ける。
+   master は 古い AudioContext の ノードなので すてて 作りなおす */
+onAudioResume(() => {
+  if (!running || isMuted()) return;
+  const ctx = sharedAudioContext();
+  if (!ctx) return;
+  const out = audioOut();
+  if (!out) return;
+  try {
+    master = ctx.createGain();
+    master.gain.setValueAtTime(MASTER_VOL, ctx.currentTime);
+    master.connect(out);
+    nextTime = ctx.currentTime + 0.1;
+  } catch {
+    /* noop */
+  }
+});
+
+// おとの トグルに連動: ミュートで止め、解除で流す
 onMuteChange((m) => {
   if (m) stopBgm();
   else startBgm();

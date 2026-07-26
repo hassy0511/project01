@@ -7,9 +7,15 @@ import { store } from '../game/store';
 import { buildHeader, buildNav, HEADER_H } from '../ui/nav';
 import { COLORS, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { ScrollArea } from '../ui/widgets';
+import { addIcon, type IconKey } from '../ui/icons';
 
 const CELL_W = 148;
 const CELL_H = 110;
+/** データに 絵が ない ときの 絵 */
+const UNKNOWN_ICON: IconKey = 'question:gray';
+/** できばえの ★ アイコン */
+const STAR_ICON: IconKey = 'star:gold';
+const STAR_SIZE = 11;
 
 export class InvScene extends Phaser.Scene {
   constructor() {
@@ -46,7 +52,7 @@ export class InvScene extends Phaser.Scene {
     const keys = [...groups.keys()].sort();
     const cols = 3;
     keys.forEach((key, i) => {
-      const [ref, origin, q] = key.split('|');
+      const [ref, origin, qs] = key.split('|');
       const e = findEntity(GAME_DATA, ref);
       const prefName = findPref(GAME_DATA, origin)?.name ?? origin;
       const c = this.add.container(

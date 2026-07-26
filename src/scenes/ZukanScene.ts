@@ -9,6 +9,7 @@ import { store } from '../game/store';
 import { buildHeader, buildNav, HEADER_H } from '../ui/nav';
 import { COLORS, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { Modal, ScrollArea } from '../ui/widgets';
+import { addIcon, type IconKey } from '../ui/icons';
 
 type TabKey = 'mat' | 't2' | 't3' | 't4';
 const TIER_OF: Record<Exclude<TabKey, 'mat'>, number> = { t2: 2, t3: 3, t4: 4 };
@@ -16,6 +17,10 @@ const TIER_OF: Record<Exclude<TabKey, 'mat'>, number> = { t2: 2, t3: 3, t4: 4 };
 const TAB_H = 46;
 const CELL_W = 148;
 const CELL_H = 130;
+/** まだ てにいれていない ものの 絵 */
+const UNKNOWN_ICON: IconKey = 'question:gray';
+/** できばえの ★ アイコン */
+const STAR_ICON: IconKey = 'star:gold';
 
 export class ZukanScene extends Phaser.Scene {
   private tab: TabKey = 'mat';
@@ -86,18 +91,16 @@ export class ZukanScene extends Phaser.Scene {
       for (const m of GAME_DATA.materials) {
         const rec = store.state.zukanMat[m.id];
         if (!rec) {
-          cells.push(this.cell('❓', UI_TEXT.zukan.unknown, '', false));
+          cells.push(this.cell(UNKNOWN_ICON, UI_TEXT.zukan.unknown, '', false));
           continue;
         }
-        // 要約表示: さいこう★ / さんち n/m(県が増えても そざいごとに1セルのまま)
+        // 要約表示: さいこう★(アイコン) / さんち n/m(県が増えても そざいごとに1セルのまま)
         const gotOrigins = m.origins.filter((o) => rec[o]);
         const best = gotOrigins.reduce((mx, o) => Math.max(mx, rec[o] ?? 0), 0);
         const comp = gotOrigins.length === m.origins.length;
         const sub =
-          `${UI_TEXT.pref.bestStars('★'.repeat(best))}\n` +
-          `${UI_TEXT.zukan.sanchi(gotOrigins.length, m.origins.length)}` +
-          (comp ? `\n${UI_TEXT.zukan.comp}` : '');
-        const c = this.cell(m.emoji, m.name, sub, true, comp);
+          `${UI_TEXT.zukan.sanchi(gotOrigins.length, m.origins.length)}` + (comp ? `\n${UI_TEXT.zukan.comp}` : '');
+        const c = this.cell(m.icon, m.name, sub, true, comp, best);
         const zone = this.add.zone(0, 0, CELL_W, CELL_H).setInteractive({ useHandCursor: true });
         zone.on('pointerup', () => this.openMatDetail(m));
         c.add(zone);
@@ -109,14 +112,14 @@ export class ZukanScene extends Phaser.Scene {
         const got = tier === 4 ? store.state.fest.includes(r.id) : store.state.zukanProd[r.id];
         const prefName = findPref(GAME_DATA, r.pref)?.name ?? '';
         if (!got) {
-          cells.push(this.cell('❓', UI_TEXT.zukan.unknown, prefName, false));
+          cells.push(this.cell(UNKNOWN_ICON, UI_TEXT.zukan.unknown, prefName, false));
         } else if (tier === 4) {
           const best = store.state.festBest[r.id];
           const bestLine = best ? `\n${UI_TEXT.fest.bestScore(best)}` : '';
-          cells.push(this.cell(r.emoji, r.name, prefName + bestLine, true, true));
+          cells.push(this.cell(r.icon, r.name, prefName + bestLine, true, true));
         } else {
           const jimoto = typeof got === 'object' && got.jimoto ? `\n${UI_TEXT.zukan.jimoto}` : '';
-          cells.push(this.cell(r.emoji, r.name, prefName + jimoto, true, jimoto !== ''));
+          cells.push(this.cell(r.icon, r.name, prefName + jimoto, true, jimoto !== ''));
         }
       }
     }
@@ -144,22 +147,44 @@ export class ZukanScene extends Phaser.Scene {
   private openMatDetail(m: Material): void {
     const rec = store.state.zukanMat[m.id] ?? {};
     const modal = new Modal(this, m.name, true);
-    modal.add(this.add.text(0, 0, m.emoji, { fontSize: '48px' }).setOrigin(0.5), 54);
+    modal.add(addIcon(this, 0, 0, m.icon, 48), 54);
     modal.addText(UI_TEXT.zukan.detailHead, 14, TEXT_COLORS.accent);
-    const lines = m.origins
-      .map((o) => {
-        const name = findPref(GAME_DATA, o)?.name ?? o;
-        const st = rec[o];
-        return st ? `${name}: ${'★'.repeat(st)}` : `${name}: ${UI_TEXT.zukan.notYet}`;
-      })
-      .join('\n');
-    modal.addText(lines, 16);
+    // 産地ごとの できばえ: なまえは 右づめ、★は アイコンで ならべる
+    const rows = this.add.container(0, 0);
+    const lineH = 22;
+    m.origins.forEach((o, i) => {
+      const name = findPref(GAME_DATA, o)?.name ?? o;
+      const st = rec[o] ?? 0;
+      const ly = (i - (m.origins.length - 1) / 2) * lineH;
+      rows.add(
+        this.add
+          .text(-6, ly, `${name}:`, { fontFamily: FONT, fontSize: '16px', color: TEXT_COLORS.main })
+          .setOrigin(1, 0.5),
+      );
+      if (st) {
+        for (let s = 0; s < st; s++) rows.add(addIcon(this, 6 + s * 18 + 9, ly, STAR_ICON, 17));
+      } else {
+        rows.add(
+          this.add
+            .text(6, ly, UI_TEXT.zukan.notYet, { fontFamily: FONT, fontSize: '16px', color: TEXT_COLORS.sub })
+            .setOrigin(0, 0.5),
+        );
+      }
+    });
+    modal.add(rows, m.origins.length * lineH);
     if (m.origins.every((o) => rec[o])) modal.addText(UI_TEXT.zukan.comp, 15, TEXT_COLORS.good);
     modal.addButton(UI_TEXT.settings.close, COLORS.primary, () => modal.close());
     modal.show();
   }
 
-  private cell(emoji: string, name: string, sub: string, known: boolean, gold = false): Phaser.GameObjects.Container {
+  private cell(
+    icon: IconKey,
+    name: string,
+    sub: string,
+    known: boolean,
+    gold = false,
+    stars = 0,
+  ): Phaser.GameObjects.Container {
     const c = this.add.container(0, 0);
     const g = this.add.graphics();
     g.fillStyle(COLORS.panel, known ? 1 : 0.6);
@@ -167,7 +192,7 @@ export class ZukanScene extends Phaser.Scene {
     g.fillRoundedRect(-CELL_W / 2, -CELL_H / 2, CELL_W, CELL_H, 12);
     g.strokeRoundedRect(-CELL_W / 2, -CELL_H / 2, CELL_W, CELL_H, 12);
     c.add(g);
-    c.add(this.add.text(0, -CELL_H / 2 + 28, emoji, { fontSize: '30px' }).setOrigin(0.5).setAlpha(known ? 1 : 0.5));
+    c.add(addIcon(this, 0, -CELL_H / 2 + 28, icon, 30).setAlpha(known ? 1 : 0.5));
     c.add(
       this.add
         .text(0, -CELL_H / 2 + 58, name, {
@@ -178,15 +203,33 @@ export class ZukanScene extends Phaser.Scene {
         })
         .setOrigin(0.5),
     );
+    if (stars > 0) {
+      // 「さいこう ★★」の 行(★は アイコン)
+      const label = this.add
+        .text(0, 0, UI_TEXT.pref.bestStars('').trimEnd(), {
+          fontFamily: FONT,
+          fontSize: '10px',
+          color: TEXT_COLORS.sub,
+        })
+        .setOrigin(0, 0.5);
+      const sy = -CELL_H / 2 + 76;
+      const total = label.width + 3 + stars * 13;
+      label.setPosition(-total / 2, sy);
+      c.add(label);
+      for (let i = 0; i < stars; i++) {
+        c.add(addIcon(this, -total / 2 + label.width + 3 + i * 13 + 6.5, sy, STAR_ICON, 13));
+      }
+    }
     c.add(
       this.add
-        .text(0, -CELL_H / 2 + 92, sub, {
+        .text(0, -CELL_H / 2 + (stars > 0 ? 88 : 84), sub, {
           fontFamily: FONT,
           fontSize: '10px',
           color: TEXT_COLORS.sub,
           align: 'center',
+          lineSpacing: 2,
         })
-        .setOrigin(0.5),
+        .setOrigin(0.5, 0),
     );
     return c;
   }

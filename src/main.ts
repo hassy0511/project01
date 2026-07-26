@@ -26,6 +26,9 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
+  // おとは じぶんで WebAudio 合成しているので、Phaser 側の サウンドは つかわない
+  // (AudioContext が 2つ できると iOS で とりあいに なる)
+  audio: { noAudio: true },
   scene: [BootScene, StoryScene, RegionScene, MapScene, PrefScene, SessionScene, FestivalScene, ZukanScene, InvScene],
 };
 
@@ -39,12 +42,21 @@ declare global {
 }
 window.__game = game;
 
-// iOS Safari の AudioContext 制約: タップのたびに resume と BGM 開始を試みる
-// (初回タップが AudioContext の起動に失敗しても、次のタップで立ち上がる。起動済みなら何もしない)
-document.addEventListener('pointerdown', () => {
+/* iOS Safari の AudioContext 制約への 対策。
+   - pointerdown だけでは「ユーザー操作」と みなされない ことが あるので touchend/click も 見る
+   - 画面に もどってきた とき(visibilitychange)も 中断からの 復帰を 試す
+   すでに 起動ずみなら 何も しない(何回 呼んでも 安全) */
+const kickAudio = (): void => {
   resumeAudio();
   startBgm();
+};
+for (const ev of ['pointerdown', 'touchend', 'click', 'keydown'] as const) {
+  document.addEventListener(ev, kickAudio, { passive: true });
+}
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) kickAudio();
 });
+window.addEventListener('focus', kickAudio);
 
 // オフライン対応: 一度開けば、電波が無い場所でもホーム画面から起動できるようにする
 if ('serviceWorker' in navigator) {

@@ -3,6 +3,7 @@
    画像アセット不要(パーティクルのテクスチャは起動時に Graphics から焼く) */
 import Phaser from 'phaser';
 import { DEPTH, FONT, GAME_H, GAME_W } from './theme';
+import { addIcon } from './icons';
 
 const CONF_COLORS = [0xff9f40, 0x6fbf44, 0xff9eb5, 0xffd166, 0x8ed4e8, 0xb39ddb];
 
@@ -137,13 +138,16 @@ export function soilPuff(scene: Phaser.Scene, x: number, y: number): void {
   burst(scene, x, y, 12, [0xb89b6a, 0x8a6242, 0xd8c49a, 0x9c7d4f]);
 }
 
-/** 紙吹雪: 上から降ってくる(祝福用)。角形+きらめき絵文字を混ぜる */
+/** 紙吹雪の きらめき(4分の1だけ アイコンを 混ぜる)の 大きさ */
+const CONF_ICON = 22;
+
+/** 紙吹雪: 上から降ってくる(祝福用)。角形+きらめきアイコンを混ぜる */
 export function confetti(scene: Phaser.Scene, count = 34): void {
   for (let i = 0; i < count; i++) {
     const x = Math.random() * GAME_W;
-    const useEmoji = Math.random() < 0.25;
-    const p = useEmoji
-      ? scene.add.text(x, -20, Math.random() < 0.5 ? '✨' : '⭐', { fontSize: '18px' }).setDepth(DEPTH.overlay)
+    const useIcon = Math.random() < 0.25;
+    const p = useIcon
+      ? addIcon(scene, x, -20, Math.random() < 0.5 ? 'sparkle:gold' : 'star:gold', CONF_ICON).setDepth(DEPTH.overlay)
       : scene.add
           .rectangle(x, -20, 10, 14, CONF_COLORS[Math.floor(Math.random() * CONF_COLORS.length)])
           .setDepth(DEPTH.overlay)
@@ -234,8 +238,8 @@ export function bigImpact(scene: Phaser.Scene, x: number, y: number, color = 0xf
   hitStop(scene, 70);
 }
 
-/** 当たり判定を見た目より広げる(子供の指は太い)。Text等の interactive 済みオブジェクトに使う */
-export function padHitArea(obj: Phaser.GameObjects.Text, pad: number): void {
+/** 当たり判定を見た目より広げる(子供の指は太い)。Text/Image など 見た目サイズを もつ ものに使う */
+export function padHitArea(obj: Phaser.GameObjects.Text | Phaser.GameObjects.Image, pad: number): void {
   obj.setInteractive(
     new Phaser.Geom.Rectangle(-pad, -pad, obj.width + pad * 2, obj.height + pad * 2),
     Phaser.Geom.Rectangle.Contains,

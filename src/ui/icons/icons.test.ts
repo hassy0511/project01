@@ -77,7 +77,12 @@ describe('絵文字を つかっていない', () => {
     for (const f of tsFiles('src')) {
       const rel = f.replace(/\\/g, '/');
       if (ALLOW.some((a) => rel.endsWith(a))) continue;
-      const text = readFileSync(f, 'utf8');
+      if (rel.endsWith('.test.ts')) continue; // テストの 説明文は 画面に 出ない
+      // コメントは 対象外(「なにを 置きかえたか」の 説明で 絵文字を 書くのは OK。
+      // 画面に 出るのは コードの 文字列だけ なので、そこだけ 見る)
+      const text = readFileSync(f, 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
+        .replace(/\/\/[^\n]*/g, '');
       for (const [i, l] of text.split('\n').entries()) {
         const m = EMOJI_RE.exec(l);
         if (m) offenders.push(`${rel}:${i + 1} 「${m[0]}」 ${l.trim().slice(0, 60)}`);

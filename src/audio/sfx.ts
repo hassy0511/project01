@@ -91,20 +91,61 @@ export function audioOut(): AudioNode | null {
   return outNode;
 }
 
-/** SFX/BGM で共有する AudioContext(ミュート中でも取得・resume は行う) */
+/** AudioContext のコンストラクタ(ふるい iPadOS Safari は webkit 接頭辞つき) */
+function audioCtor(): typeof AudioContext | null {
+  if (typeof AudioContext !== 'undefined') return AudioContext;
+  const w = window as unknown as { webkitAudioContext?: typeof AudioContext };
+  return w.webkitAudioContext ?? null;
+}
+
+/** SFX/BGM で共有する AudioContext(ミュート中でも取得・resume は行う)。
+    iOS Safari には W3C にない第3の状態 'interrupted' がある(他アプリへの切りかえ・画面ロック・
+    着信・Siri など)。ここを ほうっておくと 一度 中断された あと ずっと 無音に なるので、
+    'suspended' と おなじように resume する。resume できない ときは 作りなおす */
 export function sharedAudioContext(): AudioContext | null {
-  if (typeof AudioContext === 'undefined') return null;
+  const Ctor = audioCtor();
+  if (!Ctor) return null;
   if (!audioCtx) {
     try {
-      audioCtx = new AudioContext();
+      audioCtx = new Ctor();
     } catch {
       return null;
     }
   }
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume().catch(() => undefined);
+  const state = audioCtx.state as string;
+  if (state === 'suspended' || state === 'interrupted') {
+    audioCtx
+      .resume()
+      .then(() => {
+        // 中断から もどったら BGM の さいせいも つなぎなおす
+        for (const cb of resumeListeners) cb();
+      })
+      .catch(() => {
+        // どうしても もどらない: 作りなおして つぎの タップで 鳴るように する
+        recreateContext();
+      });
   }
   return audioCtx;
+}
+
+/** 中断から 復帰した ときに 呼ばれる(bgm.ts が スケジューラの つなぎなおしに つかう) */
+type ResumeListener = () => void;
+const resumeListeners: ResumeListener[] = [];
+export function onAudioResume(cb: ResumeListener): void {
+  resumeListeners.push(cb);
+}
+
+function recreateContext(): void {
+  const old = audioCtx;
+  audioCtx = null;
+  outNode = null;
+  mediaEl = null;
+  try {
+    old?.close();
+  } catch {
+    /* noop */
+  }
+  for (const cb of resumeListeners) cb();
 }
 
 function ac(): AudioContext | null {
