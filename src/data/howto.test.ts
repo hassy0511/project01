@@ -60,6 +60,18 @@ describe('ゆびマーク(HOW_TO)', () => {
     }
   });
 
+  it('おまつりゲームには ぜんぶ ゆびマークが ある', () => {
+    const missing: string[] = [];
+    for (const r of GAME_DATA.recipes) {
+      const kind = r.festGame;
+      if (!kind) continue;
+      if (!HOW_TO[kind]) missing.push(`${r.id}(${kind})`);
+    }
+    // やたい(festGame 未指定の おまつり)も 見る
+    if (!HOW_TO.yatai) missing.push('yatai');
+    expect(missing, `ゆびマークが ない おまつり:\n${missing.join('\n')}`).toEqual([]);
+  });
+
   it('ざひょうは ゲームの area の 中に ある', () => {
     for (const [key, h] of Object.entries(HOW_TO)) {
       for (const [x, y] of pointsOf(h)) {

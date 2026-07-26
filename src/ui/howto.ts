@@ -12,8 +12,10 @@
    ===================================================== */
 import Phaser from 'phaser';
 import { HOW_TO, type HowTo, type Pt } from '../data/howto';
+import { UI_TEXT } from '../data/uiText';
 import { addIcon, iconScale } from './icons';
-import { DEPTH, GAME_W } from './theme';
+import { COLORS, DEPTH, GAME_W } from './theme';
+import { Modal } from './widgets';
 
 /** ゆびの 大きさ・こさ */
 const HAND_SIZE = 64;
@@ -289,4 +291,42 @@ export function showHowTo(scene: Phaser.Scene, key: string, areaY: number): HowT
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => handle.stop());
   loop();
   return handle;
+}
+
+/* -----------------------------------------------------
+   ゲーム中の 「?」ボタン。
+   おまつりの 説明は 2回目からは 出ない ように した ので、
+   忘れた ときの 見なおし口を ゲームの ヘッダーに 1つ おく。
+   ----------------------------------------------------- */
+
+/** 「?」ボタンの 大きさ */
+const HELP_SIZE = 26;
+
+/**
+ * 「?」を おいて、おすと 説明 + ゆびマークを もう一度 見せる。
+ * @param text  その ゲームの 説明文
+ * @param howto showHowTo が かえした ハンドル(ない ときは 説明だけ)
+ */
+export function addHelpButton(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  title: string,
+  text: string,
+  howto?: HowToHandle,
+): Phaser.GameObjects.Image {
+  const btn = addIcon(scene, x, y, 'question:sky', HELP_SIZE)
+    .setName('nav-help')
+    .setDepth(DEPTH.header + 1)
+    .setInteractive({ useHandCursor: true });
+  btn.on(Phaser.Input.Events.GAMEOBJECT_POINTER_UP, () => {
+    const modal = new Modal(scene, title, true);
+    modal.addText(text, 15);
+    modal.addButton(UI_TEXT.howto.gotIt, COLORS.primary, () => {
+      modal.close();
+      howto?.replay();
+    });
+    modal.show();
+  });
+  return btn;
 }

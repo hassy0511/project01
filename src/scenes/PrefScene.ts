@@ -13,7 +13,7 @@ import {
   type Prefecture,
   type Recipe,
 } from '../data/gameData';
-import { UI_TEXT } from '../data/uiText';
+import { festIntro, UI_TEXT } from '../data/uiText';
 import { applyCraft, craftable, matchItems, pickConsume } from '../core/craft';
 import { ensureInfra, collectInfra, infraNextSec, infraStock, plantSeed, plotKey, plotState } from '../core/plots';
 import { pickRecipeQuizzes, recordQuizAsked } from '../core/quiz';
@@ -628,63 +628,26 @@ export class PrefScene extends Phaser.Scene {
   }
 
   private startFestival(r: Recipe): void {
+    const kind = r.festGame ?? 'yatai';
+    const go = (): void => {
+      this.scene.start('FestivalScene', { recipeId: r.id, prefId: this.prefId });
+    };
+    // 2回目からは 説明を 出さずに すぐ 始める(毎回 全文が 出ると じゃま)。
+    // 忘れた ときは ゲーム中の 「?」ボタンで 見なおせる
+    if (store.state.playedGame[kind]) {
+      const best = store.state.festBest[r.id];
+      if (best) showToast(this, UI_TEXT.fest.bestScore(best));
+      go();
+      return;
+    }
     const modal = new Modal(this, r.name, true);
     modal.add(addIcon(this, 0, 0, r.icon, 54), 60);
-    const INTROS: Record<string, string> = {
-      yatai: UI_TEXT.fest.introBody,
-      daruma: UI_TEXT.fest.introDaruma,
-      hanabi: UI_TEXT.fest.introHanabi,
-      dashi: UI_TEXT.fest.introDashi,
-      mikoshi: UI_TEXT.fest.introMikoshi,
-      rokuro: UI_TEXT.fest.introRokuro,
-      sousen: UI_TEXT.fest.introSousen,
-      nebuta: UI_TEXT.fest.introNebuta,
-      sansa: UI_TEXT.fest.introSansa,
-      tanabata: UI_TEXT.fest.introTanabata,
-      kantou: UI_TEXT.fest.introKantou,
-      hanagasa: UI_TEXT.fest.introHanagasa,
-      waraji: UI_TEXT.fest.introWaraji,
-      yukimatsuri: UI_TEXT.fest.introYukimatsuri,
-      minyou: UI_TEXT.fest.introMinyou,
-      owara: UI_TEXT.fest.introOwara,
-      tourou: UI_TEXT.fest.introTourou,
-      kani: UI_TEXT.fest.introKani,
-      himatsuri: UI_TEXT.fest.introHimatsuri,
-      onbashira: UI_TEXT.fest.introOnbashira,
-      karakuri: UI_TEXT.fest.introKarakuri,
-      tako: UI_TEXT.fest.introTako,
-      makiwara: UI_TEXT.fest.introMakiwara,
-      ishidori: UI_TEXT.fest.introIshidori,
-      kabuki: UI_TEXT.fest.introKabuki,
-      gion: UI_TEXT.fest.introGion,
-      danjiri: UI_TEXT.fest.introDanjiri,
-      fukuotoko: UI_TEXT.fest.introFukuotoko,
-      yamayaki: UI_TEXT.fest.introYamayaki,
-      ougi: UI_TEXT.fest.introOugi,
-      shanshan: UI_TEXT.fest.introShanshan,
-      kagura: UI_TEXT.fest.introKagura,
-      eyou: UI_TEXT.fest.introEyou,
-      betcha: UI_TEXT.fest.introBetcha,
-      kingyo: UI_TEXT.fest.introKingyo,
-      awaodori: UI_TEXT.fest.introAwaodori,
-      chousa: UI_TEXT.fest.introChousa,
-      ushioni: UI_TEXT.fest.introUshioni,
-      yosakoi: UI_TEXT.fest.introYosakoi,
-      yamakasa: UI_TEXT.fest.introYamakasa,
-      balloon: UI_TEXT.fest.introBalloon,
-      kokkodesho: UI_TEXT.fest.introKokkodesho,
-      kazariuma: UI_TEXT.fest.introKazariuma,
-      yukake: UI_TEXT.fest.introYukake,
-      hyottoko: UI_TEXT.fest.introHyottoko,
-      rokugatsudo: UI_TEXT.fest.introRokugatsudo,
-      tsunahiki: UI_TEXT.fest.introTsunahiki,
-    };
-    modal.addText(INTROS[r.festGame ?? 'yatai'] ?? UI_TEXT.fest.introBody, 15);
+    modal.addText(festIntro(kind), 15);
     const best = store.state.festBest[r.id];
     if (best) modal.addText(UI_TEXT.fest.bestScore(best), 14, TEXT_COLORS.accent);
     modal.addButton(UI_TEXT.fest.startBtn, COLORS.orange, () => {
       modal.close();
-      this.scene.start('FestivalScene', { recipeId: r.id, prefId: this.prefId });
+      go();
     });
     modal.show();
   }

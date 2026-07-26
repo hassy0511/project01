@@ -57,6 +57,7 @@ await page.evaluate(() => localStorage.clear());
 await page.reload();
 await page.waitForSelector('canvas');
 await page.waitForTimeout(1200);
+await page.evaluate(() => window.__mqAdmin.skipGuides()); // はじめての 3コマは verify-guide.mjs で しらべる
 // 1タップで AudioContext が resume して BGM が はじまる
 await page.mouse.click(240, 400);
 await page.waitForTimeout(2500);

@@ -203,7 +203,19 @@ export function makeDriver(page, shotsDir) {
   /** playArcade で 見つけた でかすぎる アイコン(だいひょうで まとめて 報告する) */
   const hugeSeen = [];
 
+  /** おまつりを 始める。説明モーダルは 初回だけ 出るので 出ていたら 押す */
+  async function startFest() {
+    await scrollAndClick('ひらく!');
+    const start = await findTexts('おまつり スタート!');
+    if (start.length) {
+      await page.mouse.click(start[0].x, start[0].y);
+      await page.waitForTimeout(250);
+    }
+    await page.waitForFunction(() => window.__mq?.kind === 'arcade', null, { timeout: 8000 });
+  }
+
   return {
+    startFest,
     hugeIcons,
     hugeSeen,
     findTexts,

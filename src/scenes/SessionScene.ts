@@ -18,7 +18,7 @@ import { showTriviaOnce } from '../ui/trivia';
 import { COLORS, DEPTH, FONT, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { makeStarRow, Modal, showToast } from '../ui/widgets';
 import { confetti, screenFlash } from '../ui/effects';
-import { showHowTo, type HowToHandle } from '../ui/howto';
+import { addHelpButton, showHowTo, type HowToHandle } from '../ui/howto';
 import { addIcon } from '../ui/icons';
 import { renderCatch } from './minigames/catchGame';
 import { renderChain } from './minigames/chainGame';
@@ -53,6 +53,8 @@ export class SessionScene extends Phaser.Scene {
   private backBtn?: Phaser.GameObjects.Text;
   /** あそびかたの ゆびマーク(クイズに すすむ ときに 止める) */
   private howto?: HowToHandle;
+  /** あそびかたの 「?」。クイズでは 消す(ゲームの 説明を 出しても まぎらわしい) */
+  private helpBtn?: Phaser.GameObjects.Image;
 
   constructor() {
     super('SessionScene');
@@ -194,6 +196,10 @@ export class SessionScene extends Phaser.Scene {
     // あそびかたの ゆびマーク(データに ある ゲームだけ)。字が 読めなくても わかるように
     this.howto?.stop();
     this.howto = showHowTo(this, engine, GAME_AREA_Y);
+    // 忘れた ときの 見なおし口。説明文は データの 案内文を そのまま つかう
+    const helpText = engine === 'care' && g.type === 'plant' ? g.care.label : prompt;
+    this.helpBtn?.destroy();
+    this.helpBtn = addHelpButton(this, GAME_W - 28, TOP_H / 2, UI_TEXT.howto.title, helpText, this.howto);
     store.state.playedGame[engine] = true;
     store.save();
   }
@@ -221,6 +227,8 @@ export class SessionScene extends Phaser.Scene {
   private renderQuiz(): void {
     this.howto?.stop();
     this.howto = undefined;
+    this.helpBtn?.destroy();
+    this.helpBtn = undefined;
     if (this.mode === 'care') {
       this.finish();
       return;

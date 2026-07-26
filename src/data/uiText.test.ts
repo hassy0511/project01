@@ -2,7 +2,7 @@
    ・こどもが よむ ぶん(settings より 前)には 漢字を つかわない
    ・「Xの X…」のように そざい名と ばしょ名が かさならない */
 import { describe, expect, it } from 'vitest';
-import { TITLE_TEXT, UI_TEXT } from './uiText';
+import { festIntroOf, TITLE_TEXT, UI_TEXT } from './uiText';
 import { GAME_DATA } from './gameData';
 
 /** ひらがな・カタカナ・すうじ・きごう だけで 書く(おうちのひと むけは べつ) */
@@ -67,5 +67,15 @@ describe('uiText', () => {
       if (shown.split(m.name).length - 1 > 1) bad.push(`${m.id}: ${shown}`);
     }
     expect(bad, `ばしょの 見だしが かさなっている:\n${bad.join('\n')}`).toEqual([]);
+  });
+
+  it('おまつりゲームの 説明文が ぜんぶ ある(名まえの きまりで ひける)', () => {
+    const missing: string[] = [];
+    for (const r of GAME_DATA.recipes) {
+      const kind = r.festGame;
+      if (!kind || kind === 'yatai') continue; // やたいは introBody を つかう
+      if (!festIntroOf(kind)) missing.push(`${r.id}(${kind})`);
+    }
+    expect(missing, `uiText.fest に intro… が ない:\n${missing.join('\n')}`).toEqual([]);
   });
 });

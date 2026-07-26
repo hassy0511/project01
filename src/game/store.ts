@@ -31,6 +31,7 @@ declare global {
       halfGrow: () => void;
       fastMode: () => void;
       unlockAll: () => void;
+      skipGuides: () => void;
     };
   }
 }
@@ -55,6 +56,11 @@ export function installAdminApi(onChange: () => void): void {
       adminUnlockAll(store.state, GAME_DATA);
       store.save();
       onChange();
+    },
+    // あそびかたの 案内を 見たことに する(E2E で じゃまに ならない ように)
+    skipGuides: () => {
+      store.state.seenPrefGuide = true;
+      store.save();
     },
   };
 }

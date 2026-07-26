@@ -149,6 +149,23 @@ export const UI_TEXT = {
     jimotoBanner: 'ぜんぶ じもとの そざい! じもとメダル ゲット!',
   },
 
+  /** あそびかた(ゆびマーク・「?」ボタン・ずかんの あそびかた) */
+  howto: {
+    /** ゲーム中の 「?」を おした ときの みだし */
+    title: 'あそびかた',
+    /** 説明を 読みおわった ときの ボタン */
+    gotIt: 'わかった!',
+    /** ずかんの タブ名 */
+    tab: 'あそびかた',
+    /** まだ あそんでいない ゲーム(ネタバレを しない) */
+    locked: '？？？',
+    lockedNote: 'まだ あそんでいないよ',
+    /** ずかんの あそびかたの ならびが 空の とき */
+    empty: 'ゲームを あそぶと ここに あそびかたが ならぶよ!',
+    /** 見本の 中の 案内 */
+    demoNote: 'ゆびの うごきを まねしてみよう!',
+  },
+
   fest: {
     preparing: 'まだ くもの むこう… ぼうけんが すすむと ひらくよ!',
     held: 'かいさいずみ',
@@ -652,3 +669,22 @@ export const UI_TEXT = {
     close: 'とじる',
   },
 } as const;
+
+/* -----------------------------------------------------
+   おまつりゲームの 説明文の ひきかた。
+   introDaruma / introHanabi … の ように 「intro + ゲーム名(かしら文字だけ 大)」で
+   ならべて あるので、名まえの きまりで ひく。
+   47行の 対応表を シーンに ベタ書き しない ため(データ駆動の きまり)。
+   ----------------------------------------------------- */
+
+/** その おまつりゲームの 説明文。ない ときは undefined(テストで 見つける ため) */
+export function festIntroOf(kind: string): string | undefined {
+  const key = `intro${kind.charAt(0).toUpperCase()}${kind.slice(1)}`;
+  const v = (UI_TEXT.fest as Record<string, unknown>)[key];
+  return typeof v === 'string' ? v : undefined;
+}
+
+/** その おまつりゲームの 説明文(ない ときは やたいの 説明) */
+export function festIntro(kind: string): string {
+  return festIntroOf(kind) ?? UI_TEXT.fest.introBody;
+}

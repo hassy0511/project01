@@ -5,7 +5,7 @@
 import Phaser from 'phaser';
 import { setupHiDpi } from '../ui/display';
 import { findEntity, findPref, findRecipe, GAME_DATA, prefTitle, type Recipe } from '../data/gameData';
-import { UI_TEXT } from '../data/uiText';
+import { festIntro, UI_TEXT } from '../data/uiText';
 import { applyFestival, craftable, updateFestBest } from '../core/craft';
 import { store } from '../game/store';
 import { setHook } from '../game/testHooks';
@@ -15,6 +15,7 @@ import { showTriviaOnce } from '../ui/trivia';
 import { COLORS, DEPTH, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { makeGuideRow, makeIconRow, Modal } from '../ui/widgets';
 import { confetti, firework, screenFlash } from '../ui/effects';
+import { addHelpButton, showHowTo, type HowToHandle } from '../ui/howto';
 import { iconTexture } from '../ui/icons';
 import { renderFestival, type StallItem } from './minigames/festivalGame';
 import { renderDaruma } from './minigames/darumaGame';
@@ -76,6 +77,8 @@ export class FestivalScene extends Phaser.Scene {
   private recipe!: Recipe;
   private gameScore = 0;
   private area?: Phaser.GameObjects.Container;
+  /** あそびかたの ゆびマーク */
+  private howto?: HowToHandle;
 
   constructor() {
     super('FestivalScene');
@@ -130,7 +133,8 @@ export class FestivalScene extends Phaser.Scene {
     this.area = this.add.container(0, GAME_AREA_Y);
     // おまつりごとのゲーム(データ駆動)。全県ユニーク化の方針は docs/ACTION_DESIGN.md
     const api = this.minigameApi();
-    switch (r.festGame ?? 'yatai') {
+    const kind = r.festGame ?? 'yatai';
+    switch (kind) {
       case 'daruma':
         renderDaruma(api, UI_TEXT.fest.darumaPrompt);
         break;
@@ -272,6 +276,14 @@ export class FestivalScene extends Phaser.Scene {
       default:
         renderFestival(api, UI_TEXT.fest.prompt, this.buildMenu());
     }
+
+    // あそびかたの ゆびマークと、忘れた ときの 「?」
+    this.howto?.stop();
+    this.howto = showHowTo(this, kind, GAME_AREA_Y);
+    addHelpButton(this, GAME_W - 28, TOP_H / 2, UI_TEXT.howto.title, festIntro(kind), this.howto);
+    // 1回 あそんだら つぎからは 説明モーダルを 出さない
+    store.state.playedGame[kind] = true;
+    store.save();
   }
 
   /** やたいの 品ぞろえ: recipe.menu(未指定なら ingredients)を解決する */

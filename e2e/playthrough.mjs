@@ -24,6 +24,7 @@ await page.evaluate(() => localStorage.clear());
 await page.reload();
 await page.waitForSelector('canvas');
 await page.waitForTimeout(1500);
+await page.evaluate(() => window.__mqAdmin.skipGuides()); // はじめての 3コマは verify-guide.mjs で しらべる
 await page.evaluate(() => window.__mqAdmin.fastMode());
 
 /* 0. 導入ストーリー(初回のみ)→ スキップ → にほんぜんこく → かんとうへ */
@@ -139,8 +140,7 @@ await d.dismissTrivia();
 log('かさまやき(産地指定クラフト)');
 
 /* 8. うめまつり(やたいラッシュ アーケード) */
-await d.scrollAndClick('ひらく!');
-await d.clickText('おまつり スタート!');
+await d.startFest();
 await d.playArcade(async () => {
   // 3つの屋台(x=110/240/370, y=572+52)を順にタップ。
   // ほしがっている客がいれば得点、いなければコンボが切れるだけ
