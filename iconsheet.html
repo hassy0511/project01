@@ -1,6 +1,15 @@
 <!doctype html>
-<!-- 開発用: めいさんアイコン(src/ui/icons.ts)の 全かたちを 一覧して 目で 確認する。
-     npm run dev して http://localhost:5173/iconsheet.html を開く。dist には 含まれない -->
+<!-- 開発用: めいさんアイコン(src/ui/icons/)の 全かたちを 一覧して 目で 確認する。
+     npm run dev して http://localhost:5173/project01/iconsheet.html を開く(base が /project01/ なので 注意)。
+     dist には 含まれない。
+
+     クエリで 見え方を かえられる(細かい つぶれの 確認に つかう):
+       ?size=96&cols=6        … 1つの 大きさ と よこの 数
+       ?from=40&to=80         … かたちの ならびの 何番目から 何番目まで
+       ?small=1               … 実際の UI の 小ささ(28px)で 見る
+     いろは データ(gameData)で じっさいに 使われている いろを つかう。
+     どこにも 使われて いない かたちは グレーの わくで しめし、
+     かたちが 見える ように こい いろを あてる(cream だと 白っぽくて 判別できない)。 -->
 <html lang="ja">
   <head>
     <meta charset="utf-8" />
@@ -13,13 +22,52 @@
     <div id="app"></div>
     <script type="module">
       import Phaser from 'phaser';
-      import { addIcon, allShapes, ICON_COLORS } from '/src/ui/icons.ts';
+      // 相対パスで 書く(vite の base 設定に 左右されない ように)
+      import { addIcon, allShapes } from './src/ui/icons/index.ts';
+      import { GAME_DATA } from './src/data/gameData.ts';
 
-      const COLS = 8;
-      const CELL = 108;
-      const shapes = allShapes();
+      // 開発ツール(スクショ・ドット数の 計測)から つかえる ように 出しておく
+      window.__sheet = { Phaser, addIcon, allShapes, GAME_DATA };
+
+      const q = new URLSearchParams(location.search);
+      const num = (k, d) => (q.has(k) ? Number(q.get(k)) : d);
+      const SMALL = q.has('small');
+      const ICON = SMALL ? 28 : num('size', 72);
+      const CELL = ICON + 40;
+      const COLS = num('cols', SMALL ? 12 : 8);
+
+      /* データで その かたちが どの いろで 使われて いるか 集める。
+         レビューでは 「実際に 目に する 見た目」を 見たいので 最頻の いろを つかう。 */
+      const usage = new Map(); // shape -> Map(color -> 回数)
+      const scan = (obj) => {
+        if (!obj || typeof obj !== 'object') return;
+        if (Array.isArray(obj)) return obj.forEach(scan);
+        for (const [k, v] of Object.entries(obj)) {
+          if (k === 'icon' && typeof v === 'string') {
+            const [shape, color = 'cream'] = v.split(':');
+            if (!usage.has(shape)) usage.set(shape, new Map());
+            const m = usage.get(shape);
+            m.set(color, (m.get(color) ?? 0) + 1);
+          } else scan(v);
+        }
+      };
+      scan(GAME_DATA);
+
+      const topColor = (shape) => {
+        const m = usage.get(shape);
+        if (!m) return null;
+        return [...m.entries()].sort((a, b) => b[1] - a[1])[0][0];
+      };
+      const uses = (shape) => {
+        const m = usage.get(shape);
+        return m ? [...m.values()].reduce((a, b) => a + b, 0) : 0;
+      };
+
+      const all = allShapes();
+      // ?only=cup,jar,… で 見たい かたちだけ 出す(直した ところの 確認に つかう)
+      const only = q.get('only');
+      const shapes = only ? only.split(',').filter((s) => all.includes(s)) : all.slice(num('from', 0), num('to', all.length));
       const rows = Math.ceil(shapes.length / COLS);
-      const PALETTE = ['red', 'orange', 'green', 'sky', 'purple', 'brown', 'cream', 'gold'];
 
       new Phaser.Game({
         type: Phaser.AUTO,
@@ -34,13 +82,25 @@
               const row = Math.floor(i / COLS);
               const x = col * CELL + CELL / 2;
               const y = row * CELL + CELL / 2 + 10;
-              const color = PALETTE[i % PALETTE.length];
-              addIcon(this, x, y - 10, `${shape}:${color}`, 72);
+              // 使われて いない かたちは cream だと 白っぽくて 見えないので こい いろを まわす
+              const SPARE = ['brown', 'green', 'blue', 'orange', 'purple', 'teal'];
+              const color = topColor(shape) ?? SPARE[i % SPARE.length];
+              // 使われて いない かたちは わくで しめす(消し忘れ・つづり違いの 発見用)
+              if (uses(shape) === 0) {
+                this.add.rectangle(x, y - 10, CELL - 10, ICON + 8).setStrokeStyle(1.5, 0xc0b8a4);
+              }
+              addIcon(this, x, y - 10, `${shape}:${color}`, ICON);
               this.add
-                .text(x, y + 38, shape, { fontFamily: 'sans-serif', fontSize: '12px', color: '#5a4632' })
+                .text(x, y + ICON / 2 + 2, shape, { fontFamily: 'sans-serif', fontSize: '12px', color: '#5a4632' })
+                .setOrigin(0.5);
+              this.add
+                .text(x, y + ICON / 2 + 16, `${color} ×${uses(shape)}`, {
+                  fontFamily: 'sans-serif',
+                  fontSize: '10px',
+                  color: '#9a8c72',
+                })
                 .setOrigin(0.5);
             });
-            void ICON_COLORS;
           },
         },
       });

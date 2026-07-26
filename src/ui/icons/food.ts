@@ -1,6 +1,6 @@
 /* たべもの・そざいの かたち(くだもの・やさい・さかな・かいさんぶつ・つくったもの)。
    実物の「なにもの か」で かたちを 選ぶ。おなじ 絵を べつの 意味に 使い回さない */
-import { ellipseOutlined, fill, leaf, line, shine, stem, type IconDraw } from './kit';
+import { OUTLINE_SOFT, ellipseOutlined, fill, leaf, line, shine, stem, type IconDraw } from './kit';
 
 export const FOOD_ICONS: Record<string, IconDraw> = {
   round: (g, c) => {
@@ -103,26 +103,36 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     fill(g, 0xf3f0dc);
     g.fillRoundedRect(30, 44, 5, 16, 2);
   },
+  /** ねぎ・せり など「くきの やさい」。はっぱは いつも みどり
+     (c で ぬると white/cream/yellow の とき まっしろに 消えて しまう)。
+     c は じくの いろに つかう */
   stalk: (g, c) => {
-    fill(g, 0xf5f2e0);
-    g.fillRoundedRect(26, 30, 12, 28, 5);
-    line(g, 0xcfc9ae, 1.6);
-    g.strokeRoundedRect(26, 30, 12, 28, 5);
-    fill(g, c[0]);
-    for (const [dx, dy] of [
-      [-10, -6],
-      [0, -14],
-      [10, -6],
+    // はっぱ(3まい)
+    for (const [dx, tipY] of [
+      [-13, 6],
+      [0, 2],
+      [13, 8],
     ] as const) {
+      fill(g, 0x5aa04a);
       g.beginPath();
-      g.moveTo(32, 32);
-      g.lineTo(32 + dx, 6 + dy + 10);
-      g.lineTo(32 + dx + 5, 34);
+      g.moveTo(32, 40);
+      g.lineTo(32 + dx, tipY);
+      g.lineTo(32 + dx * 0.45 + 6, 40);
       g.closePath();
       g.fillPath();
+      line(g, 0x37702c, 1.8);
+      g.strokePath();
     }
-    line(g, c[1], 1.6);
-    g.strokeRoundedRect(26, 30, 12, 28, 5);
+    // じく(白ねぎの しろい ぶぶん)。ほそ長く して「くき」に 見える ように する
+    fill(g, c[0]);
+    g.fillRoundedRect(26, 26, 13, 32, 6);
+    line(g, c[1], 2.4);
+    g.strokeRoundedRect(26, 26, 13, 32, 6);
+    line(g, c[1], 1.4);
+    g.beginPath();
+    g.moveTo(27, 34);
+    g.lineTo(38, 34);
+    g.strokePath();
   },
   root: (g, c) => {
     fill(g, c[0]);
@@ -160,37 +170,61 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     ] as const)
       g.fillCircle(x, y, 1.6);
   },
+  /** さや(えだまめ・そらまめ・だいず)。ななめの ふとい さやに して
+     まめの ふくらみを 3つ 見せる */
   pod: (g, c) => {
     fill(g, c[0]);
     g.beginPath();
-    g.moveTo(12, 42);
-    g.lineTo(26, 22);
-    g.lineTo(50, 26);
-    g.lineTo(52, 40);
-    g.lineTo(30, 50);
+    g.moveTo(9, 47);
+    g.lineTo(20, 24);
+    g.lineTo(40, 12);
+    g.lineTo(55, 17);
+    g.lineTo(46, 40);
+    g.lineTo(26, 54);
     g.closePath();
     g.fillPath();
     line(g, c[1]);
     g.strokePath();
-    g.fillStyle(c[1], 0.55);
+    // まめの ふくらみ
+    g.fillStyle(c[1], 0.5);
     for (const [x, y] of [
-      [24, 34],
-      [34, 33],
-      [44, 34],
+      [22, 40],
+      [31, 32],
+      [41, 24],
     ] as const)
-      g.fillCircle(x, y, 5);
+      g.fillCircle(x, y, 7);
+    line(g, c[1], 1.4);
+    for (const [x, y] of [
+      [22, 40],
+      [31, 32],
+      [41, 24],
+    ] as const)
+      g.strokeCircle(x, y, 7);
+    // へた
+    stem(g, 52, 18, 8);
   },
+  /** ピーマン・ししとう。まるい 実だと りんごと 見わけが つかないので
+     したが 3つに わかれた ピーマンの かたちに する */
   pepper: (g, c) => {
     fill(g, c[0]);
-    g.fillEllipse(32, 40, 30, 34);
-    g.fillEllipse(24, 38, 16, 26);
-    g.fillEllipse(40, 38, 16, 26);
+    g.fillRoundedRect(14, 22, 36, 30, 14);
     line(g, c[1]);
-    g.strokeEllipse(32, 40, 30, 34);
-    stem(g, 32, 22, 10);
+    g.strokeRoundedRect(14, 22, 36, 30, 14);
+    // たての みぞ 2本(これで「りんご」ではなく ピーマンに 見える)
+    line(g, c[1], 2);
+    for (const dx of [-9, 9]) {
+      g.beginPath();
+      g.moveTo(32 + dx, 26);
+      g.lineTo(32 + dx, 50);
+      g.strokePath();
+    }
+    // へた
+    stem(g, 32, 20, 9);
     fill(g, 0x4a8a3a);
-    g.fillEllipse(32, 22, 16, 7);
-    shine(g, 25, 34, 4, 6);
+    g.fillEllipse(32, 20, 18, 8);
+    line(g, 0x2f6b2a, 1.6);
+    g.strokeEllipse(32, 20, 18, 8);
+    shine(g, 24, 32, 4, 6);
   },
   cucumber: (g, c) => {
     fill(g, c[0]);
@@ -231,7 +265,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
   mushroom: (g, c) => {
     fill(g, 0xf0e6d0);
     g.fillRoundedRect(26, 32, 12, 24, 5);
-    line(g, 0xc9bda0, 1.8);
+    line(g, OUTLINE_SOFT, 1.8);
     g.strokeRoundedRect(26, 32, 12, 24, 5);
     fill(g, c[0]);
     g.slice(32, 34, 22, Math.PI, Math.PI * 2, false);
@@ -256,15 +290,15 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.strokePath();
     fill(g, c[0]);
     for (let i = 0; i < 6; i++) {
-      const y = 22 + i * 6;
-      g.fillEllipse(26, y, 12, 7);
-      g.fillEllipse(38, y + 3, 12, 7);
+      const y = 20 + i * 6.6;
+      g.fillEllipse(22, y, 16, 8);
+      g.fillEllipse(42, y + 3, 16, 8);
     }
-    line(g, c[1], 1.2);
+    line(g, c[1], 1.4);
     for (let i = 0; i < 6; i++) {
-      const y = 22 + i * 6;
-      g.strokeEllipse(26, y, 12, 7);
-      g.strokeEllipse(38, y + 3, 12, 7);
+      const y = 20 + i * 6.6;
+      g.strokeEllipse(22, y, 16, 8);
+      g.strokeEllipse(42, y + 3, 16, 8);
     }
   },
   bamboo: (g, c) => {
@@ -285,37 +319,52 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
   },
   lotus: (g, c) => {
     fill(g, c[0]);
-    g.fillRoundedRect(14, 24, 36, 26, 12);
+    g.fillRoundedRect(7, 17, 50, 34, 16);
     line(g, c[1]);
-    g.strokeRoundedRect(14, 24, 36, 26, 12);
+    g.strokeRoundedRect(7, 17, 50, 34, 16);
+    const holes = [
+      [19, 28],
+      [32, 25],
+      [45, 29],
+      [24, 42],
+      [40, 43],
+      [32, 36],
+    ] as const;
     fill(g, 0xfffdf5);
-    for (const [x, y] of [
-      [23, 32],
-      [33, 30],
-      [42, 34],
-      [26, 42],
-      [37, 42],
-    ] as const)
-      g.fillCircle(x, y, 4);
-    line(g, c[1], 1.2);
-    for (const [x, y] of [
-      [23, 32],
-      [33, 30],
-      [42, 34],
-      [26, 42],
-      [37, 42],
-    ] as const)
-      g.strokeCircle(x, y, 4);
+    for (const [x, y] of holes) g.fillCircle(x, y, 5.5);
+    line(g, c[1], 1.4);
+    for (const [x, y] of holes) g.strokeCircle(x, y, 5.5);
   },
+  /** しょうが。まえは 3つの まるで「ねずみのかお」に 見えて いた。
+     ごつごつした 塊+こぶ を つないだ かたちに する */
   ginger: (g, c) => {
+    // したの 太い かたまり
     fill(g, c[0]);
-    g.fillEllipse(28, 38, 26, 20);
-    g.fillEllipse(42, 30, 16, 14);
-    g.fillEllipse(20, 26, 14, 12);
+    g.fillRoundedRect(9, 34, 46, 20, 10);
+    // うえに つきでた こぶ 3つ
+    for (const [x, w, h] of [
+      [15, 13, 20],
+      [30, 15, 26],
+      [45, 13, 18],
+    ] as const)
+      g.fillRoundedRect(x, 54 - h - 12, w, h, 6.5);
     line(g, c[1]);
-    g.strokeEllipse(28, 38, 26, 20);
-    g.strokeEllipse(42, 30, 16, 14);
-    g.strokeEllipse(20, 26, 14, 12);
+    g.strokeRoundedRect(9, 34, 46, 20, 10);
+    for (const [x, w, h] of [
+      [15, 13, 20],
+      [30, 15, 26],
+      [45, 13, 18],
+    ] as const)
+      g.strokeRoundedRect(x, 54 - h - 12, w, h, 6.5);
+    // かたまりの うわがわを ぬりつぶし直して こぶの 線を けす
+    fill(g, c[0]);
+    g.fillRoundedRect(11, 38, 42, 14, 7);
+    line(g, c[1], 1.6);
+    g.beginPath();
+    g.moveTo(11, 44);
+    g.lineTo(53, 44);
+    g.strokePath();
+    shine(g, 20, 40, 5, 3);
   },
   flower: (g, c) => {
     fill(g, 0x5aa04a);
@@ -340,38 +389,103 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.strokeTriangle(32, 6, 14, 30, 50, 30);
     g.strokeTriangle(32, 18, 10, 46, 54, 46);
   },
+  /** らっかせい。まえの 絵は「円すい」で アイスの コーンに 見えて いた。
+     まめ2つぶ ぶんの くびれた からに する */
   nut: (g, c) => {
+    // ひとつづきの シルエット(まるを 2つ ならべると ゆきだるまに 見える)。
+    // たてに ながい たまごがたを、まんなかで くびれさせる
+    const shell: [number, number][] = [];
+    for (let i = 0; i <= 40; i++) {
+      const a = -Math.PI / 2 + (i / 40) * Math.PI * 2;
+      const waist = 1 - 0.42 * Math.pow(Math.cos(a), 6); // まんなか(cos≒±1)だけ ほそく
+      shell.push([32 + Math.sin(a) * 14 * waist, 32 - Math.cos(a) * 24]);
+    }
     fill(g, c[0]);
     g.beginPath();
-    g.moveTo(32, 16);
-    g.lineTo(52, 46);
-    g.lineTo(12, 46);
+    g.moveTo(shell[0][0], shell[0][1]);
+    for (const [x, y] of shell.slice(1)) g.lineTo(x, y);
+    g.closePath();
+    g.fillPath();
+    line(g, c[1], 2.6);
+    g.strokePath();
+    // くびれ(まん中の しわ)
+    line(g, c[1], 1.8);
+    for (const sgn of [-1, 1]) {
+      g.beginPath();
+      g.moveTo(32 + sgn * 8, 28);
+      g.lineTo(32 + sgn * 5, 32);
+      g.lineTo(32 + sgn * 8, 36);
+      g.strokePath();
+    }
+    // からの あみめ(よこすじ。ななめの ×は きずに 見える)
+    line(g, c[1], 1.2);
+    for (const y of [16, 21, 43, 48]) {
+      g.beginPath();
+      g.moveTo(24, y);
+      g.lineTo(40, y);
+      g.strokePath();
+    }
+  },
+  /** くり。とがった さきと、ざらざらの したはんぶん */
+  chestnut: (g, c) => {
+    fill(g, c[0]);
+    g.beginPath();
+    g.moveTo(32, 8);
+    g.lineTo(52, 26);
+    g.lineTo(54, 44);
+    g.arc(32, 44, 22, 0, Math.PI, false);
+    g.lineTo(12, 26);
     g.closePath();
     g.fillPath();
     line(g, c[1]);
     g.strokePath();
-    fill(g, 0xf3e2bc);
-    g.fillEllipse(32, 46, 40, 12);
-    line(g, c[1], 1.6);
-    g.strokeEllipse(32, 46, 40, 12);
+    // したの ざらざら(あわい 帯)
+    g.fillStyle(0xf3e2bc, 0.85);
+    g.fillEllipse(32, 52, 42, 16);
+    line(g, c[1], 1.8);
+    g.beginPath();
+    g.moveTo(11, 48);
+    g.lineTo(53, 48);
+    g.strokePath();
+    shine(g, 24, 26, 5, 4);
   },
+  /** ちゃば。ひしがた 3つでは「はっぱ」に 見えなかったので
+     さきの とがった はっぱ+まんなかの すじ に する */
   tealeaf: (g, c) => {
-    for (const [x, y, d] of [
-      [24, 40, -1],
-      [40, 34, 1],
-      [32, 22, 1],
-    ] as const) {
+    const oneLeaf = (bx: number, by: number, tx: number, ty: number): void => {
+      const pts: [number, number][] = [];
+      const [nx, ny] = [-(ty - by), tx - bx];
+      const len = Math.hypot(nx, ny) || 1;
+      for (const s of [-1, 1]) {
+        for (let i = 0; i <= 8; i++) {
+          const t = s < 0 ? i / 8 : (8 - i) / 8;
+          const bulge = Math.sin(t * Math.PI) * 9 * s;
+          pts.push([bx + (tx - bx) * t + (nx / len) * bulge, by + (ty - by) * t + (ny / len) * bulge]);
+        }
+      }
       fill(g, c[0]);
       g.beginPath();
-      g.moveTo(x, y + 10);
-      g.lineTo(x + 14 * d, y - 6);
-      g.lineTo(x + 2 * d, y - 14);
-      g.lineTo(x - 8 * d, y);
+      g.moveTo(pts[0][0], pts[0][1]);
+      for (const [x, y] of pts.slice(1)) g.lineTo(x, y);
       g.closePath();
       g.fillPath();
       line(g, c[1], 1.8);
       g.strokePath();
-    }
+      line(g, c[1], 1.4);
+      g.beginPath();
+      g.moveTo(bx, by);
+      g.lineTo(tx, ty);
+      g.strokePath();
+    };
+    // くき
+    line(g, 0x5a7c3a, 3);
+    g.beginPath();
+    g.moveTo(32, 58);
+    g.lineTo(32, 26);
+    g.strokePath();
+    oneLeaf(32, 30, 8, 16);
+    oneLeaf(32, 42, 56, 28);
+    oneLeaf(32, 30, 32, 6);
   },
   kiwi: (g, c) => {
     ellipseOutlined(g, 32, 36, 44, 40, c);
@@ -435,12 +549,12 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
   },
   bigfish: (g, c) => {
     fill(g, c[0]);
-    g.fillEllipse(30, 34, 52, 30);
-    g.fillTriangle(54, 34, 64, 18, 64, 50);
+    g.fillEllipse(29, 34, 50, 30);
+    g.fillTriangle(51, 34, 61, 18, 61, 50);
     fill(g, 0xf8f5ea);
-    g.fillEllipse(30, 42, 44, 12);
+    g.fillEllipse(29, 42, 42, 12);
     line(g, c[1]);
-    g.strokeEllipse(30, 34, 52, 30);
+    g.strokeEllipse(29, 34, 50, 30);
     fill(g, 0xfdfdf5);
     g.fillCircle(15, 30, 4.5);
     fill(g, 0x2c2c33);
@@ -466,25 +580,45 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     fill(g, 0x2c2c33);
     g.fillCircle(17, 30, 2.4);
   },
+  /** うなぎ・あなご。なめらかな S字の 体に せびれと あたま を つけて
+     「ぼう」ではなく「さかな」に 見える ように する */
   eel: (g, c) => {
-    line(g, c[0], 12);
-    g.beginPath();
-    g.moveTo(10, 46);
-    g.lineTo(24, 30);
-    g.lineTo(40, 40);
-    g.lineTo(56, 20);
-    g.strokePath();
-    line(g, c[1], 2);
-    g.beginPath();
-    g.moveTo(10, 46);
-    g.lineTo(24, 30);
-    g.lineTo(40, 40);
-    g.lineTo(56, 20);
-    g.strokePath();
+    const body: [number, number][] = [];
+    for (let i = 0; i <= 20; i++) {
+      const t = i / 20;
+      body.push([8 + t * 48, 44 - Math.sin(t * Math.PI * 1.15) * 22 + t * 4]);
+    }
+    const trace = (): void => {
+      g.beginPath();
+      g.moveTo(body[0][0], body[0][1]);
+      for (const [x, y] of body.slice(1)) g.lineTo(x, y);
+      g.strokePath();
+    };
+    // せびれ(体より 少し こい色で うしろに)
+    line(g, c[1], 15);
+    trace();
+    line(g, c[0], 11);
+    trace();
+    // しっぽ(左)を とがらせる
+    fill(g, c[0]);
+    g.fillTriangle(4, 40, 14, 38, 12, 50);
+    line(g, c[1], 1.8);
+    g.strokeTriangle(4, 40, 14, 38, 12, 50);
+    // あたま(右)
+    const [hx, hy] = body[body.length - 1];
+    fill(g, c[0]);
+    g.fillEllipse(hx, hy, 17, 13);
+    line(g, c[1], 1.8);
+    g.strokeEllipse(hx, hy, 17, 13);
     fill(g, 0xfdfdf5);
-    g.fillCircle(54, 20, 3.4);
+    g.fillCircle(hx + 3, hy - 2, 3.2);
     fill(g, 0x2c2c33);
-    g.fillCircle(55, 20, 1.8);
+    g.fillCircle(hx + 4, hy - 2, 1.8);
+    line(g, c[1], 1.6);
+    g.beginPath();
+    g.moveTo(hx + 1, hy + 4);
+    g.lineTo(hx + 7, hy + 4);
+    g.strokePath();
   },
   shell: (g, c) => {
     fill(g, c[0]);
@@ -504,19 +638,29 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     fill(g, c[1]);
     g.fillRect(10, 43, 44, 3);
   },
+  /** しんじゅ。かいを こく して、たまが 白く 浮くように する */
   pearl: (g, c) => {
-    fill(g, 0xd9d3c4);
-    g.slice(32, 46, 26, Math.PI, Math.PI * 2, false);
+    // ひらいた かい(したがわ)
+    fill(g, 0xbdb49f);
+    g.slice(32, 52, 28, Math.PI, Math.PI * 2, false);
     g.fillPath();
-    line(g, 0xa39c8b);
+    line(g, 0x7e7563, 2.4);
     g.beginPath();
-    g.arc(32, 46, 26, Math.PI, Math.PI * 2, false);
+    g.arc(32, 52, 28, Math.PI, Math.PI * 2, false);
     g.strokePath();
+    line(g, 0x7e7563, 1.4);
+    for (let i = -2; i <= 2; i++) {
+      g.beginPath();
+      g.moveTo(32, 52);
+      g.lineTo(32 + i * 11, 27);
+      g.strokePath();
+    }
+    // たま
     fill(g, c[0]);
-    g.fillCircle(32, 34, 11);
-    shine(g, 28, 30, 4, 3);
-    line(g, c[1], 1.6);
-    g.strokeCircle(32, 34, 11);
+    g.fillCircle(32, 30, 14);
+    line(g, c[1], 2.4);
+    g.strokeCircle(32, 30, 14);
+    shine(g, 27, 25, 5, 4);
   },
   crab: (g, c) => {
     fill(g, c[0]);
@@ -545,35 +689,66 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.fillCircle(26, 32, 1.8);
     g.fillCircle(38, 32, 1.8);
   },
+  /** えび。まるまった 体+しっぽの おうぎ+ひげ で 「えび」と わかる ように する */
   shrimp: (g, c) => {
-    fill(g, c[0]);
-    g.beginPath();
-    g.moveTo(48, 18);
-    g.lineTo(52, 32);
-    g.lineTo(38, 48);
-    g.lineTo(20, 46);
-    g.lineTo(14, 34);
-    g.lineTo(28, 22);
-    g.closePath();
-    g.fillPath();
-    line(g, c[1]);
-    g.strokePath();
-    line(g, c[1], 1.4);
-    for (let i = 0; i < 3; i++) {
+    // からだ: あたま(左うえ)から しっぽ(右うえ)へ まるまった カーブ。
+    // ふしめの ある からと、おうぎの しっぽ、ひげ で 「えび」と わかる ように する
+    const spine: [number, number][] = [];
+    for (let i = 0; i <= 16; i++) {
+      const a = Math.PI * 1.05 - (i / 16) * Math.PI * 1.15;
+      spine.push([31 + Math.cos(a) * 18, 32 + Math.sin(a) * 18]);
+    }
+    const trace = (): void => {
       g.beginPath();
-      g.moveTo(24 + i * 8, 24);
-      g.lineTo(30 + i * 8, 46);
+      g.moveTo(spine[0][0], spine[0][1]);
+      for (const [x, y] of spine.slice(1)) g.lineTo(x, y);
+      g.strokePath();
+    };
+    line(g, c[1], 21);
+    trace();
+    line(g, c[0], 16);
+    trace();
+    // からの ふしめ(まんなかから そとへ 放射)
+    line(g, c[1], 1.8);
+    for (let i = 3; i <= 13; i += 2) {
+      const [x, y] = spine[i];
+      g.beginPath();
+      g.moveTo(32 + (x - 32) * 0.6, 32 + (y - 32) * 0.6);
+      g.lineTo(32 + (x - 32) * 1.38, 32 + (y - 32) * 1.38);
       g.strokePath();
     }
-    line(g, c[1], 1.6);
-    g.beginPath();
-    g.moveTo(48, 18);
-    g.lineTo(60, 8);
-    g.strokePath();
-    g.beginPath();
-    g.moveTo(48, 20);
-    g.lineTo(62, 18);
-    g.strokePath();
+    // しっぽの おうぎ(3まい)
+    const [tx, ty] = spine[spine.length - 1];
+    for (const [dx, dy] of [
+      [10, -9],
+      [13, -1],
+      [10, 7],
+    ] as const) {
+      fill(g, c[0]);
+      g.fillTriangle(tx - 2, ty + 3, tx + dx, ty + dy, tx + dx * 0.5, ty + dy + 5);
+      line(g, c[1], 1.6);
+      g.strokeTriangle(tx - 2, ty + 3, tx + dx, ty + dy, tx + dx * 0.5, ty + dy + 5);
+    }
+    // あたま(左うえ)を ふとらせて、め と ひげ を つける
+    const [hx, hy] = spine[0];
+    fill(g, c[0]);
+    g.fillEllipse(hx - 1, hy + 3, 20, 17);
+    line(g, c[1], 2);
+    g.strokeEllipse(hx - 1, hy + 3, 20, 17);
+    line(g, c[1], 2);
+    for (const [ex, ey] of [
+      [hx - 10, hy - 8],
+      [hx - 6, hy - 13],
+    ] as const) {
+      g.beginPath();
+      g.moveTo(hx - 4, hy - 1);
+      g.lineTo(ex, ey);
+      g.strokePath();
+    }
+    fill(g, 0xfdfdf5);
+    g.fillCircle(hx - 3, hy + 2, 3.6);
+    fill(g, 0x2c2c33);
+    g.fillCircle(hx - 4, hy + 2, 2);
   },
   squid: (g, c) => {
     fill(g, c[0]);
@@ -632,32 +807,61 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
       g.strokePath();
     }
   },
+  /** うし。まえは 「まるに ぶちが 2つ」で なにか わからなかった。
+     かおを 大きく して、つの・みみ・はなを はっきり させる */
   cow: (g, c) => {
+    const EDGE = 0x6f6152;
+    // からだ(よこ向き)+あし
     fill(g, 0xfaf6ec);
-    g.fillEllipse(32, 38, 46, 30);
+    g.fillEllipse(34, 40, 44, 26);
+    line(g, EDGE);
+    g.strokeEllipse(34, 40, 44, 26);
+    for (const [w, col] of [
+      [8, EDGE],
+      [4.5, 0xfaf6ec],
+    ] as const) {
+      line(g, col, w);
+      for (const x of [22, 31, 42, 50]) {
+        g.beginPath();
+        g.moveTo(x, 46);
+        g.lineTo(x, 57);
+        g.strokePath();
+      }
+    }
+    // ぶち(c の いろ)
     fill(g, c[0]);
-    g.fillEllipse(22, 34, 16, 14);
-    g.fillEllipse(42, 42, 14, 12);
-    line(g, 0x8a7a62);
-    g.strokeEllipse(32, 38, 46, 30);
+    g.fillEllipse(26, 36, 15, 13);
+    g.fillEllipse(45, 44, 13, 11);
+    // かお
     fill(g, 0xfaf6ec);
-    g.fillEllipse(32, 22, 22, 16);
-    line(g, 0x8a7a62, 2);
-    g.strokeEllipse(32, 22, 22, 16);
-    fill(g, 0xf0b8c0);
-    g.fillEllipse(32, 26, 12, 8);
-    fill(g, 0x2c2c33);
-    g.fillCircle(27, 20, 1.8);
-    g.fillCircle(37, 20, 1.8);
+    g.fillEllipse(20, 20, 26, 22);
+    line(g, EDGE, 2.2);
+    g.strokeEllipse(20, 20, 26, 22);
+    // つの
     fill(g, 0xe0d6c0);
-    g.fillTriangle(20, 14, 26, 18, 18, 20);
-    g.fillTriangle(44, 14, 38, 18, 46, 20);
+    for (const s of [-1, 1]) {
+      g.fillTriangle(20 + s * 9, 11, 20 + s * 15, 4, 20 + s * 16, 13);
+      line(g, EDGE, 1.6);
+      g.strokeTriangle(20 + s * 9, 11, 20 + s * 15, 4, 20 + s * 16, 13);
+    }
+    // はな
+    fill(g, 0xf0b8c0);
+    g.fillEllipse(20, 27, 16, 10);
+    line(g, EDGE, 1.6);
+    g.strokeEllipse(20, 27, 16, 10);
+    fill(g, 0x8a6a62);
+    g.fillCircle(16, 27, 1.8);
+    g.fillCircle(24, 27, 1.8);
+    // め
+    fill(g, 0x2c2c33);
+    g.fillCircle(14, 17, 2.2);
+    g.fillCircle(26, 17, 2.2);
   },
   milk: (g, c) => {
     fill(g, c[0]);
     g.fillRoundedRect(20, 18, 24, 40, 4);
     g.fillTriangle(20, 18, 44, 18, 32, 6);
-    line(g, 0xa8a08c);
+    line(g, OUTLINE_SOFT);
     g.strokeRoundedRect(20, 18, 24, 40, 4);
     fill(g, 0x76c4e8);
     g.fillRect(24, 30, 16, 8);
@@ -676,17 +880,34 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
       g.fillCircle(x, y, 2.6);
     shine(g, 25, 28, 4, 3);
   },
+  /** きいと・まゆ(いとまき)。まえの 絵は うすい 円だけで なにか わからなかった */
   silk: (g, c) => {
+    // まきしんの じく(うえと したの つば)
+    fill(g, 0xb59253);
+    g.fillRoundedRect(14, 8, 36, 8, 3);
+    g.fillRoundedRect(14, 48, 36, 8, 3);
+    line(g, 0x7d6335, 2);
+    g.strokeRoundedRect(14, 8, 36, 8, 3);
+    g.strokeRoundedRect(14, 48, 36, 8, 3);
+    // まきついた いと
     fill(g, c[0]);
-    g.fillEllipse(32, 36, 40, 34);
-    line(g, c[1]);
-    g.strokeEllipse(32, 36, 40, 34);
-    line(g, c[1], 1.6);
-    for (let i = 0; i < 4; i++) {
+    g.fillRect(18, 15, 28, 34);
+    line(g, c[1], 2.4);
+    g.strokeRect(18, 15, 28, 34);
+    line(g, c[1], 1.4);
+    for (let i = 0; i < 6; i++) {
       g.beginPath();
-      g.arc(32, 36, 8 + i * 5, 0.4, 2.6, false);
+      g.moveTo(18, 18 + i * 5.6);
+      g.lineTo(46, 15 + i * 5.6);
       g.strokePath();
     }
+    // ほどけた いとの さき
+    line(g, c[1], 2);
+    g.beginPath();
+    g.moveTo(46, 26);
+    g.lineTo(56, 32);
+    g.lineTo(50, 40);
+    g.strokePath();
   },
   drop: (g, c) => {
     fill(g, c[0]);
@@ -703,7 +924,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
   salt: (g, c) => {
     fill(g, 0xf2ede0);
     g.fillTriangle(32, 16, 12, 52, 52, 52);
-    line(g, 0xbfb7a4);
+    line(g, OUTLINE_SOFT);
     g.strokeTriangle(32, 16, 12, 52, 52, 52);
     fill(g, c[0]);
     for (const [x, y] of [
@@ -727,18 +948,18 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
   stone: (g, c) => {
     fill(g, c[0]);
     g.beginPath();
-    g.moveTo(14, 40);
-    g.lineTo(24, 20);
-    g.lineTo(44, 18);
-    g.lineTo(52, 36);
-    g.lineTo(40, 52);
-    g.lineTo(20, 50);
+    g.moveTo(6, 40);
+    g.lineTo(19, 14);
+    g.lineTo(46, 10);
+    g.lineTo(58, 34);
+    g.lineTo(44, 56);
+    g.lineTo(16, 54);
     g.closePath();
     g.fillPath();
     line(g, c[1]);
     g.strokePath();
     g.fillStyle(0xffffff, 0.28);
-    g.fillTriangle(24, 22, 42, 20, 30, 34);
+    g.fillTriangle(20, 17, 45, 13, 29, 32);
   },
   bowl: (g, c) => {
     fill(g, 0xf6efdc);
@@ -750,30 +971,42 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.beginPath();
     g.arc(32, 30, 22, 0, Math.PI, false);
     g.strokePath();
-    line(g, 0xd8cdb0, 2);
+    line(g, OUTLINE_SOFT, 2);
     g.strokeEllipse(32, 30, 42, 16);
   },
   plate: (g, c) => {
     fill(g, 0xf6efdc);
     g.fillEllipse(32, 40, 52, 22);
-    line(g, 0xcfc4a8);
+    line(g, OUTLINE_SOFT);
     g.strokeEllipse(32, 40, 52, 22);
     fill(g, c[0]);
     g.fillEllipse(32, 36, 32, 14);
     line(g, c[1], 1.8);
     g.strokeEllipse(32, 36, 32, 14);
   },
+  /** ゆのみ(おちゃ・ジュース)。ほかの アイコンと 同じ 大きさに なる ように 64枠を つかう */
   cup: (g, c) => {
     fill(g, 0xf6efdc);
-    g.fillRoundedRect(18, 26, 28, 26, 6);
-    line(g, 0xcfc4a8);
-    g.strokeRoundedRect(18, 26, 28, 26, 6);
+    g.beginPath();
+    g.moveTo(15, 18);
+    g.lineTo(49, 18);
+    g.lineTo(44, 54);
+    g.lineTo(20, 54);
+    g.closePath();
+    g.fillPath();
+    line(g, OUTLINE_SOFT);
+    g.strokePath();
     fill(g, c[0]);
-    g.fillEllipse(32, 28, 24, 9);
-    line(g, c[1], 1.6);
-    g.strokeEllipse(32, 28, 24, 9);
+    g.fillEllipse(32, 21, 32, 11);
+    line(g, c[1], 1.8);
+    g.strokeEllipse(32, 21, 32, 11);
     g.fillStyle(0xffffff, 0.5);
-    g.fillEllipse(24, 40, 5, 12);
+    g.fillEllipse(23, 36, 4, 12);
+    line(g, OUTLINE_SOFT, 2);
+    g.beginPath();
+    g.moveTo(18, 52);
+    g.lineTo(46, 52);
+    g.strokePath();
   },
   bottle: (g, c) => {
     fill(g, 0xeae3cf);
@@ -787,47 +1020,63 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
   },
   jar: (g, c) => {
     fill(g, c[0]);
-    g.fillRoundedRect(18, 22, 28, 34, 6);
+    g.fillRoundedRect(13, 20, 38, 38, 7);
     line(g, c[1]);
-    g.strokeRoundedRect(18, 22, 28, 34, 6);
+    g.strokeRoundedRect(13, 20, 38, 38, 7);
     fill(g, 0xd8b483);
-    g.fillRoundedRect(15, 16, 34, 10, 4);
-    line(g, 0xa8865a, 2);
-    g.strokeRoundedRect(15, 16, 34, 10, 4);
+    g.fillRoundedRect(9, 10, 46, 13, 5);
+    line(g, 0xa8865a, 2.2);
+    g.strokeRoundedRect(9, 10, 46, 13, 5);
+    g.fillStyle(0xffffff, 0.4);
+    g.fillEllipse(22, 34, 6, 12);
   },
   sweet: (g, c) => {
-    line(g, 0xc9a86a, 3);
+    // くし(こい 木の いろ+ふち。うすいと だんごが 3つの まるに 見える)
+    line(g, 0x8f7440, 6);
     g.beginPath();
-    g.moveTo(10, 46);
-    g.lineTo(54, 26);
+    g.moveTo(8, 50);
+    g.lineTo(58, 22);
+    g.strokePath();
+    line(g, 0xd8b483, 3.4);
+    g.beginPath();
+    g.moveTo(8, 50);
+    g.lineTo(58, 22);
     g.strokePath();
     for (const [x, y] of [
-      [20, 42],
-      [32, 36],
-      [44, 30],
+      [20, 43],
+      [33, 36],
+      [46, 29],
     ] as const) {
       fill(g, c[0]);
-      g.fillCircle(x, y, 9);
-      line(g, c[1], 1.8);
-      g.strokeCircle(x, y, 9);
+      g.fillCircle(x, y, 10);
+      line(g, c[1], 2);
+      g.strokeCircle(x, y, 10);
+      shine(g, x - 3, y - 4, 3, 2);
     }
   },
   cake: (g, c) => {
     fill(g, 0xf6e7c4);
-    g.fillRoundedRect(16, 32, 32, 22, 4);
-    line(g, 0xd0bb90);
-    g.strokeRoundedRect(16, 32, 32, 22, 4);
+    g.fillRoundedRect(9, 30, 46, 26, 5);
+    line(g, OUTLINE_SOFT);
+    g.strokeRoundedRect(9, 30, 46, 26, 5);
+    line(g, OUTLINE_SOFT, 1.6);
+    g.beginPath();
+    g.moveTo(10, 43);
+    g.lineTo(54, 43);
+    g.strokePath();
     fill(g, c[0]);
-    g.fillRoundedRect(14, 22, 36, 14, 6);
+    g.fillRoundedRect(7, 18, 50, 16, 7);
     line(g, c[1]);
-    g.strokeRoundedRect(14, 22, 36, 14, 6);
+    g.strokeRoundedRect(7, 18, 50, 16, 7);
     fill(g, 0xe0584f);
-    g.fillCircle(32, 20, 5);
+    g.fillCircle(32, 14, 6.5);
+    line(g, 0xa83a33, 1.8);
+    g.strokeCircle(32, 14, 6.5);
   },
   noodle: (g, c) => {
     fill(g, 0xf6efdc);
     g.fillEllipse(32, 36, 46, 22);
-    line(g, 0xcfc4a8);
+    line(g, OUTLINE_SOFT);
     g.strokeEllipse(32, 36, 46, 22);
     line(g, c[0], 3.4);
     for (let i = 0; i < 5; i++) {
@@ -850,13 +1099,35 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
       g.strokeRoundedRect(20, y - 7, 24, 14, 6);
     }
   },
+  /** おにぎり。ごはんは いつも 白(c で ぬると のりと 見わけが つかない)。
+     いろは「うえに のせた ぐ」に つかうので、ぐの ちがいで 見わけられる */
   onigiri: (g, c) => {
+    const tri: [number, number][] = [
+      [32, 8],
+      [57, 52],
+      [7, 52],
+    ];
+    fill(g, 0xfaf6ec);
+    g.fillTriangle(tri[0][0], tri[0][1], tri[1][0], tri[1][1], tri[2][0], tri[2][1]);
+    line(g, OUTLINE_SOFT, 2.6);
+    g.strokeTriangle(tri[0][0], tri[0][1], tri[1][0], tri[1][1], tri[2][0], tri[2][1]);
+    // のり: したの へんに ぴったり そわせた 台形(まんなかに ういた しかくは
+    // 「はこ」に 見えて しまうので さける)
+    fill(g, 0x33422f);
+    g.beginPath();
+    g.moveTo(15, 38);
+    g.lineTo(49, 38);
+    g.lineTo(56, 51);
+    g.lineTo(8, 51);
+    g.closePath();
+    g.fillPath();
+    line(g, 0x1f2a1c, 1.8);
+    g.strokePath();
+    // ぐ(いろの ちがいは ここで 見せる)
     fill(g, c[0]);
-    g.fillTriangle(32, 12, 12, 50, 52, 50);
-    line(g, 0xcfc4a8);
-    g.strokeTriangle(32, 12, 12, 50, 52, 50);
-    fill(g, 0x3a4a3a);
-    g.fillRect(22, 36, 20, 14);
+    g.fillCircle(32, 27, 7.5);
+    line(g, c[1], 1.8);
+    g.strokeCircle(32, 27, 7.5);
   },
   senbei: (g, c) => {
     fill(g, c[0]);
@@ -880,7 +1151,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.strokeRoundedRect(14, 28, 36, 24, 8);
     fill(g, 0xd8cdb0);
     g.fillEllipse(32, 28, 42, 12);
-    line(g, 0xa89c80, 2);
+    line(g, OUTLINE_SOFT, 2);
     g.strokeEllipse(32, 28, 42, 12);
     g.fillStyle(0xffffff, 0.5);
     g.fillEllipse(24, 20, 10, 5);
@@ -888,32 +1159,215 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
   },
   pottery: (g, c) => {
     fill(g, c[0]);
-    g.fillEllipse(32, 40, 36, 30);
-    g.fillRect(24, 18, 16, 12);
+    g.fillEllipse(32, 38, 48, 40);
+    g.fillRect(22, 10, 20, 14);
     line(g, c[1]);
-    g.strokeEllipse(32, 40, 36, 30);
-    g.strokeRect(24, 18, 16, 12);
-    g.fillStyle(0xffffff, 0.35);
-    g.fillEllipse(24, 34, 8, 12);
-  },
-  cloth: (g, c) => {
-    fill(g, c[0]);
-    g.fillRoundedRect(12, 18, 40, 34, 4);
-    line(g, c[1]);
-    g.strokeRoundedRect(12, 18, 40, 34, 4);
-    g.fillStyle(0xffffff, 0.45);
-    for (let i = 0; i < 3; i++) g.fillRect(12, 24 + i * 10, 40, 3);
+    g.strokeEllipse(32, 38, 48, 40);
+    g.strokeRect(22, 10, 20, 14);
     fill(g, c[1]);
-    g.fillRect(12, 48, 40, 4);
+    g.fillEllipse(32, 11, 20, 6);
+    g.fillStyle(0xffffff, 0.35);
+    g.fillEllipse(21, 32, 9, 14);
   },
+  /** ぬの・わた の ぬの(たたんだ ぬの)。towel(ほしてある タオル)とは
+     かたちで 見わける: cloth は かどが めくれた いちまい */
+  cloth: (g, c) => {
+    // たたんだ ぬの(しかくに ななめの おりめ)。ぺらの しかくだと
+    // カード・towel と 見わけが つかない ので かどを めくる
+    fill(g, c[0]);
+    g.beginPath();
+    g.moveTo(8, 16);
+    g.lineTo(56, 12);
+    g.lineTo(56, 46);
+    g.lineTo(8, 52);
+    g.closePath();
+    g.fillPath();
+    line(g, c[1]);
+    g.strokePath();
+    // おりめ 1本だけ(たてと よこ 両方 ひくと「まどガラス」に 見える)
+    line(g, c[1], 1.8);
+    g.beginPath();
+    g.moveTo(8, 34);
+    g.lineTo(56, 28);
+    g.strokePath();
+    // めくれた かど(うらがわが 見える)
+    fill(g, c[1]);
+    g.fillTriangle(56, 46, 38, 49, 52, 58);
+    line(g, c[1], 2);
+    g.strokeTriangle(56, 46, 38, 49, 52, 58);
+    g.fillStyle(0xffffff, 0.3);
+    g.fillRect(10, 18, 44, 4);
+  },
+  /** わりばし(きの こうげいひん)。めがね・コースターには つかわない
+     (それぞれ glasses / mat が ある) */
   craft: (g, c) => {
     fill(g, c[0]);
-    g.fillRoundedRect(20, 10, 6, 44, 3);
-    g.fillRoundedRect(34, 10, 6, 44, 3);
-    line(g, c[1], 1.8);
-    g.strokeRoundedRect(20, 10, 6, 44, 3);
-    g.strokeRoundedRect(34, 10, 6, 44, 3);
+    g.fillRoundedRect(18, 8, 8, 46, 4);
+    g.fillRoundedRect(36, 8, 8, 46, 4);
+    line(g, c[1], 2);
+    g.strokeRoundedRect(18, 8, 8, 46, 4);
+    g.strokeRoundedRect(36, 8, 8, 46, 4);
+    // はしぶくろ(おびがみ)
     fill(g, 0xc9a86a);
-    g.fillRect(16, 48, 30, 6);
+    g.fillRoundedRect(12, 42, 40, 12, 3);
+    line(g, 0x8f7440, 2);
+    g.strokeRoundedRect(12, 42, 40, 12, 3);
+  },
+  /** めがね(さばえの めがね) */
+  glasses: (g, c) => {
+    line(g, c[1], 3);
+    // つる
+    g.beginPath();
+    g.moveTo(6, 24);
+    g.lineTo(14, 30);
+    g.strokePath();
+    g.beginPath();
+    g.moveTo(58, 24);
+    g.lineTo(50, 30);
+    g.strokePath();
+    // はしら(まんなか)
+    g.beginPath();
+    g.moveTo(27, 32);
+    g.lineTo(37, 32);
+    g.strokePath();
+    for (const cx of [18, 46]) {
+      g.fillStyle(0xffffff, 0.55);
+      g.fillEllipse(cx, 34, 22, 20);
+      line(g, c[1], 3.4);
+      g.strokeEllipse(cx, 34, 22, 20);
+    }
+  },
+  /** コースター・ござ(いぐさの あみもの) */
+  mat: (g, c) => {
+    fill(g, c[0]);
+    g.fillRoundedRect(8, 18, 48, 32, 4);
+    line(g, c[1]);
+    g.strokeRoundedRect(8, 18, 48, 32, 4);
+    // あみめ
+    line(g, c[1], 1.6);
+    for (let i = 1; i < 6; i++) {
+      g.beginPath();
+      g.moveTo(8 + i * 8, 18);
+      g.lineTo(8 + i * 8, 50);
+      g.strokePath();
+    }
+    for (let i = 1; i < 4; i++) {
+      g.beginPath();
+      g.moveTo(8, 18 + i * 8);
+      g.lineTo(56, 18 + i * 8);
+      g.strokePath();
+    }
+  },
+  /** ソフトクリーム(sweet(だんご)で 代用すると 意味が わからない) */
+  icecream: (g, c) => {
+    // コーン
+    fill(g, 0xd8b483);
+    g.fillTriangle(32, 60, 18, 30, 46, 30);
+    line(g, 0xa8865a, 2.2);
+    g.strokeTriangle(32, 60, 18, 30, 46, 30);
+    line(g, 0xa8865a, 1.4);
+    for (const [x1, y1, x2, y2] of [
+      [22, 34, 38, 52],
+      [30, 32, 42, 42],
+      [26, 52, 42, 34],
+    ] as const) {
+      g.beginPath();
+      g.moveTo(x1, y1);
+      g.lineTo(x2, y2);
+      g.strokePath();
+    }
+    // まきの クリーム
+    fill(g, c[0]);
+    g.fillEllipse(32, 30, 32, 14);
+    g.fillEllipse(32, 22, 26, 14);
+    g.fillEllipse(32, 15, 18, 13);
+    g.fillCircle(32, 8, 5);
+    line(g, c[1], 2);
+    g.strokeEllipse(32, 30, 32, 14);
+    g.strokeEllipse(32, 22, 26, 14);
+    g.strokeEllipse(32, 15, 18, 13);
+    g.strokeCircle(32, 8, 5);
+  },
+  /** チーズ(あなの あいた くさびがた) */
+  cheese: (g, c) => {
+    fill(g, c[0]);
+    g.beginPath();
+    g.moveTo(6, 44);
+    g.lineTo(50, 16);
+    g.lineTo(58, 24);
+    g.lineTo(58, 40);
+    g.lineTo(14, 52);
+    g.closePath();
+    g.fillPath();
+    line(g, c[1]);
+    g.strokePath();
+    // かわ(うわめん)
+    line(g, c[1], 1.8);
+    g.beginPath();
+    g.moveTo(50, 16);
+    g.lineTo(50, 30);
+    g.lineTo(58, 24);
+    g.strokePath();
+    g.beginPath();
+    g.moveTo(6, 44);
+    g.lineTo(50, 30);
+    g.strokePath();
+    // あな
+    g.fillStyle(c[1], 0.55);
+    for (const [x, y, r] of [
+      [22, 44, 4],
+      [36, 40, 3.2],
+      [48, 38, 2.6],
+    ] as const)
+      g.fillCircle(x, y, r);
+  },
+  /** プリン(カラメルの のった むしがし) */
+  pudding: (g, c) => {
+    fill(g, c[0]);
+    g.beginPath();
+    g.moveTo(12, 24);
+    g.lineTo(52, 24);
+    g.lineTo(44, 52);
+    g.lineTo(20, 52);
+    g.closePath();
+    g.fillPath();
+    line(g, c[1]);
+    g.strokePath();
+    // うえの カラメル
+    fill(g, 0x9a6b42);
+    g.fillEllipse(32, 24, 40, 12);
+    line(g, 0x6d492b, 2);
+    g.strokeEllipse(32, 24, 40, 12);
+    // したの おさら
+    fill(g, 0xf6efdc);
+    g.fillEllipse(32, 54, 50, 10);
+    line(g, OUTLINE_SOFT, 2);
+    g.strokeEllipse(32, 54, 50, 10);
+    shine(g, 22, 36, 4, 7);
+  },
+  /** かまぼこ(いたに のった はんえん) */
+  kamaboko: (g, c) => {
+    // いた
+    fill(g, 0xd8b483);
+    g.fillRoundedRect(6, 44, 52, 10, 3);
+    line(g, 0xa8865a, 2.2);
+    g.strokeRoundedRect(6, 44, 52, 10, 3);
+    // み(はんえん)。そとは 白、ふちが c の いろ
+    fill(g, 0xfaf6ec);
+    g.slice(32, 45, 24, Math.PI, Math.PI * 2, false);
+    g.fillPath();
+    line(g, OUTLINE_SOFT, 2.2);
+    g.beginPath();
+    g.arc(32, 45, 24, Math.PI, Math.PI * 2, false);
+    g.strokePath();
+    // かわ(いろの ついた そとがわ)
+    line(g, c[0], 5);
+    g.beginPath();
+    g.arc(32, 45, 21.5, Math.PI * 1.03, Math.PI * 1.97, false);
+    g.strokePath();
+    line(g, c[1], 1.6);
+    g.beginPath();
+    g.arc(32, 45, 19, Math.PI * 1.03, Math.PI * 1.97, false);
+    g.strokePath();
   },
 };

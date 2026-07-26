@@ -11,6 +11,9 @@ export type IconDraw = (g: G, c: [number, number]) => void;
 /** アイコンの 1辺(ローカル座標) */
 export const S = 64;
 export const OUTLINE = 0x5a4632;
+/** 白っぽい ものの ふち。背景(#f7f3e6)に とけない こさが 必要。
+   うつわ・ごはん・ぬのなど「白い もの」の ふちは これを つかう(ベタ書き きんし) */
+export const OUTLINE_SOFT = 0x9c8f76;
 
 /** いろの なまえ(データから 文字列で 指定する) */
 export const ICON_COLORS: Record<string, [number, number]> = {
@@ -32,12 +35,13 @@ export const ICON_COLORS: Record<string, [number, number]> = {
   violet: [0x8e6bb5, 0x644a86],
   brown: [0x9a6b42, 0x6d492b],
   tan: [0xd8b483, 0xa8865a],
-  cream: [0xf6e7c4, 0xd0bb90],
-  white: [0xfaf6ec, 0xcfc7b4],
+  // うすい 3色は ふちを こく する(うすい ふちだと 背景に とけて かたちが 見えない)
+  cream: [0xf6e7c4, 0xb59253],
+  white: [0xfaf6ec, 0x9c8f76],
   gray: [0x9aa0a6, 0x6c7278],
   dark: [0x4a4a52, 0x2c2c33],
   gold: [0xe8c14a, 0xb28f22],
-  silver: [0xd6dde3, 0xa3adb6],
+  silver: [0xd6dde3, 0x8a949e],
 };
 
 export const fill = (g: G, color: number): void => {
