@@ -47,6 +47,11 @@ export interface SaveState {
   flags: Record<string, boolean>;
   /** さいごに ひらいていた地方(MapScene の表示対象) */
   currentRegion: string;
+  /** はじめて けんに ついた ときの 3コマを 見たか */
+  seenPrefGuide: boolean;
+  /** あそんだ ことが ある ミニゲーム(エンジン名 → true)。
+      あそびかたの 説明を 初回だけ 出す/ずかんで 見返せる ものを 決める のに つかう */
+  playedGame: Record<string, boolean>;
 }
 
 /** localStorage 互換の最小インターフェース(テスト時はメモリ実装を注入) */
@@ -70,6 +75,8 @@ export function defaultState(): SaveState {
     infra: {},
     flags: {},
     currentRegion: 'kanto',
+    seenPrefGuide: false,
+    playedGame: {},
   };
 }
 

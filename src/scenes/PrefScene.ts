@@ -23,7 +23,16 @@ import { buildNav } from '../ui/nav';
 import { runQuizModal } from '../ui/quizRunner';
 import { showTriviaOnce } from '../ui/trivia';
 import { COLORS, DEPTH, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
-import { makeButton, makeGuideRow, Modal, ScrollArea, showToast, shrinkToWidth } from '../ui/widgets';
+import {
+  makeButton,
+  makeGuideRow,
+  Modal,
+  ScrollArea,
+  showToast,
+  shrinkToWidth,
+  type MascotMood,
+} from '../ui/widgets';
+import { nextTask, type NextTask } from '../core/nextTask';
 import { confetti, wobble } from '../ui/effects';
 import { addIcon, type IconKey } from '../ui/icons';
 
@@ -53,6 +62,9 @@ const SPROUT_ICON: IconKey = 'leaf:lime';
 const STAR_ICON: IconKey = 'star:gold';
 const STAR_SIZE = 12;
 
+/** 3コマの さしえ(そざい → めいぶつ → おまつり) */
+const FIRST_GUIDE_ICONS: IconKey[] = ['leaf:lime', 'bowl:orange', 'lantern:crimson'];
+
 const fmtWait = (sec: number): string =>
   sec < 60 ? UI_TEXT.pref.soonWait : UI_TEXT.pref.minutesWait(Math.ceil(sec / 60));
 
@@ -61,6 +73,9 @@ export class PrefScene extends Phaser.Scene {
   private pref!: Prefecture;
   private scroll?: ScrollArea;
   private lastSig = '';
+  /** 「いま やること」の 1行(状態が かわった ときだけ 作りなおす) */
+  private taskRow?: Phaser.GameObjects.Container;
+  private lastTaskText = '';
 
   constructor() {
     super('PrefScene');
@@ -78,11 +93,17 @@ export class PrefScene extends Phaser.Scene {
       return;
     }
     this.pref = pref;
+    // Phaser は シーンを 作りなおさない。前の 県で のこった ガイド行を わすれさせる
+    this.taskRow = undefined;
+    this.lastTaskText = '';
     this.cameras.main.setBackgroundColor(COLORS.ground);
     this.buildTop();
     this.buildBanner();
     this.rebuildCards();
     buildNav(this, 'map');
+    this.updateTaskRow();
+    // はじめて けんに ついた ときだけ 「この まちで やること」を 3コマで 見せる
+    if (!store.state.seenPrefGuide) this.time.delayedCall(400, () => this.showFirstGuide());
 
     // 1秒ティッカー: 状態シグネチャが変わった時だけ再描画(モーダル中は触らない)
     this.time.addEvent({
@@ -90,12 +111,15 @@ export class PrefScene extends Phaser.Scene {
       loop: true,
       callback: () => {
         if (Modal.isOpen()) return;
+        this.updateTaskRow();
         if (this.sozaiSig() !== this.lastSig) this.rebuildCards();
       },
     });
 
     const refresh = (): void => {
-      if (this.scene.isActive() && !Modal.isOpen()) this.rebuildCards();
+      if (!this.scene.isActive() || Modal.isOpen()) return;
+      this.rebuildCards();
+      this.updateTaskRow();
     };
     this.game.events.on('mq-refresh', refresh);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.game.events.off('mq-refresh', refresh));
@@ -146,6 +170,73 @@ export class PrefScene extends Phaser.Scene {
     );
   }
 
+  /* ---------- 「いま やること」の 1行 ---------- */
+
+  /** core/nextTask の こたえを ことばに する。文は uiText がもつ */
+  private taskText(t: NextTask): string {
+    const T = UI_TEXT.pref.task;
+    const name = t.name ?? '';
+    switch (t.kind) {
+      case 'care':
+        return T.care(name);
+      case 'harvest':
+        return T.harvest(name);
+      case 'infraFull':
+        return T.infraFull(name);
+      case 'festival':
+        return T.festival(name);
+      case 'craft':
+        return T.craft(name);
+      case 'findRecipe':
+        return T.findRecipe;
+      case 'plant':
+        return T.plant(name);
+      case 'growing':
+        return T.growing;
+      default:
+        return T.done;
+    }
+  }
+
+  /** いそぎの ことは ぴっけの かおも かえる */
+  private taskMood(kind: NextTask['kind']): MascotMood {
+    if (kind === 'care') return 'wow';
+    if (kind === 'harvest' || kind === 'festival' || kind === 'craft') return 'happy';
+    return 'normal';
+  }
+
+  private updateTaskRow(): void {
+    const t = nextTask(store.state, this.pref, GAME_DATA, Date.now());
+    const text = this.taskText(t);
+    if (text === this.lastTaskText && this.taskRow) return;
+    this.lastTaskText = text;
+    this.taskRow?.destroy();
+    const row = makeGuideRow(this, text, this.taskMood(t.kind), 440);
+    row.container.setPosition(GAME_W / 2, TOP_H + BANNER_H - row.height / 2 - 4).setDepth(DEPTH.header - 1);
+    this.taskRow = row.container;
+  }
+
+  /* ---------- はじめての ときの 3コマ ---------- */
+  private showFirstGuide(step = 0): void {
+    const G = UI_TEXT.pref.firstGuide;
+    const last = step >= G.steps.length - 1;
+    const modal = new Modal(this, G.title);
+    modal.add(addIcon(this, 0, 0, FIRST_GUIDE_ICONS[step] ?? 'chick:amber', 54), 60);
+    modal.addText(G.steps[step], 16);
+    if (last) modal.addText(G.wait, 14, TEXT_COLORS.sub);
+    modal.addButton(last ? G.start : G.next, COLORS.primary, () => {
+      modal.close();
+      if (last) {
+        store.state.seenPrefGuide = true;
+        store.save();
+        this.updateTaskRow();
+      } else {
+        this.showFirstGuide(step + 1);
+      }
+    });
+    modal.show();
+  }
+
   private buildBanner(): void {
     // 風景バナー(暫定): 県色の丘+空+かざりアイコン
     const g = this.add.graphics();
@@ -157,8 +248,9 @@ export class PrefScene extends Phaser.Scene {
     g.fillStyle(c, 0.45);
     g.fillEllipse(GAME_W * 0.2, TOP_H + BANNER_H + 22, GAME_W * 0.9, 60);
     addIcon(this, GAME_W - 52, TOP_H + 24, 'sun:gold', 26);
+    // かざりは そらの ところに おく。バナーの 下半分は 「いま やること」の ふきだしが つかう
     const deco = BANNER_DECO[this.prefId] ?? BANNER_DECO_DEFAULT;
-    deco.forEach((key, i) => addIcon(this, 24 + 13 + i * 28, TOP_H + BANNER_H - 30, key, 26));
+    deco.forEach((key, i) => addIcon(this, 24 + 13 + i * 28, TOP_H + 22, key, 26));
   }
 
   private prefProgress(): { got: number; total: number } {

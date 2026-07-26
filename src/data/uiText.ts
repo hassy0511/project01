@@ -70,6 +70,30 @@ export const UI_TEXT = {
   },
 
   pref: {
+    /** 県ページの うえに つねに 出す 「いま やること」。core/nextTask.ts の 種類ごとに 1行 */
+    task: {
+      care: (name: string) => `${name}の おせわチャンス! いそげ〜!`,
+      harvest: (name: string) => `${name}が しゅうかくできるよ!`,
+      infraFull: (name: string) => `${name}が まんたん! かいしゅうしよう!`,
+      festival: (name: string) => `「${name}」が ひらけるよ! おまつりだ!`,
+      craft: (name: string) => `「${name}」が つくれるよ!`,
+      findRecipe: 'レシピを さがして みよう!',
+      plant: (name: string) => `まずは ${name}を うえてみよう!`,
+      growing: 'そだつまで ほかの けんへ いってみよう!',
+      done: 'この けんは バッチリ! ほかの けんへ いってみよう!',
+    },
+    /** はじめて けんに ついた ときの 3コマ */
+    firstGuide: {
+      title: 'この まちで やること',
+      steps: [
+        'まずは そざいを そだてよう!\nたねを まく、すこし まつ、そして しゅうかく!',
+        'そざいが そろったら めいぶつを つくろう!\nレシピを さがして、つくる!',
+        'めいぶつが できたら おまつりだ!\nおまつりを ひらくと もやもやぐもが はれるよ!',
+      ],
+      wait: 'そだつのを まっている あいだは、\nほかの けんへ いくのが おすすめ!',
+      next: 'つぎへ',
+      start: 'やってみる!',
+    },
     sozaiHead: 'そざい',
     recipeHead: 'レシピ',
     back: 'ちずへ',
