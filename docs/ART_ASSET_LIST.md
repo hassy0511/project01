@@ -6,8 +6,8 @@
 絵の かきかたの きまりは [ART_DIRECTION.md](./ART_DIRECTION.md) を 先に よむこと。
 この ファイルは 「何を 何個 描くか」だけを ならべた ものです。
 
-- かたち: **199**
-- いろちがいを ふくめた のべ数: **521**
+- かたち: **200**
+- いろちがいを ふくめた のべ数: **526**
 - せかい(ミニゲームの 背景): **59**
 
 いろは かたち1つに つき 1まいの SVG を つくり、`#MAIN` / `#DARK` の 2つの
@@ -22,7 +22,7 @@
 | `berry.svg` | つぶの みが ふさに なった もの(ブルーベリー・ぶどう・さくらんぼ)。まるを 6〜7つ かさねて ふさに し、うえに みじかい えだ | cream crimson dark deepgreen gold green lime navy purple violet yellow | — | さくらんぼ / さくらんぼ(しゅうかく中) / さくらんぼ(まだ はやい) / さんしょう ほか18 |
 | `bigfish.svg` | 大きな さかな(まぐろ・かつお・さけ)。よこむき。fish より 体が ぶあつく しっぽが 大きい | blue navy pink tan | — | かつお / かつお(えんしゅつ3) / かつお(ねらう もの) / さけ ほか6 |
 | `bottle.svg` | くびの ある びん(ジュース・しょうゆ・さけ)。中身の 色が ほんたい色。jar(ひろくちの びん)とは 見わける | amber brown crimson dark deepgreen gold gray green lime orange pink purple red tan teal violet yellow | — | ありたみかんの ジュース / いよかんジュース / いりこだし / うめシロップ ほか14 |
-| `bowl.svg` | ふかい わん・どんぶり。中身が すこし もりあがって 見える。plate(たいらな さら)とは 見わける | amber brown cream crimson dark deepgreen gray green lime navy orange pink red silver sky tan teal white yellow | — | minyouGame / あなごめし / あゆめし / いかなごの くぎに ほか29 |
+| `bowl.svg` | ふかい わん・どんぶり。中身が すこし もりあがって 見える。plate(たいらな さら)とは 見わける | amber brown cream crimson dark deepgreen gray green lime navy orange pink red silver sky tan teal white yellow | — | PrefScene / minyouGame / あなごめし / あゆめし ほか30 |
 | `cake.svg` | ケーキ 1きれ。よこから 見た さんかく。上に みが 1つ | red tan violet | — | いちごさんの タルト / べにいもの タルト / アップルパイ |
 | `cheese.svg` | チーズ(あなの あいた くさびがた) | yellow | — | チーズ |
 | `chestnut.svg` | くり。とがった さきと、ざらざらの したはんぶん | brown | — | くり |
@@ -86,7 +86,7 @@
 | `tree.svg` | き。太い みきと まるい はっぱの かたまり。forest(すぎ 3本)や palm(やしのき)とは べつ | deepgreen | 20〜22 | PrefScene / onbashiraGame / yamayakiGame / よしのすぎ ほか1 |
 | `tuber.svg` | いも(さつまいも・じゃがいも)。ながい たまごがたに 土の 点 | amber brown dark purple tan violet | — | こんにゃくいも / さつまいも / さといも / じゃがいも ほか2 |
 
-## ひと・いきもの(36)
+## ひと・いきもの(37)
 
 | ファイル | 何を 描くか | つかう いろ | 出る 大きさ(px) | どこで つかう |
 |---|---|---|---|---|
@@ -107,6 +107,7 @@
 | `frog.svg` | かえる(たんぼの いきもの・じゃまする やつ) | green | 32〜32 | reapGame |
 | `hand.svg` | てのひら(タップ・さわる あんない) | cream tan | 40〜40 | kantouGame / minyouGame |
 | `hand-clap.svg` | ぱちぱち(はくしゅ・おいわい) | tan | — | awaodoriGame / minyouGame |
+| `hand-point.svg` | ゆびさし(あそびかたの 「ここを おす」の しるし)。うえむきの ひとさしゆび | cream | — | howto |
 | `hawk.svg` | たか(はねを ひろげた もうきん・そらの おうさま) | brown | — | いかなご(しゅうかく中) / かき(しゅうかく中) / さくらえび(しゅうかく中) / しらす(しゅうかく中) ほか3 |
 | `horse.svg` | うま(やぶさめ・のうぎょうの うま) | brown | 48〜48 | kazariumaGame / ふじさきはちまんぐうの あきまつり |
 | `mask.svg` | 意味が きまっている いろ(ひとの はだ・目・しろ・き) */ const SKIN = 0xf2c9a0; const EYE = 0x2c2c33; const WHITE = 0xfaf6ec; const CREAM = 0xf6e7c4; const CREAM_D = 0xc0a878; const WOOD = 0x8a6a4a; const BEAK = 0xf0913c; const BEAK_D = 0xbc6a22; const CHEEK = 0xf28ba0; const WATER = 0x76c4e8; /** はだ色の あたま(ふちは こい色) */ const head = (g: G, c: [number, number], x: number, y: number, r: number): void => { fill(g, SKIN); g.fillCircle(x, y, r); line(g, c[1]); g.strokeCircle(x, y, r); }; /** ちいさな くろい 目 2つ */ const dotEyes = (g: G, x: number, y: number, gap: number, r = 2): void => { fill(g, EYE); g.fillCircle(x - gap, y, r); g.fillCircle(x + gap, y, r); }; /** まるい 目 2つ(しろ目 + くろ目) */ const bigEyes = (g: G, c: [number, number], x: number, y: number, gap: number, r: number): void => { fill(g, WHITE); g.fillCircle(x - gap, y, r); g.fillCircle(x + gap, y, r); line(g, c[1], 2); g.strokeCircle(x - gap, y, r); g.strokeCircle(x + gap, y, r); fill(g, EYE); g.fillCircle(x - gap, y, r * 0.5); g.fillCircle(x + gap, y, r * 0.5); }; /** てんを つないだ かたち(ぬり + ふちどり) */ const poly = (g: G, c: [number, number], pts: readonly (readonly [number, number])[], w = 2.4): void => { fill(g, c[0]); g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]); g.closePath(); g.fillPath(); line(g, c[1], w); g.strokePath(); }; /** ふく(からだ)を まるみの ある だいけいで 描く */ const torso = (g: G, c: [number, number], cx: number, top: number, wTop: number, bottom: number, wBot: number): void => { fill(g, c[0]); g.beginPath(); g.moveTo(cx - wTop / 2, top); g.lineTo(cx + wTop / 2, top); g.lineTo(cx + wBot / 2, bottom); g.lineTo(cx - wBot / 2, bottom); g.closePath(); g.fillPath(); line(g, c[1]); g.strokePath(); }; /** あし 2ほん(こい色) */ const legs2 = (g: G, c: [number, number], cx: number, y: number, h: number): void => { fill(g, c[1]); g.fillRoundedRect(cx - 9, y, 8, h, 4); g.fillRoundedRect(cx + 1, y, 8, h, 4); }; /** ほそい あし(とりの あし) */ const birdLegs = (g: G, x: number, y: number): void => { line(g, BEAK_D, 2.4); for (const dx of [-5, 5]) { g.beginPath(); g.moveTo(x + dx, y); g.lineTo(x + dx, y + 7); g.lineTo(x + dx + 4, y + 9); g.strokePath(); } }; export const ACTOR_ICONS: Record<string, IconDraw> = { /** おめんの かたち(おまつり・やたいの おめん) | cream red violet | 80〜80 | hyottokoGame / kabukiGame / たかさき だるまいち / ひゅうが ひょっとこ なつまつり |
@@ -148,7 +149,7 @@
 | `palm.svg` | やしのき(おきなわ・あたたかい みなみの しま) | deepgreen | 34〜34 | tsunahikiGame |
 | `rock.svg` | いわ(てついし・こうぶつを ほる) | gray | — | fukuotokoGame |
 | `sakura.svg` | さくら(はなみ・はる) | pink | 16〜40 | PrefScene / hanagasaGame |
-| `snow.svg` | ふる ゆき(ゆきの ひ・つもった ゆき) | — | — | — |
+| `snow.svg` | ふる ゆき(ゆきの ひ・つもった ゆき) | white | — | — |
 | `snowflake.svg` | ゆきの けっしょう(ゆき・さむさの しるし) | sky | — | エリア ほっかいどう・とうほく |
 | `snowman.svg` | ゆきだるま(ゆきの おまつり・ふゆの けしき) | white | — | yukimatsuriGame / さっぽろ ゆきまつり |
 | `sparkle.svg` | きらきら(できばえ・ごほうびの えんしゅつ) | amber gold pink | 18〜58 | FestivalScene / MapScene / StoryScene / effects ほか9 |
@@ -184,8 +185,8 @@
 | `knife.svg` | ほうちょう(りょうりの どうぐ) | silver | 40〜40 | kaguraGame / たたらの ほうちょう |
 | `ladle.svg` | ひしゃく(みずを くむ たけの どうぐ) | tan | 34〜34 | yukakeGame |
 | `naruko.svg` | よさこいの なるこ(木の いたを うちならす どうぐ) | red | 46〜46 | yosakoiGame / よさこいまつり |
-| `net.svg` | あみ(さかなを すくう たまあみ) | — | — | — |
-| `pick.svg` | つるはし(こうざん・かいたくの どうぐ) | silver | — | すいしょう(えんしゅつ2) / てついし(えんしゅつ2) / ねんど(えんしゅつ2) / チタン(えんしゅつ2) |
+| `net.svg` | あみ(さかなを すくう たまあみ) | tan | — | — |
+| `pick.svg` | つるはし(こうざん・かいたくの どうぐ) | gray silver | — | すいしょう(えんしゅつ2) / てついし(えんしゅつ2) / ねんど(えんしゅつ2) / チタン(えんしゅつ2) |
 | `raft.svg` | いかだ(まるたを ならべた ふね) | tan | — | むつごろう(えんしゅつ1) |
 | `rope.svg` | つな・なわ。まえは ななめの すじだけで なにか わからなかったので たばねた 「わ」+ よじれ に する(おおづなひき・わらじ・かんぴょう) | cream crimson tan | — | かんぴょう / なは おおづなひき / ふくしま わらじまつり |
 | `rowboat.svg` | てこぎの こぶね(かわくだり・ふなあそび) | brown | — | ふな(えんしゅつ1) / ままかり(えんしゅつ1) |
@@ -226,7 +227,7 @@
 | `note.svg` | おんぷ(おと・BGM) | purple | 26〜26 | kazariumaGame |
 | `pin.svg` | ピン(ちずの ばしょ) | gray red | — | nav |
 | `plus.svg` | +(ふやす・くわえる) | — | — | — |
-| `question.svg` | ?(まだ わからない・ひみつ) | gray | — | InvScene / PrefScene / ZukanScene |
+| `question.svg` | ?(まだ わからない・ひみつ) | gray sky | — | InvScene / PrefScene / ZukanScene / howto |
 | `sound-off.svg` | おとを けす(スピーカー+×) | gray | — | nav |
 | `sound-on.svg` | おとが なる(スピーカー+おとの なみ) | navy | — | nav |
 | `spin-left.svg` | ↺(ひだりに まわす) | gold | — | hanagasaGame |
