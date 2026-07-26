@@ -16,6 +16,7 @@ import { UI_TEXT } from '../data/uiText';
 import { addIcon, iconScale } from './icons';
 import { COLORS, DEPTH, GAME_AREA_H, GAME_W } from './theme';
 import { Modal } from './widgets';
+import { HELP_CLOSE, HELP_OPEN } from '../scenes/minigames/arcade';
 
 /** ゆびの 大きさ・こさ */
 const HAND_SIZE = 64;
@@ -343,12 +344,17 @@ export function addHelpButton(
     .setDepth(DEPTH.header + 1)
     .setInteractive({ useHandCursor: true });
   btn.on(Phaser.Input.Events.GAMEOBJECT_POINTER_UP, () => {
+    // 読んでいる あいだ アーケードの 時計を 止める(読むだけで 点が へらない ように)
+    scene.events.emit(HELP_OPEN);
     const modal = new Modal(scene, title, true);
     modal.addText(text, 15);
     modal.addButton(UI_TEXT.howto.gotIt, COLORS.primary, () => {
       modal.close();
+      scene.events.emit(HELP_CLOSE);
       howto?.replay();
     });
+    // × で とじた ときも 時計を もどす
+    modal.onClose(() => scene.events.emit(HELP_CLOSE));
     modal.show();
   });
   return btn;

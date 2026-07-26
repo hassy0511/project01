@@ -76,6 +76,7 @@ export class Modal {
   private bg: Phaser.GameObjects.Graphics;
   private cursorY = 0;
   private closed = false;
+  private readonly closeHooks: (() => void)[] = [];
 
   static isOpen(): boolean {
     const m = Modal.current;
@@ -175,10 +176,16 @@ export class Modal {
     // タイトルを箱の上端に合わせているので、box 原点は上端
   }
 
+  /** とじた ときに 1回 よぶ しごと(× でも ボタンでも かならず とおる) */
+  onClose(fn: () => void): void {
+    this.closeHooks.push(fn);
+  }
+
   close(): void {
     if (this.closed) return;
     this.closed = true;
     if (Modal.current === this) Modal.current = null;
+    for (const fn of this.closeHooks.splice(0)) fn();
     this.root.destroy();
   }
 }

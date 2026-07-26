@@ -12,6 +12,11 @@ import type { MinigameApi } from './types';
 
 const HUD_H = 44;
 
+/** 「?」で あそびかたを 開いた/とじた の しらせ(ui/howto.ts が 出す)。
+   文字列を 2か所に 書かない ように ここで もつ */
+export const HELP_OPEN = 'mq-help-open';
+export const HELP_CLOSE = 'mq-help-close';
+
 export interface ArcadeOpts {
   engine: ArcadeEngine;
   /** 残り時間わずか(5秒)で毎秒鳴らすかどうか */
@@ -29,6 +34,9 @@ export class ArcadeSession {
   score = 0;
   combo = 0;
   private lastHitAt = 0;
+  /** 「?」で あそびかたを 読んでいる あいだ(0 = 読んでいない)。
+      読んでいる うちに 時間切れに なるのは かわいそう なので 時計を 止める */
+  private pausedAt = 0;
 
   private scoreText!: Phaser.GameObjects.Text;
   private comboText!: Phaser.GameObjects.Text;
@@ -49,6 +57,10 @@ export class ArcadeSession {
     this.buildHud();
     setHook({ kind: 'arcade', engine: this.engine, score: 0, secLeft: this.durationSec });
 
+    // あそびかたを 見ている あいだは 時計を 止める(ui/howto.ts の 「?」が しらせる)
+    this.scene.events.on(HELP_OPEN, this.onHelpOpen, this);
+    this.scene.events.on(HELP_CLOSE, this.onHelpClose, this);
+
     const tick = this.scene.time.addEvent({
       delay: 100,
       loop: true,
@@ -57,6 +69,7 @@ export class ArcadeSession {
           tick.remove();
           return;
         }
+        if (this.pausedAt) return; // あそびかたを 読んでいる あいだは すすめない
         const left = this.secLeft();
         this.drawTimer(left / this.durationSec);
         this.timerLabel.setText(`${Math.ceil(left)}`);
@@ -65,6 +78,18 @@ export class ArcadeSession {
         if (left <= 0) this.finish();
       },
     });
+  }
+
+  private onHelpOpen(): void {
+    if (!this.ended && !this.pausedAt) this.pausedAt = Date.now();
+  }
+
+  private onHelpClose(): void {
+    if (!this.pausedAt) return;
+    // 止まって いた ぶんだけ 「はじまり」を 後ろに ずらす
+    this.startedAt += Date.now() - this.pausedAt;
+    this.lastHitAt += Date.now() - this.pausedAt;
+    this.pausedAt = 0;
   }
 
   secLeft(): number {
@@ -166,6 +191,8 @@ export class ArcadeSession {
   finish(): void {
     if (this.ended) return;
     this.ended = true;
+    this.scene.events.off(HELP_OPEN, this.onHelpOpen, this);
+    this.scene.events.off(HELP_CLOSE, this.onHelpClose, this);
     SFX.fanfare();
     const banner = this.scene.add
       .text(GAME_W / 2, 200, UI_TEXT.arcade.timeUp, {
