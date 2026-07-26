@@ -4,7 +4,7 @@
    まれに「きんいろ」の山があり、深く はらうと 大得点(C要素)。
    既存動詞との違い = 「こする(みがく)」動作が本体。とうほく=雪ワールドの看板動詞 */
 import Phaser from 'phaser';
-import { addIcon } from '../../ui/icons';
+import { addIcon, iconScale } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -163,7 +163,7 @@ export function renderSweep(api: MinigameApi, target: string, prompt: string): v
     s.crop = addIcon(scene, s.x, s.y, target, s.gold ? 46 : 36).setScale(0).setName('mg-target');
     if (s.gold) s.crop.setTint(0xffd34d);
     area.add(s.crop);
-    scene.tweens.add({ targets: s.crop, scale: 1, ease: 'Back.easeOut', duration: 300 });
+    scene.tweens.add({ targets: s.crop, scale: iconScale(s.crop), ease: 'Back.easeOut', duration: 300 });
     floatUp(scene, s.x, s.y + api.areaY - 34, s.gold ? UI_TEXT.arcade.goldVeg : UI_TEXT.arcade.sweepReveal, s.gold ? '#e0812a' : '#3f7d2c');
     s.ring = scene.add.circle(s.x, s.y, 32).setStrokeStyle(3, s.gold ? 0xffd34d : 0xffffff, 0.9);
     area.add(s.ring);
@@ -184,7 +184,7 @@ export function renderSweep(api: MinigameApi, target: string, prompt: string): v
     const obj = s.crop;
     if (obj) {
       s.crop = undefined;
-      scene.tweens.add({ targets: obj, y: obj.y - 56, scale: 0.3, alpha: 0, duration: 240, onComplete: () => obj.destroy() });
+      scene.tweens.add({ targets: obj, y: obj.y - 56, scale: iconScale(obj, 0.3), alpha: 0, duration: 240, onComplete: () => obj.destroy() });
     }
     clearSpot(s);
     schedule(s, RESPAWN_MIN_MS + Math.random() * (RESPAWN_MAX_MS - RESPAWN_MIN_MS), () => pile(s));

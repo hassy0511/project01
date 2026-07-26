@@ -4,7 +4,7 @@
    ときどき実る「まぼろしの おおつぶ」(ながく ひっぱる+大得点)が C 要素。
    chain(色の見分け)との違い = 指の「うごかしかた」そのものが本体 */
 import Phaser from 'phaser';
-import { addIcon, setIcon } from '../../ui/icons';
+import { addIcon, iconScale, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -34,6 +34,8 @@ const RESPAWN_MIN_MS = 600;
 const RESPAWN_MAX_MS = 1500;
 /** まぼろしの おおつぶ の出現間隔 */
 const BIG_EVERY_MS = 12000;
+/** おおつぶ(まぼろしの みのり)の 大きさ = ふつうの なんばい か */
+const BIG_MULT = 1.6;
 const TINT_UNRIPE = 0x86c26a;
 
 type Stage = 'empty' | 'unripe' | 'ripe';
@@ -106,7 +108,7 @@ export function renderPluck(api: MinigameApi, target: string, prompt: string, un
     s.obj = addIcon(scene, s.x, s.y, unripeIcon ?? target, 36).setScale(0).setName('mg-target');
     if (!unripeIcon) s.obj.setTint(TINT_UNRIPE);
     area.add(s.obj);
-    scene.tweens.add({ targets: s.obj, scale: 0.8, ease: 'Back.easeOut', duration: 260 });
+    scene.tweens.add({ targets: s.obj, scale: iconScale(s.obj, 0.8), ease: 'Back.easeOut', duration: 260 });
     schedule(s, RIPEN_MIN_MS + Math.random() * (RIPEN_MAX_MS - RIPEN_MIN_MS), () => ripen(s));
   };
 
@@ -115,7 +117,7 @@ export function renderPluck(api: MinigameApi, target: string, prompt: string, un
     s.stage = 'ripe';
     s.obj.clearTint();
     setIcon(s.obj, target, 36); // まだ はやい すがたから 食べごろの すがたへ
-    scene.tweens.add({ targets: s.obj, scale: { from: 1.15, to: 1 }, ease: 'Back.easeOut', duration: 220 });
+    scene.tweens.add({ targets: s.obj, scale: { from: iconScale(s.obj, 1.15), to: iconScale(s.obj) }, ease: 'Back.easeOut', duration: 220 });
     // ゆらゆら(つみごろの合図)
     scene.tweens.add({ targets: s.obj, angle: { from: -5, to: 5 }, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
   };
@@ -133,7 +135,7 @@ export function renderPluck(api: MinigameApi, target: string, prompt: string, un
       s.big = true;
       s.obj = addIcon(scene, s.x, s.y - 8, target, 36).setScale(0).setName('mg-target');
       area.add(s.obj);
-      scene.tweens.add({ targets: s.obj, scale: 1.6, ease: 'Back.easeOut', duration: 400 });
+      scene.tweens.add({ targets: s.obj, scale: iconScale(s.obj, BIG_MULT), ease: 'Back.easeOut', duration: 400 });
       s.ring = scene.add.circle(s.x, s.y - 8, 40).setStrokeStyle(4, 0xffd34d, 0.9);
       area.add(s.ring);
       scene.tweens.add({ targets: s.ring, scale: { from: 1, to: 1.25 }, alpha: { from: 0.9, to: 0.3 }, duration: 600, yoyo: true, repeat: -1 });
@@ -163,7 +165,8 @@ export function renderPluck(api: MinigameApi, target: string, prompt: string, un
   const releaseVisual = (s: Spot): void => {
     stemG.clear();
     if (!s.obj) return;
-    scene.tweens.add({ targets: s.obj, y: s.big ? s.y - 8 : s.y, scaleY: s.big ? 1.6 : 1, scaleX: s.big ? 1.6 : 1, ease: 'Elastic.easeOut', duration: 500 });
+    const back = iconScale(s.obj, s.big ? BIG_MULT : 1);
+    scene.tweens.add({ targets: s.obj, y: s.big ? s.y - 8 : s.y, scaleY: back, scaleX: back, ease: 'Elastic.easeOut', duration: 500 });
   };
 
   const pop = (s: Spot): void => {
@@ -183,7 +186,7 @@ export function renderPluck(api: MinigameApi, target: string, prompt: string, un
     const obj = s.obj;
     if (obj) {
       scene.tweens.killTweensOf(obj);
-      scene.tweens.add({ targets: obj, y: obj.y - 60, scale: 0.3, alpha: 0, duration: 240, onComplete: () => obj.destroy() });
+      scene.tweens.add({ targets: obj, y: obj.y - 60, scale: iconScale(obj, 0.3), alpha: 0, duration: 240, onComplete: () => obj.destroy() });
       s.obj = undefined;
     }
     clearSpot(s);
@@ -252,7 +255,7 @@ export function renderPluck(api: MinigameApi, target: string, prompt: string, un
       }
     }
     // びよ〜ん: 実が下にのびる
-    const base = s.big ? 1.6 : 1;
+    const base = iconScale(s.obj, s.big ? BIG_MULT : 1);
     s.obj.setY((s.big ? s.y - 8 : s.y) + grab.dy * 0.42);
     s.obj.setScale(base * (1 - grab.dy / 600), base * (1 + grab.dy / 240));
     s.ring?.setY(s.obj.y);

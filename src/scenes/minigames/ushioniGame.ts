@@ -5,7 +5,7 @@
    くびは のばしすぎると もどってしまう(のびる かぎりが ある = のばす きょりの かけひき)。
    ぜんぶの もんを おはらいすると 大ボーナス。動作=のばして ねらう(のびる くびの コントロール) */
 import Phaser from 'phaser';
-import { addIcon, setIcon } from '../../ui/icons';
+import { addIcon, resetIcon, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -73,7 +73,7 @@ export function renderUshioni(api: MinigameApi, prompt: string): void {
 
   let target: Gate | null = null;
   const lightNext = (): void => {
-    for (const g of gates) g.obj.setTint(0xffffff).setScale(1);
+    for (const g of gates) resetIcon(g.obj.setTint(0xffffff));
     const rest = gates.filter((g) => !g.done);
     target = rest.length ? rest[Math.floor(Math.random() * rest.length)] : null;
     if (target) {
@@ -155,7 +155,7 @@ export function renderUshioni(api: MinigameApi, prompt: string): void {
       floatUp(scene, g.x, g.y + api.areaY - 80, UI_TEXT.fest.ushioniOharai, '#e0812a');
       setIcon(g.obj, 'sparkle:gold');
       scene.tweens.killTweensOf(g.obj);
-      g.obj.setScale(1).setTint(0xffffff);
+      resetIcon(g.obj).setTint(0xffffff);
       if (gates.every((x2) => x2.done)) {
         SFX.fanfare();
         bigImpact(scene, GAME_W / 2, 300 + api.areaY);

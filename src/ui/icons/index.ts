@@ -46,17 +46,42 @@ export function iconTexture(scene: Phaser.Scene, key: IconKey): string {
   return tk;
 }
 
+/** どの 大きさで おいたかを おぼえておく ための しるし */
+const SIZE_KEY = '__iconSize';
+
 /** アイコンを おく(size = 見た目の 1辺 px) */
 export function addIcon(scene: Phaser.Scene, x: number, y: number, key: IconKey, size = 64): Phaser.GameObjects.Image {
-  return scene.add.image(x, y, iconTexture(scene, key)).setOrigin(0.5).setDisplaySize(size, size);
+  const img = scene.add.image(x, y, iconTexture(scene, key)).setOrigin(0.5).setDisplaySize(size, size);
+  img.setData(SIZE_KEY, size);
+  return img;
+}
+
+/** アイコンの 「もとの 大きさ = 1」と した ときの scale の あたい。
+    テクスチャは 見た目より 大きい ドット数で 焼いてある ので、
+    tween や setScale に 1 や 0.8 を そのまま わたすと でっかく なって しまう。
+    ぷるんと させたい ときは `scale: iconScale(img, 1.15)` の ように つかう。 */
+export function iconScale(img: Phaser.GameObjects.Image, mult = 1): number {
+  const size = (img.getData(SIZE_KEY) as number | undefined) ?? img.displayWidth;
+  const frameW = img.frame?.realWidth || S * RES;
+  return (size / frameW) * mult;
+}
+
+/** アイコンを おいた ときの 大きさに もどす。
+    テクスチャは 見た目より 大きい ドット数で 焼いてある ので、
+    `setScale(1)` を つかうと ドット数どおりの でっかい 絵に なって しまう。
+    「もとの 大きさに もどす」ときは かならず これを つかう。 */
+export function resetIcon(img: Phaser.GameObjects.Image): Phaser.GameObjects.Image {
+  const size = (img.getData(SIZE_KEY) as number | undefined) ?? img.displayWidth;
+  return img.setDisplaySize(size, size);
 }
 
 /** すでに おいた アイコンの 絵を べつの かたちに 差しかえる(状態が かわる ときに つかう。
     もとの 大きさ・回転は そのまま たもつ) */
 export function setIcon(img: Phaser.GameObjects.Image, key: IconKey, size?: number): void {
-  const w = size ?? img.displayWidth;
+  const w = size ?? (img.getData(SIZE_KEY) as number | undefined) ?? img.displayWidth;
   img.setTexture(iconTexture(img.scene, key));
   img.setDisplaySize(w, w);
+  img.setData(SIZE_KEY, w);
 }
 
 

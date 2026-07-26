@@ -162,21 +162,50 @@ export function makeDriver(page, shotsDir) {
     throw new Error(`scrollAndClick failed: ${label} nth=${nth}`);
   }
 
+  /** でかすぎる/ちいさすぎる アイコンを 見つける。
+   * アイコンの テクスチャは 見た目の 2ばいの ドットで 焼いてあるので、
+   * `setScale(1)` や `scale: 1` の tween を かけると ドット数どおりの でっかい 絵に なる。
+   * 画面に 128px の アイコンは 出てこない ので、それを めやすに する */
+  const hugeIcons = (limit = 96) =>
+    page.evaluate((lim) => {
+      const bad = [];
+      for (const s of window.__game.scene.getScenes(true)) {
+        const walk = (l) => {
+          for (const o of l) {
+            if (o.list) walk(o.list);
+            if (o.texture?.key?.startsWith('icon:') && o.displayWidth > lim) {
+              bad.push(`${o.texture.key} ${Math.round(o.displayWidth)}px (${s.scene.key})`);
+            }
+          }
+        };
+        walk(s.children.list);
+      }
+      return [...new Set(bad)];
+    }, limit);
+
   /** アーケードゲーム: 少し遊んでから時間切れを待つ(fastMode 前提)。
    * interact が指定されればゲーム中に呼び続ける */
   async function playArcade(interact = null, timeout = 30000) {
     await page.waitForFunction(() => window.__mq?.kind === 'arcade', null, { timeout: 8000 });
     const t0 = Date.now();
+    const seenHuge = new Set();
     for (;;) {
       const hook = await page.evaluate(() => window.__mq);
       if (!hook || hook.kind !== 'arcade') break;
       if (Date.now() - t0 > timeout) throw new Error('arcade did not finish');
       if (interact) await interact(hook);
+      for (const h of await hugeIcons()) seenHuge.add(h);
       await page.waitForTimeout(250);
     }
+    if (seenHuge.size) hugeSeen.push(...seenHuge);
   }
 
+  /** playArcade で 見つけた でかすぎる アイコン(だいひょうで まとめて 報告する) */
+  const hugeSeen = [];
+
   return {
+    hugeIcons,
+    hugeSeen,
     findTexts,
     findNames,
     clickName,

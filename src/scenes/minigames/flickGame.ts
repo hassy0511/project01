@@ -3,7 +3,7 @@
    時間経過で岩が増え、かごが左右に動き出す。
    引っぱるほど実が「ぐぐっ」と張りつめる(手応えレイヤー)。岩バウンスは失敗ではなく物理 */
 import Phaser from 'phaser';
-import { addIcon } from '../../ui/icons';
+import { addIcon, iconScale, resetIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -95,7 +95,7 @@ export function renderFlick(api: MinigameApi, target: string, prompt: string): v
     vy = 0;
     fruit = addIcon(scene, GAME_W / 2, START_Y, target, 46).setScale(0).setName('mg-target');
     area.add(fruit);
-    scene.tweens.add({ targets: fruit, scale: 1, ease: 'Back.easeOut', duration: 240 });
+    scene.tweens.add({ targets: fruit, scale: iconScale(fruit), ease: 'Back.easeOut', duration: 240 });
   };
   newFruit();
 
@@ -134,7 +134,7 @@ export function renderFlick(api: MinigameApi, target: string, prompt: string): v
     const power = Math.hypot(dx, dy);
     fruit.setAngle(0);
     if (power < 14) {
-      fruit.setScale(1);
+      resetIcon(fruit);
       return; // 誤タップは無視
     }
     const k = 5.2;
@@ -142,7 +142,7 @@ export function renderFlick(api: MinigameApi, target: string, prompt: string): v
     vy = dy * k;
     rolling = true;
     // びよんっと縮んで飛び出す
-    scene.tweens.add({ targets: fruit, scale: { from: 0.8, to: 1 }, duration: 160, ease: 'Back.easeOut' });
+    scene.tweens.add({ targets: fruit, scale: { from: iconScale(fruit, 0.8), to: iconScale(fruit) }, duration: 160, ease: 'Back.easeOut' });
     burst(scene, fruit.x, fruit.y + api.areaY + 14, 5, [0x9ccb6f, 0xd8c49a]);
     SFX.pop();
   };

@@ -3,7 +3,7 @@
    推理して掘る場所を選ぶ(マインスイーパーの逆型)。
    全部見つけると 残りシャベル×ボーナス + 新しい盤面(だんだんシャベルが減る) */
 import Phaser from 'phaser';
-import { addIcon } from '../../ui/icons';
+import { addIcon, iconScale } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, floatUp, screenFlash, soilPuff } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -144,7 +144,7 @@ export function renderMine(api: MinigameApi, prompt: string, targetIcon: string)
       found++;
       const icon = addIcon(scene, 0, 0, targetIcon, 44).setScale(0);
       t.c.add(icon);
-      scene.tweens.add({ targets: icon, scale: 1, ease: 'Back.easeOut', duration: 280 });
+      scene.tweens.add({ targets: icon, scale: iconScale(icon), ease: 'Back.easeOut', duration: 280 });
       burst(scene, wx, wy, 12);
       SFX.good();
       session.addPoints(TREASURE_PTS, wx, wy - 30, false);

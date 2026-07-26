@@ -4,7 +4,7 @@
    8つ ぜんぶ たいじすると 大ボーナス → つぎの おろちが でてくる。
    動作=むきの ある スワイプ(方向はんだん)。ほかの おまつりに ない てざわり */
 import Phaser from 'phaser';
-import { addIcon } from '../../ui/icons';
+import { addIcon, resetIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -97,7 +97,7 @@ export function renderKagura(api: MinigameApi, prompt: string): void {
   const hide = (h: Head): void => {
     h.active = false;
     h.arrow.setVisible(false);
-    h.obj.setAlpha(h.alive ? 0.25 : 0).setScale(1);
+    resetIcon(h.obj.setAlpha(h.alive ? 0.25 : 0));
   };
 
   const nextHead = (): void => {

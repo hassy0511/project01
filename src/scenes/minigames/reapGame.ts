@@ -5,7 +5,7 @@
    タイミングを見て なぞるかの判断が入る(まっすぐ引くだけにならない)。
    刈った列は少しずつ生えてくるので、45秒間 刈りつづける */
 import Phaser from 'phaser';
-import { addIcon, iconTexture } from '../../ui/icons';
+import { addIcon, iconScale, iconTexture } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, floatUp, missShake, padHitArea } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -172,7 +172,7 @@ export function renderReap(api: MinigameApi, targetIcon: string, prompt: string)
       area.add(obj);
       if (animate) {
         obj.setScale(0);
-        scene.tweens.add({ targets: obj, scale: 1, ease: 'Back.easeOut', duration: 300, delay: c * 60 });
+        scene.tweens.add({ targets: obj, scale: iconScale(obj), ease: 'Back.easeOut', duration: 300, delay: c * 60 });
       }
       scene.tweens.add({
         targets: obj,

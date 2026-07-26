@@ -385,5 +385,10 @@ if (errors.length) {
   console.error('page errors:', errors);
   process.exit(1);
 }
+if (d.hugeSeen.length) {
+  console.error('アイコンが でかすぎる(scale の あつかいが まちがっている):');
+  for (const h of [...new Set(d.hugeSeen)]) console.error('  ' + h);
+  process.exit(1);
+}
 console.log('\nALL E2E PLAYTHROUGH PASSED 🎉');
 await browser.close();

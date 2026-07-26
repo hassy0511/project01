@@ -2,7 +2,7 @@
    と変化していく。「食べごろ」の実だけを素早く摘む。青いうちに触るとコンボが切れる。
    同じ形の実を色で見分けるのが本体(時間経過で食べごろの窓が短くなる) */
 import Phaser from 'phaser';
-import { addIcon, setIcon } from '../../ui/icons';
+import { addIcon, iconScale, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, impactRing, missShake } from '../../ui/effects';
 import { GAME_W } from '../../ui/theme';
@@ -91,7 +91,7 @@ export function renderChain(api: MinigameApi, target: string, prompt: string, ri
     s.obj = addIcon(scene, s.x, s.y, ripen0.unripe ?? target, 36).setScale(0).setName('mg-fruit');
     if (!ripen0.unripe) s.obj.setTint(TINT_UNRIPE);
     area.add(s.obj);
-    scene.tweens.add({ targets: s.obj, scale: 0.8, ease: 'Back.easeOut', duration: 260 });
+    scene.tweens.add({ targets: s.obj, scale: iconScale(s.obj, 0.8), ease: 'Back.easeOut', duration: 260 });
     schedule(s, 1200 + Math.random() * 1400, () => turn(s));
   };
 
@@ -100,7 +100,7 @@ export function renderChain(api: MinigameApi, target: string, prompt: string, ri
     s.stage = 'turning';
     if (ripen0.turning) setIcon(s.obj, ripen0.turning, 36);
     else s.obj.setTint(TINT_TURNING);
-    scene.tweens.add({ targets: s.obj, scale: 0.92, duration: 300 });
+    scene.tweens.add({ targets: s.obj, scale: iconScale(s.obj, 0.92), duration: 300 });
     schedule(s, 900 + Math.random() * 900, () => ripen(s));
   };
 
@@ -109,7 +109,7 @@ export function renderChain(api: MinigameApi, target: string, prompt: string, ri
     s.stage = 'ripe';
     s.obj.clearTint();
     setIcon(s.obj, target, 36); // 3だんかいの どれから でも 食べごろの すがたに そろえる
-    scene.tweens.add({ targets: s.obj, scale: { from: 1.15, to: 1 }, ease: 'Back.easeOut', duration: 220 });
+    scene.tweens.add({ targets: s.obj, scale: { from: iconScale(s.obj, 1.15), to: iconScale(s.obj) }, ease: 'Back.easeOut', duration: 220 });
     // 「いま食べごろ!」の合図リング
     s.ring = scene.add.circle(s.x, s.y, 30).setStrokeStyle(3, 0xffffff, 0.8);
     area.add(s.ring);
@@ -151,7 +151,7 @@ export function renderChain(api: MinigameApi, target: string, prompt: string, ri
         s.timer?.remove();
         s.obj = undefined;
         s.stage = 'empty';
-        scene.tweens.add({ targets: obj, y: obj.y - 30, scale: 0.3, alpha: 0, duration: 200, onComplete: () => obj.destroy() });
+        scene.tweens.add({ targets: obj, y: obj.y - 30, scale: iconScale(obj, 0.3), alpha: 0, duration: 200, onComplete: () => obj.destroy() });
         schedule(s, 700 + Math.random() * 1200, () => sprout(s));
       } else {
         // まだ青い! コンボが切れて一瞬手が止まる
