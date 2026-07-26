@@ -10,6 +10,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "art:list": "node scripts/gen-art-list.mjs",
+    "art:check": "node scripts/check-art-svg.mjs",
     "test:e2e": "vite build && node e2e/run.mjs"
   },
   "dependencies": {

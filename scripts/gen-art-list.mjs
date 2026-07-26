@@ -28,7 +28,9 @@ const GROUP_NAME = {
 const shapes = new Map(); // name -> { group, desc }
 for (const f of ICON_FILES) {
   const src = fs.readFileSync(path.join(ICON_DIR, f), 'utf8');
-  const re = /(?:\/\*\*\s*([\s\S]*?)\s*\*\/\s*)?\n\s{2}'?([a-z][a-z0-9-]*)'?:\s*\(g,\s*c\)\s*=>/g;
+  // せつめいの 中に `*​/` を ふくめない こと(ふくめると コメント1つが 何十行も
+  // のみこんで、あいだの かたちが まるごと 消える。lantern と fan が 消えていた)
+  const re = /(?:\/\*\*((?:(?!\*\/)[\s\S])*)\*\/\s*)?\n\s{2}'?([a-z][a-z0-9-]*)'?:\s*\(g,\s*c\)\s*=>/g;
   let m;
   while ((m = re.exec(src))) {
     const desc = (m[1] ?? '').replace(/\s*\n\s*/g, ' ').trim();

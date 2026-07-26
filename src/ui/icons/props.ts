@@ -110,6 +110,8 @@ const roofShape = (g: G, cx: number, yTop: number, yBot: number, halfTop: number
 };
 
 export const PROP_ICONS: Record<string, IconDraw> = {
+  /** ちょうちん。たてに ながい たまご形に 上下の わく。中が ぼんやり 明るい。
+      おまつりの しるしなので いちばん たくさん でてくる */
   lantern: (g, c) => {
     fill(g, 0x8a6a4a);
     g.fillRect(28, 6, 8, 6);
@@ -123,6 +125,7 @@ export const PROP_ICONS: Record<string, IconDraw> = {
     g.fillRect(22, 10, 20, 5);
     g.fillRect(22, 54, 20, 5);
   },
+  /** おうぎ(ひらいた せんす)。したの かなめから 上に ひろがる おうぎ形に すじ */
   fan: (g, c) => {
     fill(g, c[0]);
     g.slice(32, 52, 30, Math.PI * 1.15, Math.PI * 1.85, false);

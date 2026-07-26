@@ -24,6 +24,7 @@
 - `npm run build` — 本番ビルド(dist/)
 - `npm run test` — Vitest 実行
 - `npm run typecheck` — tsc --noEmit
+- `npm run art:list` / `npm run art:check` — 絵の発注リスト生成 / 納品SVGの規約チェック
 
 ## ディレクトリ構成(目標)
 
@@ -83,4 +84,5 @@ reference/      # v0.4 HTML試作版(参照用。編集禁止)
 - docs/MIGRATION_PLAN.md — v0.4 からの移植手順とマイルストーン
 - docs/ART_DIRECTION.md — 絵の方針(外部に絵を頼むときの指示書)
 - docs/ART_ASSET_LIST.md — 必要な絵の全リスト(`npm run art:list` で再生成)
+- docs/CODEX_ART_PROMPT.md — 絵を外部AI(Codex)に頼むときの依頼文。納品物は `npm run art:check` で検査
 - docs/TUTORIAL_PLAN.md — あそびかたの伝え方(設計案)
