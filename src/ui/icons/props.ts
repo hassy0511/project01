@@ -162,6 +162,7 @@ export const PROP_ICONS: Record<string, IconDraw> = {
     line(g, 0xa8865a, 1.8);
     g.strokeRoundedRect(48, 6, 5, 24, 2.5);
   },
+  /** とりい。2本の はしらと 上の よこぎ 2本 */
   shrine: (g, c) => {
     fill(g, c[0]);
     g.fillRect(14, 22, 8, 34);
@@ -172,6 +173,7 @@ export const PROP_ICONS: Record<string, IconDraw> = {
     box(g, 12, 26, 40, 6, 2, c, 1.8);
     box(g, 6, 12, 52, 9, 3, c);
   },
+  /** ふね。よこから 見た 船体と ほばしら 1本。rowboat(こぶね)・raft(いかだ)とは 見わける */
   boat: (g, c) => {
     fill(g, c[0]);
     g.beginPath();
@@ -190,6 +192,7 @@ export const PROP_ICONS: Record<string, IconDraw> = {
     fill(g, 0x8a6a4a);
     g.fillRect(30, 8, 3, 30);
   },
+  /** たこ(あげる たこ)。ひしがたの 本体と しっぽ 2本、いと */
   kite: (g, c) => {
     fill(g, c[0]);
     g.fillTriangle(32, 8, 10, 34, 54, 34);
@@ -202,6 +205,7 @@ export const PROP_ICONS: Record<string, IconDraw> = {
     g.lineTo(38, 62);
     g.strokePath();
   },
+  /** ねつききゅう。まるい ふくらみと したの かご */
   balloon: (g, c) => {
     fill(g, c[0]);
     g.fillEllipse(32, 28, 40, 42);

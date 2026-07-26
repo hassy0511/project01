@@ -3,12 +3,14 @@
 import { OUTLINE_SOFT, ellipseOutlined, fill, leaf, line, shine, stem, type IconDraw } from './kit';
 
 export const FOOD_ICONS: Record<string, IconDraw> = {
+  /** かたちが まるい だけの み(もも・トマト・すいか)。まるに へた 1つ。とくちょうの ある みは べつの かたちを つかう */
   round: (g, c) => {
     ellipseOutlined(g, 32, 36, 44, 42, c);
     stem(g, 32, 16);
     leaf(g, 33, 15, 11);
     shine(g, 22, 26, 7, 5);
   },
+  /** かんきつ(みかん・レモン・ゆず)。まるい みに はっぱ 1まいと へた */
   citrus: (g, c) => {
     ellipseOutlined(g, 32, 37, 44, 40, c);
     g.fillStyle(c[1], 0.35);
@@ -21,6 +23,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     leaf(g, 34, 13, 10);
     shine(g, 21, 28, 6, 4);
   },
+  /** つぶの みが ふさに なった もの(ブルーベリー・ぶどう・さくらんぼ)。まるを 6〜7つ かさねて ふさに し、うえに みじかい えだ */
   berry: (g, c) => {
     stem(g, 32, 14, 8);
     const pts: [number, number][] = [
@@ -42,6 +45,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     }
     shine(g, 22, 24, 3, 2);
   },
+  /** いちご。さきが とがった みに たねの 点、上に みどりの がく */
   strawberry: (g, c) => {
     // からだ: かたが まるく、さきが とがった かたち(たこ形に 見えない ように 上を まるめる)
     fill(g, c[0]);
@@ -74,6 +78,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     for (const dx of [-11, 0, 11]) g.strokeTriangle(32, 24, 32 + dx, 10, 32 + dx * 0.35 + 5, 24);
     stem(g, 32, 12, 7);
   },
+  /** メロン・すいか。まるい みに あみめ(メロン)か しま(すいか) */
   melon: (g, c) => {
     ellipseOutlined(g, 32, 34, 46, 44, c);
     line(g, c[1], 1.4);
@@ -91,6 +96,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     }
     stem(g, 32, 13, 8);
   },
+  /** はっぱの やさい(こまつな・レタス・しゅんぎく)。はっぱ 3〜4まいが たばに なって いる */
   leafy: (g, c) => {
     fill(g, c[0]);
     g.fillEllipse(32, 38, 46, 40);
@@ -139,6 +145,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.lineTo(38, 34);
     g.strokePath();
   },
+  /** ねの やさい(わさび・にんじん・しょうが)。したが とがった ねと、上に みどりの は */
   root: (g, c) => {
     fill(g, c[0]);
     g.beginPath();
@@ -160,6 +167,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     fill(g, 0x4a8a3a);
     for (const dx of [-8, 0, 8]) g.fillTriangle(32, 22, 32 + dx, 6, 32 + dx * 0.4, 22);
   },
+  /** いも(さつまいも・じゃがいも)。ながい たまごがたに 土の 点 */
   tuber: (g, c) => {
     fill(g, c[0]);
     g.fillEllipse(32, 36, 48, 32);
@@ -231,6 +239,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.strokeEllipse(32, 20, 18, 8);
     shine(g, 24, 32, 4, 6);
   },
+  /** きゅうり・ゴーヤー。ながい みに たての すじ。ゴーヤーは 表面が いぼいぼに 見える ように */
   cucumber: (g, c) => {
     fill(g, c[0]);
     g.fillRoundedRect(24, 10, 16, 46, 8);
@@ -241,6 +250,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     fill(g, 0x4a8a3a);
     g.fillEllipse(32, 10, 12, 6);
   },
+  /** なす。まるみの ある みに、みどりの がくと へた */
   eggplant: (g, c) => {
     fill(g, c[0]);
     g.fillEllipse(32, 40, 32, 40);
@@ -251,6 +261,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.fillRect(30, 8, 4, 14);
     shine(g, 24, 34, 4, 8);
   },
+  /** たまねぎ。まるい みに たての すじ、上に みどりの め */
   onion: (g, c) => {
     fill(g, c[0]);
     g.fillEllipse(32, 40, 38, 34);
@@ -267,6 +278,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.fillTriangle(28, 24, 36, 24, 30, 6);
     g.fillTriangle(30, 24, 38, 24, 40, 8);
   },
+  /** きのこ。太い じくと まるい かさ。かさに 点が すこし */
   mushroom: (g, c) => {
     fill(g, 0xf0e6d0);
     g.fillRoundedRect(26, 32, 12, 24, 5);
@@ -287,6 +299,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     ] as const)
       g.fillCircle(x, y, 2.4);
   },
+  /** こくもつ(こめ・むぎ・とうもろこし)。つぶが たてに ならんだ ほ */
   grain: (g, c) => {
     line(g, 0x9a8a4a, 2.6);
     g.beginPath();
@@ -306,6 +319,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
       g.strokeEllipse(42, y + 3, 16, 8);
     }
   },
+  /** たけ。ふしの ある みどりの つつ 2本と、さきに はっぱ。たけのこ(tuber)とは べつ */
   bamboo: (g, c) => {
     fill(g, c[0]);
     g.fillRoundedRect(26, 8, 14, 50, 4);
@@ -322,6 +336,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.fillTriangle(40, 20, 58, 12, 42, 28);
     g.fillTriangle(26, 32, 8, 24, 24, 40);
   },
+  /** れんこんの 断面。あなが 7〜8こ ならぶ */
   lotus: (g, c) => {
     fill(g, c[0]);
     g.fillRoundedRect(7, 17, 50, 34, 16);
@@ -371,6 +386,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.strokePath();
     shine(g, 20, 40, 5, 3);
   },
+  /** はな(ブロッコリー・べにばな・はなっこりー)。はなびら 5まいと まんなかの まる */
   flower: (g, c) => {
     fill(g, 0x5aa04a);
     g.fillRect(30, 34, 4, 24);
@@ -384,6 +400,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     line(g, c[1], 1.6);
     g.strokeCircle(32, 28, 8);
   },
+  /** き。太い みきと まるい はっぱの かたまり。forest(すぎ 3本)や palm(やしのき)とは べつ */
   tree: (g, c) => {
     fill(g, 0x8a6a42);
     g.fillRect(29, 40, 6, 18);
@@ -492,6 +509,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     oneLeaf(32, 42, 56, 28);
     oneLeaf(32, 30, 32, 6);
   },
+  /** キウイの 断面。まるい わの 中が しろく、たねの 点が わに ならぶ */
   kiwi: (g, c) => {
     ellipseOutlined(g, 32, 36, 44, 40, c);
     fill(g, 0xd8e8a8);
@@ -504,6 +522,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
       g.fillCircle(32 + Math.cos(a) * 10, 36 + Math.sin(a) * 9, 1.4);
     }
   },
+  /** パイナップル。あみめの みと、上に とがった はっぱ */
   pineapple: (g, c) => {
     fill(g, 0x5aa04a);
     for (const dx of [-10, -4, 4, 10]) g.fillTriangle(32 + dx, 24, 32 + dx * 2.2, 2, 32 + dx + 5, 24);
@@ -523,6 +542,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
       g.strokePath();
     }
   },
+  /** マンゴー。ふっくらした たまごがた。へたが よこに つく */
   mango: (g, c) => {
     fill(g, c[0]);
     g.fillEllipse(32, 38, 44, 36);
@@ -534,6 +554,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     leaf(g, 36, 18, 10);
     shine(g, 40, 44, 5, 3);
   },
+  /** ふつうの さかな(いわし・あじ・たい)。よこむき。せびれと しっぽ。bigfish より ほそい */
   fish: (g, c) => {
     fill(g, c[0]);
     g.fillEllipse(30, 34, 42, 24);
@@ -552,6 +573,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.lineTo(40, 26);
     g.strokePath();
   },
+  /** 大きな さかな(まぐろ・かつお・さけ)。よこむき。fish より 体が ぶあつく しっぽが 大きい */
   bigfish: (g, c) => {
     fill(g, c[0]);
     g.fillEllipse(29, 34, 50, 30);
@@ -565,6 +587,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     fill(g, 0x2c2c33);
     g.fillCircle(14, 30, 2.2);
   },
+  /** ふぐ。まるく ふくらんだ 体と ちいさな ひれ、とげ */
   pufferfish: (g, c) => {
     fill(g, c[0]);
     g.fillCircle(30, 34, 22);
@@ -625,6 +648,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.lineTo(hx + 7, hy + 4);
     g.strokePath();
   },
+  /** かい(かき・ほたて・しじみ)。おうぎがたの かいがらに すじ */
   shell: (g, c) => {
     fill(g, c[0]);
     g.slice(32, 44, 24, Math.PI, Math.PI * 2, false);
@@ -667,6 +691,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.strokeCircle(32, 30, 14);
     shine(g, 27, 25, 5, 4);
   },
+  /** かに。ひらたい こうらと はさみ 2つ、あし 6本。正面から */
   crab: (g, c) => {
     fill(g, c[0]);
     g.fillEllipse(32, 36, 34, 24);
@@ -755,6 +780,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     fill(g, 0x2c2c33);
     g.fillCircle(hx - 4, hy + 2, 2);
   },
+  /** いか。さんかくの あたまと ひれ、あしが 何本か */
   squid: (g, c) => {
     fill(g, c[0]);
     g.fillTriangle(32, 4, 16, 32, 48, 32);
@@ -772,6 +798,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.fillCircle(26, 32, 2);
     g.fillCircle(38, 32, 2);
   },
+  /** たこ。まるい あたまと、見えている あし 3〜4本 */
   octopus: (g, c) => {
     fill(g, c[0]);
     g.fillEllipse(32, 26, 36, 32);
@@ -792,6 +819,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.fillCircle(25, 24, 2);
     g.fillCircle(39, 24, 2);
   },
+  /** かいそう(わかめ・こんぶ・のり)。ゆらゆらした ながい は 2まい */
   seaweed: (g, c) => {
     line(g, c[0], 7);
     for (const x of [20, 32, 44]) {
@@ -862,6 +890,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.fillCircle(14, 17, 2.2);
     g.fillCircle(26, 17, 2.2);
   },
+  /** ぎゅうにゅう。上が ひらいた 紙パック。cup(ゆのみ)とは 見わける */
   milk: (g, c) => {
     fill(g, c[0]);
     g.fillRoundedRect(20, 18, 24, 40, 4);
@@ -871,6 +900,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     fill(g, 0x76c4e8);
     g.fillRect(24, 30, 16, 8);
   },
+  /** たまご 1つ。たてに ながい だえん */
   egg: (g, c) => {
     fill(g, c[0]);
     g.fillEllipse(32, 38, 34, 42);
@@ -914,6 +944,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.lineTo(50, 40);
     g.strokePath();
   },
+  /** みずの しずく。うえが とがって したが まるい */
   drop: (g, c) => {
     fill(g, c[0]);
     g.beginPath();
@@ -926,6 +957,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.strokePath();
     shine(g, 26, 38, 5, 7);
   },
+  /** しお。もりあがった しろい やまと、ちいさな つぶ */
   salt: (g, c) => {
     fill(g, 0xf2ede0);
     g.fillTriangle(32, 16, 12, 52, 52, 52);
@@ -941,6 +973,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     ] as const)
       g.fillRect(x, y, 4, 4);
   },
+  /** ねんどの かたまり。きれいな まるでは なく ゆがんだ かたまり。てで つかんだ あとが ある */
   clay: (g, c) => {
     fill(g, c[0]);
     g.fillEllipse(32, 42, 44, 26);
@@ -950,6 +983,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.fillStyle(c[1], 0.4);
     g.fillEllipse(32, 30, 20, 8);
   },
+  /** いし。かどの ある ちいさな かたまり。rock より 小さく たいらな 面が ある */
   stone: (g, c) => {
     fill(g, c[0]);
     g.beginPath();
@@ -966,6 +1000,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.fillStyle(0xffffff, 0.28);
     g.fillTriangle(20, 17, 45, 13, 29, 32);
   },
+  /** ふかい わん・どんぶり。中身が すこし もりあがって 見える。plate(たいらな さら)とは 見わける */
   bowl: (g, c) => {
     fill(g, 0xf6efdc);
     g.fillEllipse(32, 30, 42, 16);
@@ -979,6 +1014,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     line(g, OUTLINE_SOFT, 2);
     g.strokeEllipse(32, 30, 42, 16);
   },
+  /** たいらな さら。よこから 見た あさい さら。bowl(ふかい わん)とは 見わける */
   plate: (g, c) => {
     fill(g, 0xf6efdc);
     g.fillEllipse(32, 40, 52, 22);
@@ -1013,6 +1049,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.lineTo(46, 52);
     g.strokePath();
   },
+  /** くびの ある びん(ジュース・しょうゆ・さけ)。中身の 色が ほんたい色。jar(ひろくちの びん)とは 見わける */
   bottle: (g, c) => {
     fill(g, 0xeae3cf);
     g.fillRoundedRect(24, 10, 14, 12, 3);
@@ -1023,6 +1060,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     fill(g, 0xfff8e0);
     g.fillRect(22, 34, 18, 10);
   },
+  /** ひろくちの びん(ジャム・つけもの)。大きな ふたが めじるし。bottle(くびの ある びん)とは 見わける */
   jar: (g, c) => {
     fill(g, c[0]);
     g.fillRoundedRect(13, 20, 38, 38, 7);
@@ -1035,6 +1073,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.fillStyle(0xffffff, 0.4);
     g.fillEllipse(22, 34, 6, 12);
   },
+  /** わがし。まるい もちの 中に あんこが 見える。cake(ようがし)とは 見わける */
   sweet: (g, c) => {
     // くし(こい 木の いろ+ふち。うすいと だんごが 3つの まるに 見える)
     line(g, 0x8f7440, 6);
@@ -1059,6 +1098,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
       shine(g, x - 3, y - 4, 3, 2);
     }
   },
+  /** ケーキ 1きれ。よこから 見た さんかく。上に みが 1つ */
   cake: (g, c) => {
     fill(g, 0xf6e7c4);
     g.fillRoundedRect(9, 30, 46, 26, 5);
@@ -1078,6 +1118,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     line(g, 0xa83a33, 1.8);
     g.strokeCircle(32, 14, 6.5);
   },
+  /** めん(うどん・そば・ラーメン)。どんぶりから めんが もちあがって いる */
   noodle: (g, c) => {
     fill(g, 0xf6efdc);
     g.fillEllipse(32, 36, 46, 22);
@@ -1094,6 +1135,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.fillRect(40, 14, 4, 22);
     g.fillRect(46, 14, 4, 22);
   },
+  /** くし(やきとり・だんご)。まっすぐな くしに たまが 3つ */
   skewer: (g, c) => {
     fill(g, 0xd8b483);
     g.fillRect(30, 8, 4, 50);
@@ -1134,6 +1176,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     line(g, c[1], 1.8);
     g.strokeCircle(32, 27, 7.5);
   },
+  /** せんべい。まるく ひらたい やきもの。やきめの もようが すこし */
   senbei: (g, c) => {
     fill(g, c[0]);
     g.fillCircle(32, 36, 22);
@@ -1149,6 +1192,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     ] as const)
       g.fillCircle(x, y, 2);
   },
+  /** なべ。ふたと とっての ある なべ。よこから */
   pot: (g, c) => {
     fill(g, c[0]);
     g.fillRoundedRect(14, 28, 36, 24, 8);
@@ -1162,6 +1206,7 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.fillEllipse(24, 20, 10, 5);
     g.fillEllipse(38, 16, 8, 4);
   },
+  /** やきもの(とうき)。ろくろで つくった つぼ。くびが すこし しまって いる */
   pottery: (g, c) => {
     fill(g, c[0]);
     g.fillEllipse(32, 38, 48, 40);

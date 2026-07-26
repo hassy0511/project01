@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
+    "art:list": "node scripts/gen-art-list.mjs",
     "test:e2e": "vite build && node e2e/run.mjs"
   },
   "dependencies": {
