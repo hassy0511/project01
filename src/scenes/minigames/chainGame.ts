@@ -14,6 +14,8 @@ const AREA_H = 660;
 const HIT_RADIUS = 36;
 const RIPE_PTS = 8;
 /** 未熟(緑)→ 色づき(中間)→ 食べごろ の tint 段階 */
+/** はたけの みの 大きさ。こどもの ゆびで つかめる ように 大きめに とる */
+const FRUIT_SIZE = 48;
 const TINT_UNRIPE = 0x86c26a;
 const TINT_TURNING = 0xd9c26a;
 
@@ -88,7 +90,7 @@ export function renderChain(api: MinigameApi, target: string, prompt: string, ri
   const sprout = (s: Spot): void => {
     if (session.isEnded()) return;
     s.stage = 'unripe';
-    s.obj = addIcon(scene, s.x, s.y, ripen0.unripe ?? target, 36).setScale(0).setName('mg-fruit');
+    s.obj = addIcon(scene, s.x, s.y, ripen0.unripe ?? target, FRUIT_SIZE).setScale(0).setName('mg-fruit');
     if (!ripen0.unripe) s.obj.setTint(TINT_UNRIPE);
     area.add(s.obj);
     scene.tweens.add({ targets: s.obj, scale: iconScale(s.obj, 0.8), ease: 'Back.easeOut', duration: 260 });
@@ -98,7 +100,7 @@ export function renderChain(api: MinigameApi, target: string, prompt: string, ri
   const turn = (s: Spot): void => {
     if (!s.obj) return;
     s.stage = 'turning';
-    if (ripen0.turning) setIcon(s.obj, ripen0.turning, 36);
+    if (ripen0.turning) setIcon(s.obj, ripen0.turning, FRUIT_SIZE);
     else s.obj.setTint(TINT_TURNING);
     scene.tweens.add({ targets: s.obj, scale: iconScale(s.obj, 0.92), duration: 300 });
     schedule(s, 900 + Math.random() * 900, () => ripen(s));
@@ -108,7 +110,7 @@ export function renderChain(api: MinigameApi, target: string, prompt: string, ri
     if (!s.obj) return;
     s.stage = 'ripe';
     s.obj.clearTint();
-    setIcon(s.obj, target, 36); // 3だんかいの どれから でも 食べごろの すがたに そろえる
+    setIcon(s.obj, target, FRUIT_SIZE); // 3だんかいの どれから でも 食べごろの すがたに そろえる
     scene.tweens.add({ targets: s.obj, scale: { from: iconScale(s.obj, 1.15), to: iconScale(s.obj) }, ease: 'Back.easeOut', duration: 220 });
     // 「いま食べごろ!」の合図リング
     s.ring = scene.add.circle(s.x, s.y, 30).setStrokeStyle(3, 0xffffff, 0.8);

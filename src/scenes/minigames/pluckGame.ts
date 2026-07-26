@@ -36,6 +36,8 @@ const RESPAWN_MAX_MS = 1500;
 const BIG_EVERY_MS = 12000;
 /** おおつぶ(まぼろしの みのり)の 大きさ = ふつうの なんばい か */
 const BIG_MULT = 1.6;
+/** はたけの みの 大きさ。こどもの ゆびで つかめる ように 大きめに とる */
+const FRUIT_SIZE = 48;
 const TINT_UNRIPE = 0x86c26a;
 
 type Stage = 'empty' | 'unripe' | 'ripe';
@@ -105,7 +107,7 @@ export function renderPluck(api: MinigameApi, target: string, prompt: string, un
   const sprout = (s: Spot): void => {
     if (session.isEnded()) return;
     s.stage = 'unripe';
-    s.obj = addIcon(scene, s.x, s.y, unripeIcon ?? target, 36).setScale(0).setName('mg-target');
+    s.obj = addIcon(scene, s.x, s.y, unripeIcon ?? target, FRUIT_SIZE).setScale(0).setName('mg-target');
     if (!unripeIcon) s.obj.setTint(TINT_UNRIPE);
     area.add(s.obj);
     scene.tweens.add({ targets: s.obj, scale: iconScale(s.obj, 0.8), ease: 'Back.easeOut', duration: 260 });
@@ -116,7 +118,7 @@ export function renderPluck(api: MinigameApi, target: string, prompt: string, un
     if (!s.obj) return;
     s.stage = 'ripe';
     s.obj.clearTint();
-    setIcon(s.obj, target, 36); // まだ はやい すがたから 食べごろの すがたへ
+    setIcon(s.obj, target, FRUIT_SIZE); // まだ はやい すがたから 食べごろの すがたへ
     scene.tweens.add({ targets: s.obj, scale: { from: iconScale(s.obj, 1.15), to: iconScale(s.obj) }, ease: 'Back.easeOut', duration: 220 });
     // ゆらゆら(つみごろの合図)
     scene.tweens.add({ targets: s.obj, angle: { from: -5, to: 5 }, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
@@ -133,7 +135,7 @@ export function renderPluck(api: MinigameApi, target: string, prompt: string, un
       clearSpot(s);
       s.stage = 'ripe';
       s.big = true;
-      s.obj = addIcon(scene, s.x, s.y - 8, target, 36).setScale(0).setName('mg-target');
+      s.obj = addIcon(scene, s.x, s.y - 8, target, FRUIT_SIZE).setScale(0).setName('mg-target');
       area.add(s.obj);
       scene.tweens.add({ targets: s.obj, scale: iconScale(s.obj, BIG_MULT), ease: 'Back.easeOut', duration: 400 });
       s.ring = scene.add.circle(s.x, s.y - 8, 40).setStrokeStyle(4, 0xffd34d, 0.9);
