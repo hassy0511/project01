@@ -5,11 +5,13 @@
    ときどき「きんの とうろう」= 大得点(C要素)。
    pluck(引く)と違い、これは「はこんで、そっと はなす」= 速度をゼロに近づける遊び */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
+import { CROWD } from './crowd';
 import type { MinigameApi } from './types';
 
 const AREA_H = 660;
@@ -52,7 +54,7 @@ export function renderTourou(api: MinigameApi, prompt: string): void {
   }
   // 見物人
   for (let i = 0; i < 6; i++) {
-    area.add(scene.add.text(30 + i * 82, BANK_Y + 60, ['🧑', '👧', '👘'][i % 3], { fontSize: '24px' }).setOrigin(0.5));
+    area.add(addIcon(scene, 30 + i * 82, BANK_Y + 60, CROWD[i % CROWD.length], 24));
   }
 
   api.sign(prompt);
@@ -77,7 +79,7 @@ export function renderTourou(api: MinigameApi, prompt: string): void {
     g.fillStyle(gold ? 0xffef9f : 0xffe0a3, 0.85);
     g.fillCircle(0, -8, 9); // ひ
     c.add(g);
-    c.add(scene.add.text(0, -8, '🔥', { fontSize: '14px' }).setOrigin(0.5));
+    c.add(addIcon(scene, 0, -8, 'fire:orange', 14));
     area.add(c);
     return { obj: c, gold, flowing: false };
   };

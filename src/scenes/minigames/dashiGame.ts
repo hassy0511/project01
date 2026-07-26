@@ -4,11 +4,13 @@
    ときどき来る「曳っかわせ(ひっかわせ)」= 対向の山車との競演が C 要素(得点2倍タイム)。
    実在の川越まつりの「山車の曳っかわせ」をそのまま動詞化 */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, floatUp, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
+import { CREW } from './crowd';
 import type { MinigameApi } from './types';
 
 const AREA_H = 660;
@@ -99,7 +101,7 @@ export function renderDashi(api: MinigameApi, prompt: string): void {
   dg.fillStyle(0x3d3129, 1);
   dg.fillTriangle(-76, -150, 0, -186, 76, -150);
   dashi.add(dg);
-  const doll = scene.add.text(0, -204, '🎎', { fontSize: '34px' }).setOrigin(0.5);
+  const doll = addIcon(scene, 0, -204, 'person-kimono:violet', 34);
   dashi.add(doll);
   // 綱と引き手
   const rope = scene.add.graphics();
@@ -107,7 +109,7 @@ export function renderDashi(api: MinigameApi, prompt: string): void {
   rope.lineBetween(78, -30, 210, -8);
   dashi.add(rope);
   for (let i = 0; i < 3; i++) {
-    dashi.add(scene.add.text(120 + i * 44, -16, ['🧑', '👧', '👦'][i], { fontSize: '26px' }).setOrigin(0.5));
+    dashi.add(addIcon(scene, 120 + i * 44, -16, CREW[i], 26));
   }
   area.add(dashi);
   scene.tweens.add({ targets: doll, angle: { from: -4, to: 4 }, duration: 900, yoyo: true, repeat: -1 });
@@ -123,7 +125,7 @@ export function renderDashi(api: MinigameApi, prompt: string): void {
   rg.fillStyle(0x3d3129, 1);
   rg.fillTriangle(-56, -120, 0, -150, 56, -120);
   rival.add(rg);
-  rival.add(scene.add.text(0, -166, '👺', { fontSize: '28px' }).setOrigin(0.5));
+  rival.add(addIcon(scene, 0, -166, 'tengu:red', 28));
   area.add(rival);
 
   /* ---------- 綱引きゲージ ---------- */

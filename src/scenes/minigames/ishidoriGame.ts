@@ -80,8 +80,8 @@ export function renderIshidori(api: MinigameApi, prompt: string): void {
     area.add(c);
     return c;
   };
-  const kane = makeInst(KANE_X, '🔔', UI_TEXT.fest.ishidoriKane);
-  const taiko = makeInst(TAIKO_X, '🪘', UI_TEXT.fest.ishidoriTaiko);
+  const kane = makeInst(KANE_X, 'bell:gold', UI_TEXT.fest.ishidoriKane);
+  const taiko = makeInst(TAIKO_X, 'drum:brown', UI_TEXT.fest.ishidoriTaiko);
 
   const setLit = (c: Phaser.GameObjects.Container, on: boolean, color: number): void => {
     const g = c.getData('glow') as Phaser.GameObjects.Graphics;

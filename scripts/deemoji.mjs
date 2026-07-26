@@ -75,8 +75,11 @@ for (const file of targets) {
     return `addIcon(${scene}, ${g.x.trim()}, ${g.y.trim()}, '${key}', ${g.sz})`;
   });
 
-  /* 2) タプルの中の 絵文字リテラル: [-150, '👘'] のような ならび */
-  src = src.replace(new RegExp(`'(${E})'`, 'g'), (m, e) => (MAP[e] ? `'${MAP[e]}'` : m));
+  /* 2) タプル・setText の 中の 絵文字は 機械的には なおせない(キー文字列が そのまま
+        画面に 出てしまう)。--tuples を つけた ときだけ かえて、人が 目で 確かめる */
+  if (process.argv.includes('--tuples')) {
+    src = src.replace(new RegExp(`'(${E})'`, 'g'), (m, e) => (MAP[e] ? `'${MAP[e]}'` : m));
+  }
 
   if (src !== before) {
     if (!src.includes("from '../../ui/icons'") && !src.includes("from '../ui/icons'")) {

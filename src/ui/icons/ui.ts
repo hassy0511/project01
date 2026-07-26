@@ -149,6 +149,34 @@ export const UI_ICONS: Record<string, IconDraw> = {
     poly(g, turn(ARROW, 90), c);
   },
 
+  /** ↻(みぎに まわす。はながさ回しの あいず) */
+  'spin-right': (g, c) => {
+    stroke2(g, c, 7, () => {
+      g.beginPath();
+      g.arc(32, 33, 19, Math.PI * 0.75, Math.PI * 0.25, false);
+      g.strokePath();
+    });
+    poly(g, [
+      [39, 6],
+      [56, 15],
+      [38, 24],
+    ], c);
+  },
+
+  /** ↺(ひだりに まわす) */
+  'spin-left': (g, c) => {
+    stroke2(g, c, 7, () => {
+      g.beginPath();
+      g.arc(32, 33, 19, Math.PI * 0.75, Math.PI * 0.25, false);
+      g.strokePath();
+    });
+    poly(g, [
+      [25, 6],
+      [8, 15],
+      [26, 24],
+    ], c);
+  },
+
   /** ✓(せいかい・できた) */
   check: (g, c) => {
     poly(g, [

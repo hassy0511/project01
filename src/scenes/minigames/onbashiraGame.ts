@@ -4,6 +4,7 @@
    まっすぐなほど はやく すべり、得点も 高い。おおきく かたむくと 速度が おちるだけ(成功保証)。
    1本 おりきると 次の木が すこし ながく(=かたむきやすく)なる = C要素のはしご */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -41,8 +42,8 @@ export function renderOnbashira(api: MinigameApi, prompt: string): void {
   bg.fillTriangle(20, AREA_H, 60, 130, GAME_W - 40, AREA_H); // すべりみち
   area.add(bg);
   for (let i = 0; i < 6; i++) {
-    area.add(scene.add.text(24 + i * 12, 150 + i * 82, '🌲', { fontSize: '22px' }).setOrigin(0.5));
-    area.add(scene.add.text(GAME_W - 30 - i * 6, 190 + i * 74, '🌲', { fontSize: '20px' }).setOrigin(0.5));
+    area.add(addIcon(scene, 24 + i * 12, 150 + i * 82, 'tree:deepgreen', 22));
+    area.add(addIcon(scene, GAME_W - 30 - i * 6, 190 + i * 74, 'tree:deepgreen', 20));
   }
 
   api.sign(prompt);
@@ -72,9 +73,9 @@ export function renderOnbashira(api: MinigameApi, prompt: string): void {
   };
   drawLog();
   log.add(lg);
-  const riders: Phaser.GameObjects.Text[] = [];
+  const riders: Phaser.GameObjects.Image[] = [];
   for (const dx of [-40, 0, 40]) {
-    const r = scene.add.text(dx, -30, '🧑', { fontSize: '24px' }).setOrigin(0.5);
+    const r = addIcon(scene, dx, -30, 'person:teal', 24);
     log.add(r);
     riders.push(r);
   }

@@ -6,6 +6,7 @@
    ゴールすると つぎの としの かいもん ― 何回 ゴールできるかの ゲーム。
    動作=れんだ+はんしゃスワイプ。ほかの おまつりゲームに ない てざわり */
 import Phaser from 'phaser';
+import { addIcon, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -30,7 +31,7 @@ const GOAL_PTS = 60;
 type ObstKind = 'jump' | 'side';
 
 interface Obst {
-  obj: Phaser.GameObjects.Text;
+  obj: Phaser.GameObjects.Image;
   kind: ObstKind;
   x: number;
   passed: boolean;
@@ -67,9 +68,9 @@ export function renderFukuotoko(api: MinigameApi, prompt: string): void {
   });
 
   /* ---------- はしるひと ---------- */
-  const runner = scene.add.text(RUNNER_X, GROUND_Y - 26, '🏃', { fontSize: '44px' }).setOrigin(0.5);
+  const runner = addIcon(scene, RUNNER_X, GROUND_Y - 26, 'person-runner:sky', 44);
   area.add(runner);
-  const ribbon = scene.add.text(RUNNER_X - 26, GROUND_Y - 54, '🎍', { fontSize: '20px' }).setOrigin(0.5);
+  const ribbon = addIcon(scene, RUNNER_X - 26, GROUND_Y - 54, 'bamboo:lime', 20);
   area.add(ribbon);
 
   // すすんだ きょりの メーター
@@ -101,11 +102,13 @@ export function renderFukuotoko(api: MinigameApi, prompt: string): void {
   const spawn = (): void => {
     if (session.isEnded()) return;
     const kind: ObstKind = Math.random() < 0.5 ? 'jump' : 'side';
-    const obj = scene.add
-      .text(GAME_W + 30, kind === 'jump' ? GROUND_Y - 14 : GROUND_Y - 30, kind === 'jump' ? '🪨' : '🧑‍🤝‍🧑', {
-        fontSize: kind === 'jump' ? '30px' : '34px',
-      })
-      .setOrigin(0.5);
+    const obj = addIcon(
+      scene,
+      GAME_W + 30,
+      kind === 'jump' ? GROUND_Y - 14 : GROUND_Y - 30,
+      kind === 'jump' ? 'rock:gray' : 'crowd:teal',
+      kind === 'jump' ? 30 : 34,
+    );
     area.add(obj);
     obsts.push({ obj, kind, x: GAME_W + 30, passed: false });
     spawnTimer = scene.time.delayedCall(1400 + Math.random() * 900 - 500 * session.progress(), spawn);
@@ -117,10 +120,10 @@ export function renderFukuotoko(api: MinigameApi, prompt: string): void {
     SFX.bad();
     missShake(scene);
     session.resetCombo();
-    runner.setText('🤕');
+    setIcon(runner, 'face-sad:cream');
     floatUp(scene, RUNNER_X, GROUND_Y + api.areaY - 70, UI_TEXT.fest.fukuotokoFall, '#c04545');
     scene.time.delayedCall(900, () => {
-      if (!session.isEnded()) runner.setText('🏃');
+      if (!session.isEnded()) setIcon(runner, 'person-runner:sky');
     });
   };
 

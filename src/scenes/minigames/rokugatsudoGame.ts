@@ -6,6 +6,7 @@
    絵は「さくらじま」「ねこ」「はなび」など いろいろ。
    動作=すうじの じゅんに てんを つなぐ(てんつなぎ)。ほかの おまつりに ない てざわり */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -159,7 +160,7 @@ export function renderRokugatsudo(api: MinigameApi, prompt: string): void {
     g.lineStyle(3, 0x8a2f2f, 1);
     g.strokeRoundedRect(-18, -22, 36, 44, 6);
     t.add(g);
-    t.add(scene.add.text(0, 0, '🏮', { fontSize: '20px' }).setOrigin(0.5));
+    t.add(addIcon(scene, 0, 0, 'lantern:crimson', 20));
     area.add(t);
     hung.push(t);
     scene.tweens.add({ targets: t, y: 188, duration: 900, yoyo: true, repeat: -1 });

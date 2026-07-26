@@ -5,6 +5,7 @@
    くびは のばしすぎると もどってしまう(のびる かぎりが ある = のばす きょりの かけひき)。
    ぜんぶの もんを おはらいすると 大ボーナス。動作=のばして ねらう(のびる くびの コントロール) */
 import Phaser from 'phaser';
+import { addIcon, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -23,7 +24,7 @@ const ALL_BONUS = 50;
 const GATE_R = 40;
 
 interface Gate {
-  obj: Phaser.GameObjects.Text;
+  obj: Phaser.GameObjects.Image;
   x: number;
   y: number;
   done: boolean;
@@ -62,7 +63,7 @@ export function renderUshioni(api: MinigameApi, prompt: string): void {
       [110, 340],
     ] as const;
     for (const [x, y] of spots) {
-      const obj = scene.add.text(x, y, '🏠', { fontSize: '40px' }).setOrigin(0.5);
+      const obj = addIcon(scene, x, y, 'house:teal', 40);
       area.add(obj);
       gates.push({ obj, x, y, done: false });
     }
@@ -90,10 +91,10 @@ export function renderUshioni(api: MinigameApi, prompt: string): void {
   bgph.fillStyle(0x6b2a1a, 1);
   for (let i = -3; i <= 3; i++) bgph.fillEllipse(i * 26, 6, 20, 60);
   body.add(bgph);
-  for (const dx of [-60, -20, 20, 60]) body.add(scene.add.text(dx, 52, '🧑', { fontSize: '20px' }).setOrigin(0.5));
+  for (const dx of [-60, -20, 20, 60]) body.add(addIcon(scene, dx, 52, 'person:teal', 20));
   area.add(body);
 
-  const head = scene.add.text(GAME_W / 2, BODY_Y - 120, '🐮', { fontSize: '46px' }).setOrigin(0.5);
+  const head = addIcon(scene, GAME_W / 2, BODY_Y - 120, 'cow:dark', 46);
   area.add(head);
 
   let dragging = false;
@@ -151,7 +152,7 @@ export function renderUshioni(api: MinigameApi, prompt: string): void {
       burst(scene, g.x, g.y + api.areaY, 10, [0xffd34d, 0xffffff]);
       session.addPoints(GATE_PTS, g.x, g.y + api.areaY - 50);
       floatUp(scene, g.x, g.y + api.areaY - 80, UI_TEXT.fest.ushioniOharai, '#e0812a');
-      g.obj.setText('✨');
+      setIcon(g.obj, 'sparkle:gold');
       scene.tweens.killTweensOf(g.obj);
       g.obj.setScale(1).setTint(0xffffff);
       if (gates.every((x2) => x2.done)) {

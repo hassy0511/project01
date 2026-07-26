@@ -6,6 +6,7 @@
      ・おちつきが 0に なると たちどまる(すすめない だけ。うまも 人も けがを しない)
    ゴール(とりい)まで つくと ボーナス。動作=なだめる スワイプ + すすむ タップの りょうりつ */
 import Phaser from 'phaser';
+import { addIcon, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -37,13 +38,13 @@ export function renderKazariuma(api: MinigameApi, prompt: string): void {
   bg.fillRect(0, 500, GAME_W, AREA_H - 500);
   area.add(bg);
   // まちの ひとたち(おどろかす げんいん)
-  const crowd: Phaser.GameObjects.Text[] = [];
+  const crowd: Phaser.GameObjects.Image[] = [];
   for (let i = 0; i < 8; i++) {
-    const t = scene.add.text(30 + i * 60, 300 + (i % 2) * 26, '🧑', { fontSize: '22px' }).setOrigin(0.5).setAlpha(0.8);
+    const t = addIcon(scene, 30 + i * 60, 300 + (i % 2) * 26, 'person:teal', 22).setAlpha(0.8);
     area.add(t);
     crowd.push(t);
   }
-  const torii = scene.add.text(GAME_W - 50, 250, '⛩️', { fontSize: '40px' }).setOrigin(0.5);
+  const torii = addIcon(scene, GAME_W - 50, 250, 'shrine:red', 40);
   area.add(torii);
 
   api.sign(prompt);
@@ -64,8 +65,8 @@ export function renderKazariuma(api: MinigameApi, prompt: string): void {
   hg.fillStyle(0xffd34d, 1);
   for (let i = 0; i < 4; i++) hg.fillCircle(-40 + i * 26, 0, 8);
   horse.add(hg);
-  horse.add(scene.add.text(0, -52, '🐴', { fontSize: '48px' }).setOrigin(0.5));
-  horse.add(scene.add.text(-70, 10, '🧑', { fontSize: '24px' }).setOrigin(0.5)); // ひきて
+  horse.add(addIcon(scene, 0, -52, 'horse:brown', 48));
+  horse.add(addIcon(scene, -70, 10, 'person:teal', 24)); // ひきて
   area.add(horse);
 
   /* ---------- おちつきメーター ---------- */
@@ -78,7 +79,7 @@ export function renderKazariuma(api: MinigameApi, prompt: string): void {
     .text(GAME_W / 2, 180, '', { fontFamily: FONT, fontSize: '15px', color: '#5a4632', fontStyle: 'bold' })
     .setOrigin(0.5);
   area.add(info);
-  const mood = scene.add.text(HORSE_X, HORSE_Y - 110, '', { fontSize: '26px' }).setOrigin(0.5);
+  const mood = addIcon(scene, HORSE_X, HORSE_Y - 110, 'note:purple', 26);
   area.add(mood);
 
   const draw = (): void => {
@@ -93,7 +94,7 @@ export function renderKazariuma(api: MinigameApi, prompt: string): void {
     gauge.fillStyle(0x8a6a4a, 1);
     gauge.fillRoundedRect(60, 210, Math.max(4, ((GAME_W - 120) * dist) / GOAL_M), 10, 5);
     info.setText(UI_TEXT.fest.umaInfo(Math.floor(dist), GOAL_M, goals));
-    mood.setText(calm > 0.55 ? '🎶' : calm > 0.2 ? '💦' : '💢');
+    setIcon(mood, calm > 0.55 ? 'note:purple' : calm > 0.2 ? 'splash:sky' : 'face-angry:cream');
     mood.x = horse.x;
   };
   draw();

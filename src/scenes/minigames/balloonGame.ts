@@ -6,6 +6,7 @@
      ・もくひょうの ✕ の うえに きたら「マーカーを おとす」ボタンで とうか
    ちかいほど 高とくてん。おちても こわれない(またすぐ つぎの もくひょう) */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -56,7 +57,7 @@ export function renderBalloon(api: MinigameApi, prompt: string): void {
   }
   // ほかの ききゅう(はいけい)
   for (const [x, y] of [[60, 120], [400, 180], [330, 90]] as const) {
-    area.add(scene.add.text(x, y, '🎈', { fontSize: '22px' }).setOrigin(0.5).setAlpha(0.5));
+    area.add(addIcon(scene, x, y, 'balloon:red', 22).setAlpha(0.5));
   }
 
   api.sign(prompt);
@@ -71,14 +72,14 @@ export function renderBalloon(api: MinigameApi, prompt: string): void {
 
   /* ---------- ききゅう ---------- */
   const balloon = scene.add.container(70, 300);
-  balloon.add(scene.add.text(0, 0, '🎈', { fontSize: '54px' }).setOrigin(0.5));
-  const flame = scene.add.text(0, 26, '🔥', { fontSize: '18px' }).setOrigin(0.5).setVisible(false);
+  balloon.add(addIcon(scene, 0, 0, 'balloon:red', 54));
+  const flame = addIcon(scene, 0, 26, 'fire:orange', 18).setVisible(false);
   balloon.add(flame);
   area.add(balloon);
 
   /* ---------- もくひょう ---------- */
   let targetX = 300;
-  const target = scene.add.text(targetX, GROUND_Y + 20, '✖️', { fontSize: '30px' }).setOrigin(0.5);
+  const target = addIcon(scene, targetX, GROUND_Y + 20, 'target:red', 32);
   area.add(target);
   const ring = scene.add.graphics();
   area.add(ring);
@@ -132,7 +133,7 @@ export function renderBalloon(api: MinigameApi, prompt: string): void {
   dropBtn.on('pointerdown', () => {
     if (session.isEnded()) return;
     const dx = Math.abs(balloon.x - targetX);
-    const marker = scene.add.text(balloon.x, balloon.y + 30, '🎯', { fontSize: '22px' }).setOrigin(0.5);
+    const marker = addIcon(scene, balloon.x, balloon.y + 30, 'target:teal', 22);
     area.add(marker);
     scene.tweens.add({
       targets: marker,

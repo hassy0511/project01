@@ -5,6 +5,7 @@
    ときどき「かぜが とおる」= わくが すこし はやくなって 2倍(C要素)。
    他のゲームが「タップの瞬間」を問うのに対し、これは「はなさず ついていく」持続の遊び */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, confetti, floatUp } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -34,7 +35,7 @@ export function renderOwara(api: MinigameApi, prompt: string): void {
   for (let i = 0; i < 5; i++) bg.fillRect(i * 100 - 6, 380, 88, 200);
   area.add(bg);
   for (let i = 0; i < 7; i++) {
-    const lamp = scene.add.text(20 + i * 72, 360, '🏮', { fontSize: '20px' }).setOrigin(0.5).setAlpha(0.9);
+    const lamp = addIcon(scene, 20 + i * 72, 360, 'lantern:crimson', 20).setAlpha(0.9);
     area.add(lamp);
     scene.tweens.add({ targets: lamp, alpha: 0.55, duration: 1400 + i * 200, yoyo: true, repeat: -1 });
   }
@@ -46,7 +47,7 @@ export function renderOwara(api: MinigameApi, prompt: string): void {
   dg.fillStyle(0x2a3358, 1);
   dg.fillRoundedRect(-20, -26, 40, 74, 12);
   dancer.add(dg);
-  dancer.add(scene.add.text(0, 42, '👘', { fontSize: '30px' }).setOrigin(0.5));
+  dancer.add(addIcon(scene, 0, 42, 'person-kimono:crimson', 30));
   area.add(dancer);
 
   api.sign(prompt);

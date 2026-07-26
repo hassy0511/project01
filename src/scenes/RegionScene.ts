@@ -12,6 +12,7 @@ import { getRegionAsset } from '../game/mapData';
 import { SFX } from '../audio/sfx';
 import { COLORS, DEPTH, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { makeGuideRow, showToast } from '../ui/widgets';
+import { addIcon } from '../ui/icons';
 
 const TOP_H = 48;
 /** 下部ガイドぶんの余白 */
@@ -179,7 +180,7 @@ export class RegionScene extends Phaser.Scene {
           ease: 'Sine.easeInOut',
         });
       } else {
-        root.add(this.add.text(lx, ly - 26 / scale, region.emoji, { fontSize: `${18 / scale}px` }).setOrigin(0.5));
+        root.add(addIcon(this, lx, ly - 26 / scale, region.icon, 20 / scale));
       }
 
       // 名前ラベルも タップできる(海側に出したラベルからも遷移できるように)

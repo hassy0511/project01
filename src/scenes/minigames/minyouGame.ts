@@ -4,6 +4,7 @@
    まちがえても おなじ長さで やりなおすだけ(成功保証)。
    実在の「大民謡流し」の「みんなで おなじ おどりを そろえる」をそのまま動詞化 */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -14,10 +15,10 @@ import type { MinigameApi } from './types';
 const AREA_H = 660;
 /** 4つの ふり(ボタン) */
 const MOVES = [
-  { emoji: '🙌', color: 0xef5350, label: 'ばんざい' },
-  { emoji: '👐', color: 0x42a5f5, label: 'ひろげ' },
-  { emoji: '👏', color: 0xffca28, label: 'てびょうし' },
-  { emoji: '🤲', color: 0x66bb6a, label: 'すくい' },
+  { icon: 'hand:tan', color: 0xef5350, label: 'ばんざい' },
+  { icon: 'hand:cream', color: 0x42a5f5, label: 'ひろげ' },
+  { icon: 'hand-clap:tan', color: 0xffca28, label: 'てびょうし' },
+  { icon: 'bowl:cream', color: 0x66bb6a, label: 'すくい' },
 ];
 const BTN_Y = 560;
 const BTN_R = 54;
@@ -53,9 +54,9 @@ export function renderMinyou(api: MinigameApi, prompt: string): void {
   });
 
   // おどりの列(ながれていく)
-  const dancers: Phaser.GameObjects.Text[] = [];
+  const dancers: Phaser.GameObjects.Image[] = [];
   for (let i = 0; i < 7; i++) {
-    const d = scene.add.text(20 + i * 72, 400, i % 2 === 0 ? '👘' : '🧑', { fontSize: '30px' }).setOrigin(0.5);
+    const d = addIcon(scene, 20 + i * 72, 400, i % 2 === 0 ? 'person-kimono:crimson' : 'person:teal', 30);
     area.add(d);
     dancers.push(d);
     scene.tweens.add({ targets: d, y: 394, duration: 420 + (i % 3) * 70, yoyo: true, repeat: -1 });
@@ -81,7 +82,7 @@ export function renderMinyou(api: MinigameApi, prompt: string): void {
     };
     draw(false);
     c.add(g);
-    c.add(scene.add.text(0, 0, m.emoji, { fontSize: '38px' }).setOrigin(0.5));
+    c.add(addIcon(scene, 0, 0, m.icon, 38));
     c.setData('draw', draw);
     c.setInteractive(new Phaser.Geom.Circle(0, 0, BTN_R), Phaser.Geom.Circle.Contains);
     area.add(c);

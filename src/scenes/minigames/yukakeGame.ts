@@ -7,6 +7,7 @@
    ちょうどの ときは 大よろこび。ちがっても おこらない(コンボが きれるだけ)。
    動作=ながおしの りょう調整。タップの タイミングとは べつの てざわり */
 import Phaser from 'phaser';
+import { addIcon, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -16,6 +17,8 @@ import type { MinigameApi } from './types';
 
 const AREA_H = 660;
 const CX = GAME_W / 2;
+/** おきゃくの すがた(おとな・こども・おじいさん が じゅんばんに くる) */
+const GUESTS = ['person:teal', 'person:pink', 'person-child:amber', 'person:gray'] as const;
 /** ゲージ(ためた ゆの りょう 0〜1) */
 const FILL_PER_SEC = 0.55;
 const HOT_LINE = 0.66;
@@ -42,7 +45,7 @@ export function renderYukake(api: MinigameApi, prompt: string): void {
   bg.fillStyle(0x8ec4d8, 1);
   bg.fillRoundedRect(72, 482, GAME_W - 144, 96, 16);
   area.add(bg);
-  area.add(scene.add.text(CX, 452, '♨️', { fontSize: '30px' }).setOrigin(0.5));
+  area.add(addIcon(scene, CX, 452, 'hotspring:sky', 30));
 
   api.sign(prompt);
   const session = new ArcadeSession(api, {
@@ -55,7 +58,7 @@ export function renderYukake(api: MinigameApi, prompt: string): void {
   });
 
   /* ---------- おきゃくさん ---------- */
-  const guest = scene.add.text(CX, GUEST_Y, '🧑', { fontSize: '46px' }).setOrigin(0.5);
+  const guest = addIcon(scene, CX, GUEST_Y, 'person:teal', 46);
   area.add(guest);
   const bubble = scene.add
     .text(CX, GUEST_Y - 78, '', {
@@ -73,7 +76,7 @@ export function renderYukake(api: MinigameApi, prompt: string): void {
   const nextGuest = (): void => {
     if (session.isEnded()) return;
     want = Math.random() < 0.5 ? 'hot' : 'warm';
-    guest.setText(['🧑', '👩', '🧒', '👴'][Math.floor(Math.random() * 4)]);
+    setIcon(guest, GUESTS[Math.floor(Math.random() * GUESTS.length)]);
     guest.setX(90 + Math.random() * (GAME_W - 180));
     bubble.setX(guest.x);
     bubble.setText(want === 'hot' ? UI_TEXT.fest.yukakeWantHot : UI_TEXT.fest.yukakeWantWarm);
@@ -85,7 +88,7 @@ export function renderYukake(api: MinigameApi, prompt: string): void {
   /* ---------- ひしゃく(ながおしで ゆを ためる) ---------- */
   let fill = 0;
   let filling = false;
-  const hishaku = scene.add.text(CX, 420, '🥄', { fontSize: '34px' }).setOrigin(0.5);
+  const hishaku = addIcon(scene, CX, 420, 'ladle:tan', 34);
   area.add(hishaku);
   const gauge = scene.add.graphics();
   area.add(gauge);
@@ -115,7 +118,7 @@ export function renderYukake(api: MinigameApi, prompt: string): void {
     const okHot = want === 'hot' && hot;
     const okWarm = want === 'warm' && warm;
     // ゆを かける えんしゅつ
-    const splash = scene.add.text(hishaku.x, hishaku.y - 20, '💦', { fontSize: '26px' }).setOrigin(0.5);
+    const splash = addIcon(scene, hishaku.x, hishaku.y - 20, 'splash:sky', 26);
     area.add(splash);
     scene.tweens.add({
       targets: splash,
@@ -143,7 +146,7 @@ export function renderYukake(api: MinigameApi, prompt: string): void {
           floatUp(scene, guest.x, guest.y + api.areaY - 100, UI_TEXT.fest.yukakeOk, '#3f7d2c');
         }
         burst(scene, guest.x, guest.y + api.areaY, perfect ? 12 : 5, [0x9ad0f5, 0xffffff]);
-        guest.setText('😄');
+        setIcon(guest, 'face-smile:cream');
       } else {
         SFX.bad();
         missShake(scene);

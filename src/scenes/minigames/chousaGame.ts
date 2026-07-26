@@ -4,6 +4,7 @@
    1つでも 0に なると たいこだいが かたむいて さしあげが とけるが、たおれはしない。
    動作=4つの ゲージの めくばり(マルチかんり)。1本ざおの バランス(kantou)とは べつ */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -56,8 +57,8 @@ export function renderChousa(api: MinigameApi, prompt: string): void {
   dg.fillStyle(0xc9a23f, 1);
   dg.fillRect(-130, -40, 260, 14); // きんの ふち
   dai.add(dg);
-  dai.add(scene.add.text(0, 20, '🥁', { fontSize: '34px' }).setOrigin(0.5));
-  dai.add(scene.add.text(0, -66, '🎌', { fontSize: '26px' }).setOrigin(0.5));
+  dai.add(addIcon(scene, 0, 20, 'drum:crimson', 34));
+  dai.add(addIcon(scene, 0, -66, 'flag:crimson', 26));
   area.add(dai);
 
   /* ---------- 4つの かた ---------- */
@@ -73,7 +74,7 @@ export function renderChousa(api: MinigameApi, prompt: string): void {
 
   for (let i = 0; i < SHOULDERS; i++) {
     const c = scene.add.container(POS[i][0], POS[i][1]);
-    c.add(scene.add.text(0, 0, '🧑', { fontSize: '36px' }).setOrigin(0.5));
+    c.add(addIcon(scene, 0, 0, 'person:teal', 36));
     c.add(
       scene.add
         .text(0, 42, UI_TEXT.fest.chousaShoulder(i + 1), { fontFamily: FONT, fontSize: '13px', color: '#5a4632' })

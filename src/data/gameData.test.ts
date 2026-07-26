@@ -245,11 +245,11 @@ describe('県ごとの ボリューム(全県そろえる)', () => {
 describe('そざいの あそび方が 実物と あっているか', () => {
   /** つるして そだてる貝・かご漁の いきもの は「釣りざお」ゲームにしない
       (2026-07: かき・ほたてが 魚釣りゲームになっていた不整合の再発防止) */
-  const CAGE_GROWN = ['🦪', '🐚', '🦀'];
+  const CAGE_GROWN = ['shell', 'crab', 'pearl'];
 
   it('貝・かに(つるす/かご漁)は fish(釣りざお)ではなく shell(ひきあげ)', () => {
     for (const m of D.materials) {
-      if (!CAGE_GROWN.includes(m.emoji)) continue;
+      if (!CAGE_GROWN.includes(m.icon.split(':')[0])) continue; // いろ ちがいも まとめて 見る
       const g = m.gather;
       expect(g.type, `${m.name}: 釣りざお(timing)ではなく いかだ/かご(plant)`).toBe('plant');
       if (g.type === 'plant') {

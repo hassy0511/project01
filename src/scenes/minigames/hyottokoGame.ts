@@ -5,6 +5,7 @@
    だんだん あいずが はやくなり、ときどき「まねっこ!」で さっきと おなじ ものが つづく。
    まちがえても おこられない(コンボが きれるだけ)。動作=3たくの はんしゃ */
 import Phaser from 'phaser';
+import { addIcon, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, cameraPulse, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -14,7 +15,7 @@ import type { MinigameApi } from './types';
 
 const AREA_H = 660;
 const CX = GAME_W / 2;
-const MASKS = ['🤡', '😳', '🦊'] as const;
+const MASKS = ['mask:red', 'face-surprised:cream', 'foxmask:orange'] as const;
 const HIT_PTS = 13;
 const STREAK_BONUS = 34;
 /** あいずの じかん */
@@ -35,8 +36,8 @@ export function renderHyottoko(api: MinigameApi, prompt: string): void {
   bg.fillRect(0, 560, GAME_W, AREA_H - 560);
   area.add(bg);
   // おはやしの ひとたち
-  for (const [dx, e] of [[-150, '🥁'], [150, '🪈']] as const) {
-    area.add(scene.add.text(CX + dx, 520, e, { fontSize: '26px' }).setOrigin(0.5));
+  for (const [dx, e] of [[-150, 'drum:crimson'], [150, 'flute:tan']] as const) {
+    area.add(addIcon(scene, CX + dx, 520, e, 26));
   }
 
   api.sign(prompt);
@@ -50,7 +51,7 @@ export function renderHyottoko(api: MinigameApi, prompt: string): void {
   });
 
   /* ---------- おどりて(でっかい おめん) ---------- */
-  const dancer = scene.add.text(CX, 300, '🤡', { fontSize: '80px' }).setOrigin(0.5).setAlpha(0.25);
+  const dancer = addIcon(scene, CX, 300, 'mask:red', 80).setAlpha(0.25);
   area.add(dancer);
   const cueText = scene.add
     .text(CX, 190, '', { fontFamily: FONT, fontSize: '20px', color: '#ffe8b0', fontStyle: 'bold' })
@@ -66,7 +67,7 @@ export function renderHyottoko(api: MinigameApi, prompt: string): void {
     g.fillStyle(0xfff4dc, 1);
     g.fillRoundedRect(-52, -52, 104, 104, 18);
     c.add(g);
-    c.add(scene.add.text(0, -6, MASKS[i], { fontSize: '46px' }).setOrigin(0.5));
+    c.add(addIcon(scene, 0, -6, MASKS[i], 46));
     c.add(
       scene.add
         .text(0, 36, UI_TEXT.fest.hyottokoNames[i], { fontFamily: FONT, fontSize: '13px', color: '#5a4632' })
@@ -92,7 +93,8 @@ export function renderHyottoko(api: MinigameApi, prompt: string): void {
     const same = last >= 0 && Math.random() < 0.22;
     want = same ? last : Math.floor(Math.random() * 3);
     last = want;
-    dancer.setText(MASKS[want]).setAlpha(1);
+    setIcon(dancer, MASKS[want]);
+    dancer.setAlpha(1);
     scene.tweens.add({ targets: dancer, scale: { from: 0.8, to: 1 }, duration: 200, ease: 'Back.easeOut' });
     cueText.setText(same ? UI_TEXT.fest.hyottokoSame : UI_TEXT.fest.hyottokoCue(UI_TEXT.fest.hyottokoNames[want]));
     SFX.hint();

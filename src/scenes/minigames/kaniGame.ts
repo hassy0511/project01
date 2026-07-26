@@ -5,6 +5,7 @@
    ときどき「おおざら」= 目標が 8つで 2倍(C要素)。
    実在の かにまつりの「その場で かにを さばいて 食べる」をそのまま動詞化 */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -29,7 +30,7 @@ interface Spot {
   y: number;
   ring: Phaser.GameObjects.Arc;
   cracked: boolean;
-  mi?: Phaser.GameObjects.Text;
+  mi?: Phaser.GameObjects.Image;
   timer: Phaser.Time.TimerEvent;
 }
 
@@ -47,7 +48,8 @@ export function renderKani(api: MinigameApi, prompt: string): void {
   bg.fillStyle(0xdfe6ee, 1);
   bg.fillRoundedRect(70, 500, GAME_W - 140, 110, 55); // おおざら
   area.add(bg);
-  const plateLabel = scene.add.text(GAME_W / 2, 556, '', { fontSize: '20px', color: '#3d3129', fontStyle: 'bold' }).setOrigin(0.5);
+  area.add(addIcon(scene, GAME_W / 2 - 52, 556, 'plate:cream', 26));
+  const plateLabel = scene.add.text(GAME_W / 2 + 8, 556, '', { fontSize: '20px', color: '#3d3129', fontStyle: 'bold' }).setOrigin(0.5);
   area.add(plateLabel);
 
   api.sign(prompt);
@@ -75,7 +77,7 @@ export function renderKani(api: MinigameApi, prompt: string): void {
   kg.fillEllipse(-176, -46, 40, 26); // はさみ
   kg.fillEllipse(176, -46, 40, 26);
   kani.add(kg);
-  kani.add(scene.add.text(0, 6, '🦀', { fontSize: '54px' }).setOrigin(0.5));
+  kani.add(addIcon(scene, 0, 6, 'crab:red', 54));
   area.add(kani);
   scene.tweens.add({ targets: kani, y: 296, duration: 1200, yoyo: true, repeat: -1 });
 
@@ -85,7 +87,7 @@ export function renderKani(api: MinigameApi, prompt: string): void {
   let target = PLATE_NORMAL;
   let big = false;
   const refreshPlate = (): void => {
-    plateLabel.setText(`🍽️ ${plate}/${target}${big ? ' おおざら!' : ''}`);
+    plateLabel.setText(`${plate}/${target}${big ? ' おおざら!' : ''}`);
   };
   refreshPlate();
 
@@ -156,7 +158,7 @@ export function renderKani(api: MinigameApi, prompt: string): void {
         session.addPoints(CRACK_PTS, s.x, s.y + api.areaY - 20);
         floatUp(scene, s.x, s.y + api.areaY - 34, UI_TEXT.fest.kaniCrack, '#e0812a');
         s.ring.setStrokeStyle(4, 0xffffff, 0.9);
-        s.mi = scene.add.text(s.x, s.y, '🤍', { fontSize: '20px' }).setOrigin(0.5);
+        s.mi = addIcon(scene, s.x, s.y, 'heart:white', 20);
         area.add(s.mi);
         scene.tweens.add({ targets: s.mi, scale: { from: 0.6, to: 1.1 }, duration: 400, yoyo: true, repeat: -1 });
       } else {

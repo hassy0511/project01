@@ -6,6 +6,7 @@
    ときどき「よっちょれ!」の あいずで 3れんうちに なる(よく 見て かぞえる)。
    動作=れんだの「かず」を そろえる。1タップの タイミングゲームとは べつの てざわり */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -39,9 +40,9 @@ export function renderYosakoi(api: MinigameApi, prompt: string): void {
   area.add(bg);
 
   // おどりて(なるこを もった 4にん)
-  const dancers: Phaser.GameObjects.Text[] = [];
+  const dancers: Phaser.GameObjects.Image[] = [];
   for (const dx of [-160, -55, 55, 160]) {
-    const t = scene.add.text(CX + dx, 500, '💃', { fontSize: '34px' }).setOrigin(0.5);
+    const t = addIcon(scene, CX + dx, 500, 'person-dancer:pink', 34);
     area.add(t);
     dancers.push(t);
   }
@@ -59,7 +60,7 @@ export function renderYosakoi(api: MinigameApi, prompt: string): void {
   /* ---------- なるこの わっか ---------- */
   const ring = scene.add.graphics();
   area.add(ring);
-  const naruko = scene.add.text(CX, RING_Y, '🪇', { fontSize: '46px' }).setOrigin(0.5);
+  const naruko = addIcon(scene, CX, RING_Y, 'naruko:red', 46);
   area.add(naruko);
   const needText = scene.add
     .text(CX, RING_Y - 100, '', { fontFamily: FONT, fontSize: '26px', color: '#ffe8b0', fontStyle: 'bold' })

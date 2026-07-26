@@ -5,6 +5,7 @@
    はやすぎ・おそすぎでも だんじりは たおれない(スピードが おちて コンボが きれるだけ)。
    スピードが たまると「そうこう(疾走)」= 得点アップ。gion(ゆっくり回す)と 正反対の てざわり */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, cameraPulse, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -71,14 +72,14 @@ export function renderDanjiri(api: MinigameApi, prompt: string): void {
   dg.fillCircle(-32, 26, 16);
   dg.fillCircle(32, 26, 16);
   danjiri.add(dg);
-  danjiri.add(scene.add.text(0, -58, '🏮', { fontSize: '20px' }).setOrigin(0.5));
-  danjiri.add(scene.add.text(-16, -8, '🧑', { fontSize: '18px' }).setOrigin(0.5));
-  danjiri.add(scene.add.text(16, -8, '🧑', { fontSize: '18px' }).setOrigin(0.5));
+  danjiri.add(addIcon(scene, 0, -58, 'lantern:crimson', 20));
+  danjiri.add(addIcon(scene, -16, -8, 'person:teal', 18));
+  danjiri.add(addIcon(scene, 16, -8, 'person:teal', 18));
   area.add(danjiri);
   // ひきての れつ
-  const ropes: Phaser.GameObjects.Text[] = [];
+  const ropes: Phaser.GameObjects.Image[] = [];
   for (let i = 0; i < 4; i++) {
-    const r = scene.add.text(60 - i * 30, ROAD_Y + 78, '🧍', { fontSize: '20px' }).setOrigin(0.5);
+    const r = addIcon(scene, 60 - i * 30, ROAD_Y + 78, 'person:gray', 20);
     area.add(r);
     ropes.push(r);
   }

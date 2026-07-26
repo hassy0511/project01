@@ -7,6 +7,7 @@
       ゆっくり = きれいに まわる / いっきに ひっぱると 竹が すべって やりなおし(得点は へらない)
    3. まわりきると こうさてんを つぎへ すすむ。何回 まわせるかの ゲーム */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -78,13 +79,13 @@ export function renderGion(api: MinigameApi, prompt: string): void {
   pole.fillStyle(0xffd34d, 1);
   pole.fillTriangle(-14, -196, 14, -196, 0, -232);
   hoko.add(pole);
-  hoko.add(scene.add.text(0, 20, '🎎', { fontSize: '26px' }).setOrigin(0.5));
+  hoko.add(addIcon(scene, 0, 20, 'person-kimono:violet', 26));
   area.add(hoko);
 
   // ひっぱる ひとたち
-  const pullers: Phaser.GameObjects.Text[] = [];
+  const pullers: Phaser.GameObjects.Image[] = [];
   for (const dx of [-150, -110, 110, 150]) {
-    const p = scene.add.text(CX + dx, CY + 110, '🧑', { fontSize: '24px' }).setOrigin(0.5);
+    const p = addIcon(scene, CX + dx, CY + 110, 'person:teal', 24);
     area.add(p);
     pullers.push(p);
   }
@@ -94,7 +95,7 @@ export function renderGion(api: MinigameApi, prompt: string): void {
   let turned = 0;
   let slipped = false;
   let corner = 0;
-  const bamboos: Phaser.GameObjects.Text[] = [];
+  const bamboos: Phaser.GameObjects.Image[] = [];
 
   const cornerLabel = scene.add
     .text(CX, 150, '', { fontFamily: 'sans-serif', fontSize: '16px', color: '#5a4632', fontStyle: 'bold' })
@@ -107,9 +108,7 @@ export function renderGion(api: MinigameApi, prompt: string): void {
     slipped = false;
     cornerLabel.setText(UI_TEXT.fest.gionCorner(corner + 1));
     for (let i = 0; i < 3; i++) {
-      const b = scene.add
-        .text(CX - 60 + i * 60, CY + 78, '🎍', { fontSize: '30px' })
-        .setOrigin(0.5)
+      const b = addIcon(scene, CX - 60 + i * 60, CY + 78, 'bamboo:lime', 30)
         .setAlpha(0.55)
         .setInteractive({ useHandCursor: true });
       b.on('pointerdown', () => {

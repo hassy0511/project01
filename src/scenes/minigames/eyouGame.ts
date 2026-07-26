@@ -6,6 +6,7 @@
    おされて しんぎを はなしても また なげこまれる(しっぱいに しない)。
    動作=よそくタップ + はんたい方向スワイプ(おしかえし) */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -39,17 +40,15 @@ export function renderEyou(api: MinigameApi, prompt: string): void {
   bg.fillRect(0, 120, GAME_W, 18);
   area.add(bg);
   // もみあう ひとたち(あたま)
-  const crowd: Phaser.GameObjects.Text[] = [];
+  const crowd: Phaser.GameObjects.Image[] = [];
   for (let i = 0; i < 14; i++) {
-    const t = scene.add
-      .text(20 + (i % 7) * 72, FLOOR_Y + 30 + Math.floor(i / 7) * 46, '🧑', { fontSize: '26px' })
-      .setOrigin(0.5)
+    const t = addIcon(scene, 20 + (i % 7) * 72, FLOOR_Y + 30 + Math.floor(i / 7) * 46, 'person:teal', 26)
       .setAlpha(0.85);
     area.add(t);
     crowd.push(t);
   }
   // 門(ゴール)
-  const gate = scene.add.text(GAME_W - 44, 210, '⛩️', { fontSize: '38px' }).setOrigin(0.5);
+  const gate = addIcon(scene, GAME_W - 44, 210, 'shrine:red', 38);
   area.add(gate);
 
   api.sign(prompt);
@@ -69,9 +68,9 @@ export function renderEyou(api: MinigameApi, prompt: string): void {
   let carried = 0;
   const light = scene.add.graphics();
   area.add(light);
-  const shingi = scene.add.text(0, 0, '🪵', { fontSize: '34px' }).setOrigin(0.5).setVisible(false);
+  const shingi = addIcon(scene, 0, 0, 'log:tan', 34).setVisible(false);
   area.add(shingi);
-  const holder = scene.add.text(GAME_W / 2, FLOOR_Y - 30, '🧍', { fontSize: '40px' }).setOrigin(0.5);
+  const holder = addIcon(scene, GAME_W / 2, FLOOR_Y - 30, 'person:gray', 40);
   area.add(holder);
   const info = scene.add
     .text(GAME_W / 2, 170, '', { fontFamily: 'sans-serif', fontSize: '15px', color: '#ffe8b0', fontStyle: 'bold' })

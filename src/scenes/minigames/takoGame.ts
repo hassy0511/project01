@@ -5,11 +5,13 @@
    高い方が 相手の糸を 切って 大得点(C要素)。
    kantou(倒立バランス)と違い、こちらは「張力の 上下」= ため方の 遊び */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
+import { CROWD } from './crowd';
 import type { MinigameApi } from './types';
 
 const AREA_H = 660;
@@ -46,7 +48,7 @@ export function renderTako(api: MinigameApi, prompt: string): void {
     scene.tweens.add({ targets: cl, x: cl.x + 40, duration: 6000 + i * 1200, yoyo: true, repeat: -1 });
   }
   for (let i = 0; i < 5; i++) {
-    area.add(scene.add.text(40 + i * 100, GROUND_Y + 30, ['🧑', '👦', '👧', '👘', '🧑'][i], { fontSize: '26px' }).setOrigin(0.5));
+    area.add(addIcon(scene, 40 + i * 100, GROUND_Y + 30, CROWD[i], 26));
   }
 
   api.sign(prompt);
@@ -69,7 +71,7 @@ export function renderTako(api: MinigameApi, prompt: string): void {
   tg.lineStyle(3, 0x3d3129, 1);
   tg.lineBetween(-34, 0, 34, 0);
   tako.add(tg);
-  tako.add(scene.add.text(0, 22, '🪁', { fontSize: '20px' }).setOrigin(0.5));
+  tako.add(addIcon(scene, 0, 22, 'kite:sky', 20));
   area.add(tako);
 
   const rival = scene.add.container(GAME_W + 80, 200);

@@ -5,6 +5,7 @@
    4個ごとに「おおざら」(でかい・段が多い・高得点)が C 要素。
    益子の陶器づくり(ろくろ→窯)をそのまま動詞化 */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, floatUp, impactRing, TX_GLOW } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -55,7 +56,7 @@ export function renderRokuro(api: MinigameApi, prompt: string): void {
   bg.fillStyle(0x3d3129, 1);
   bg.fillRoundedRect(345, 150, 80, 80, 40);
   area.add(bg);
-  const kilnFire = scene.add.text(385, 200, '🔥', { fontSize: '30px' }).setOrigin(0.5).setAlpha(0.55);
+  const kilnFire = addIcon(scene, 385, 200, 'fire:orange', 30).setAlpha(0.55);
   area.add(kilnFire);
   scene.tweens.add({ targets: kilnFire, scale: 1.2, alpha: 0.85, duration: 500, yoyo: true, repeat: -1 });
 

@@ -6,11 +6,13 @@
    minyou(順番を おぼえる)と違い、こちらは 常に「いま ひかっている糸」を ひく=
    目と手の 追従。速さが 上がっていくのが 手ごたえ */
 import Phaser from 'phaser';
+import { addIcon, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
+import { CROWD } from './crowd';
 import type { MinigameApi } from './types';
 
 const AREA_H = 660;
@@ -27,7 +29,7 @@ const LIT_TO_MS = 1200;
 const TRICK_LEN = 4;
 
 const STRING_X = [90, 180, 300, 390];
-const POSES = ['🙆', '🙋', '💃', '🤹'];
+const POSES = ['person-dancer:teal', 'person-dancer:amber', 'person-dancer:pink', 'person-dancer:violet'];
 
 export function renderKarakuri(api: MinigameApi, prompt: string): void {
   const { scene, area } = api;
@@ -47,7 +49,7 @@ export function renderKarakuri(api: MinigameApi, prompt: string): void {
   bg.fillRect(40, 300, GAME_W - 80, 12);
   area.add(bg);
   for (let i = 0; i < 4; i++) {
-    area.add(scene.add.text(70 + i * 110, 560, ['🧑', '👧', '👦', '👘'][i], { fontSize: '24px' }).setOrigin(0.5));
+    area.add(addIcon(scene, 70 + i * 110, 560, CROWD[i], 24));
   }
 
   api.sign(prompt);
@@ -70,9 +72,10 @@ export function renderKarakuri(api: MinigameApi, prompt: string): void {
   dg.fillStyle(0x3d3129, 1);
   dg.fillEllipse(0, -38, 40, 16); // かみ
   doll.add(dg);
-  const dollFace = scene.add.text(0, -22, '🙂', { fontSize: '20px' }).setOrigin(0.5);
+  const dollFace = addIcon(scene, 0, -22, 'face-smile:cream', 20);
   doll.add(dollFace);
-  const dollPose = scene.add.text(0, 66, '', { fontSize: '30px' }).setOrigin(0.5);
+  // はじめは まだ うごいていない: いちばんめの ポーズを うすく だしておく
+  const dollPose = addIcon(scene, 0, 66, POSES[0], 30).setAlpha(0.25);
   doll.add(dollPose);
   area.add(doll);
   scene.tweens.add({ targets: doll, y: DOLL_Y - 6, duration: 1100, yoyo: true, repeat: -1 });
@@ -146,8 +149,9 @@ export function renderKarakuri(api: MinigameApi, prompt: string): void {
       session.addPoints(STEP_PTS, handle.x, HANDLE_Y + api.areaY - 40);
       floatUp(scene, handle.x, HANDLE_Y + api.areaY - 60, UI_TEXT.fest.itoPull, '#e0812a');
       // 人形が うごく
-      dollPose.setText(POSES[i]);
-      dollFace.setText('😄');
+      setIcon(dollPose, POSES[i]);
+      dollPose.setAlpha(1);
+      setIcon(dollFace, 'face-smile:cream');
       scene.tweens.add({ targets: doll, angle: { from: -6, to: 6 }, duration: 120, yoyo: true, onComplete: () => doll.setAngle(0) });
       burst(scene, doll.x, DOLL_Y + api.areaY, 5, [0xffd34d, 0xffffff]);
       step++;
@@ -167,8 +171,8 @@ export function renderKarakuri(api: MinigameApi, prompt: string): void {
       SFX.bad();
       missShake(scene);
       impactRing(scene, handle.x, HANDLE_Y + api.areaY, 0xc04545, 10);
-      dollFace.setText('😵');
-      scene.time.delayedCall(400, () => dollFace.setText('🙂'));
+      setIcon(dollFace, 'face-surprised:cream');
+      scene.time.delayedCall(400, () => setIcon(dollFace, 'face-smile:cream'));
     }
   };
   handles.forEach((h, i) => h.on('pointerdown', () => doPull(i)));

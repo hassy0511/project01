@@ -231,6 +231,20 @@ export function makeGuideRow(
   return { container: c, height: h };
 }
 
+/** アイコンを よこ1れつに ならべた ひとまとまり(まとめて フェード・スケールできる)。
+    おまつりの かざり・ものがたりの さしえで つかう */
+export function makeIconRow(
+  scene: Phaser.Scene,
+  keys: readonly string[],
+  size = 44,
+  gap = 56,
+): Phaser.GameObjects.Container {
+  const row = scene.add.container(0, 0);
+  const left = -((keys.length - 1) * gap) / 2;
+  keys.forEach((key, i) => row.add(addIcon(scene, left + i * gap, 0, key, size)));
+  return row;
+}
+
 /** ほしの 大きさと 間かく(できばえの 見た目の かなめ。ここだけで ととのえる)。
     ポンと 出る tween が 1.1ばいまで はみ出すので、置き場の 高さ 48(SessionScene)に おさまる 42 に する */
 const STAR_SIZE = 42;

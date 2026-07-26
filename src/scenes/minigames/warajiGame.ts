@@ -5,6 +5,7 @@
    実在のわらじまつりの「大わらじを かついで ねりあるく」をそのまま動詞化。
    動作=左右交互タップ(歩行のリズム) */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, confetti, floatUp, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -71,8 +72,8 @@ export function renderWaraji(api: MinigameApi, prompt: string): void {
   wg.lineBetween(-60, -40, 0, 8);
   wg.lineBetween(60, -40, 0, 8);
   waraji.add(wg);
-  for (const [dx, e] of [[-120, '🧑'], [-40, '👦'], [40, '👧'], [120, '🧑']] as const) {
-    waraji.add(scene.add.text(dx, 62, e, { fontSize: '30px' }).setOrigin(0.5));
+  for (const [dx, e] of [[-120, 'person:teal'], [-40, 'person-child:sky'], [40, 'person-child:pink'], [120, 'person:navy']] as const) {
+    waraji.add(addIcon(scene, dx, 62, e, 30));
   }
   area.add(waraji);
 
@@ -92,7 +93,7 @@ export function renderWaraji(api: MinigameApi, prompt: string): void {
   for (let i = 0; i < 2; i++) {
     const c = scene.add.container(i === 0 ? 130 : GAME_W - 130, 580);
     c.add(scene.add.graphics());
-    c.add(scene.add.text(0, 0, '👣', { fontSize: '40px' }).setOrigin(0.5));
+    c.add(addIcon(scene, 0, 0, 'foot:gray', 40));
     area.add(c);
     feet.push(c);
   }

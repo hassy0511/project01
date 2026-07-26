@@ -6,6 +6,7 @@
    横浜開港祭の船のパレードを動詞化。かごキャッチと同じ連続操作系だが
    「くぐる・よける・鳴らす」の3役で差別化 */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -102,7 +103,7 @@ export function renderSousen(api: MinigameApi, prompt: string): void {
   bt.fillStyle(0xe8b84b, 1);
   bt.fillRect(-4, -52, 8, 20);
   boat.add(bt);
-  const flag = scene.add.text(16, -48, '🚩', { fontSize: '18px' }).setOrigin(0.5);
+  const flag = addIcon(scene, 16, -48, 'flag:red', 18);
   boat.add(flag);
   area.add(boat);
   // 航跡
@@ -138,7 +139,7 @@ export function renderSousen(api: MinigameApi, prompt: string): void {
       g.fillStyle(0xa9713a, 1);
       g.fillRect(px - 4, -26, 8, 52);
       c.add(g);
-      const f = scene.add.text(px, -30, side < 0 ? '🚩' : '🎌', { fontSize: '22px' }).setOrigin(0.5, 1);
+      const f = addIcon(scene, px, -30, side < 0 ? 'flag:red' : 'flag:crimson', 22).setOrigin(0.5, 1);
       c.add(f);
     }
     area.add(c);
@@ -169,7 +170,7 @@ export function renderSousen(api: MinigameApi, prompt: string): void {
     g.lineStyle(2, big ? 0xffd34d : 0xffffff, 0.4);
     g.strokeCircle(0, 0, big ? 44 : 34);
     c.add(g);
-    c.add(scene.add.text(0, 0, '📯', { fontSize: big ? '26px' : '20px' }).setOrigin(0.5));
+    c.add(addIcon(scene, 0, 0, 'horn:gold', big ? 26 : 20));
     area.add(c);
     scene.tweens.add({ targets: c, alpha: 0.55, duration: 400, yoyo: true, repeat: -1 });
     floaters.push({ kind: 'horn', y: -30, x, big, obj: c, used: false });

@@ -4,6 +4,7 @@
    「はなふぶきタイム」= 得点2倍 が C 要素。
    実在の花笠まつりの「笠を まわして おどる」をそのまま動詞化。動作=円ジェスチャー */
 import Phaser from 'phaser';
+import { addIcon, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, confetti, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -36,9 +37,9 @@ export function renderHanagasa(api: MinigameApi, prompt: string): void {
     bg.fillEllipse(i * 85 + 40, 70, 9, 13);
   }
   area.add(bg);
-  const dancers: Phaser.GameObjects.Text[] = [];
-  for (const [dx, e] of [[-170, '👘'], [-85, '🧍'], [85, '🧍'], [170, '👘']] as const) {
-    const d = scene.add.text(CX + dx, 580, e, { fontSize: '32px' }).setOrigin(0.5);
+  const dancers: Phaser.GameObjects.Image[] = [];
+  for (const [dx, e] of [[-170, 'person-kimono:crimson'], [-85, 'person:teal'], [85, 'person:navy'], [170, 'person-kimono:violet']] as const) {
+    const d = addIcon(scene, CX + dx, 580, e, 32);
     area.add(d);
     dancers.push(d);
   }
@@ -68,11 +69,11 @@ export function renderHanagasa(api: MinigameApi, prompt: string): void {
     kg.fillCircle(Math.cos(a) * 52, Math.sin(a) * 52, 7);
   }
   kasa.add(kg);
-  kasa.add(scene.add.text(0, 0, '🌸', { fontSize: '40px' }).setOrigin(0.5));
+  kasa.add(addIcon(scene, 0, 0, 'sakura:pink', 40));
   area.add(kasa);
 
   // むきの やじるし
-  const arrow = scene.add.text(CX, CY - 140, '↻', { fontSize: '46px', color: '#ffd34d', fontStyle: 'bold' }).setOrigin(0.5);
+  const arrow = addIcon(scene, CX, CY - 140, 'spin-right:gold', 46);
   area.add(arrow);
   scene.tweens.add({ targets: arrow, scale: { from: 1, to: 1.2 }, duration: 500, yoyo: true, repeat: -1 });
 
@@ -84,7 +85,7 @@ export function renderHanagasa(api: MinigameApi, prompt: string): void {
 
   const petals = (): void => {
     for (let i = 0; i < 6; i++) {
-      const p = scene.add.text(CX + (Math.random() * 160 - 80), CY + api.areaY - 40, '🌸', { fontSize: '16px' }).setOrigin(0.5);
+      const p = addIcon(scene, CX + (Math.random() * 160 - 80), CY + api.areaY - 40, 'sakura:pink', 16);
       scene.tweens.add({
         targets: p,
         y: p.y + 140 + Math.random() * 80,
@@ -138,7 +139,7 @@ export function renderHanagasa(api: MinigameApi, prompt: string): void {
       dir *= -1;
       acc = 0;
       SFX.good();
-      arrow.setText(dir === 1 ? '↻' : '↺');
+      setIcon(arrow, dir === 1 ? 'spin-right:gold' : 'spin-left:gold');
       floatUp(scene, CX, CY + api.areaY - 160, UI_TEXT.fest.hanagasaReverse, '#9ad0f5');
       burst(scene, CX, CY + api.areaY - 140, 6, [0x9ad0f5, 0xffffff]);
       scheduleReverse();

@@ -5,6 +5,7 @@
    すでに その じょうたいなら「そのまま」= なにも しないのが 正かい(あわてて タップすると コンボ切れ)。
    合図の じかんは だんだん みじかく なる。動作=じょうたいの きりかえ判断 */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -38,9 +39,9 @@ export function renderShanshan(api: MinigameApi, prompt: string): void {
   bg.fillRect(0, 560, GAME_W, AREA_H - 560);
   area.add(bg);
   // うしろで おどる ひとたち
-  const dancers: Phaser.GameObjects.Text[] = [];
+  const dancers: Phaser.GameObjects.Image[] = [];
   for (const dx of [-180, -110, 110, 180]) {
-    const t = scene.add.text(CX + dx, 520, '👘', { fontSize: '28px' }).setOrigin(0.5);
+    const t = addIcon(scene, CX + dx, 520, 'person-kimono:crimson', 28);
     area.add(t);
     dancers.push(t);
   }
@@ -60,13 +61,13 @@ export function renderShanshan(api: MinigameApi, prompt: string): void {
   const kasa = scene.add.container(CX, KASA_Y);
   const kg = scene.add.graphics();
   kasa.add(kg);
-  const bells: Phaser.GameObjects.Text[] = [];
+  const bells: Phaser.GameObjects.Image[] = [];
   for (let i = 0; i < 5; i++) {
-    const b = scene.add.text(-80 + i * 40, 34, '🔔', { fontSize: '16px' }).setOrigin(0.5);
+    const b = addIcon(scene, -80 + i * 40, 34, 'lantern:gold', 16);
     kasa.add(b);
     bells.push(b);
   }
-  kasa.add(scene.add.text(0, 90, '🧑', { fontSize: '30px' }).setOrigin(0.5));
+  kasa.add(addIcon(scene, 0, 90, 'person:teal', 30));
   area.add(kasa);
 
   const drawKasa = (): void => {

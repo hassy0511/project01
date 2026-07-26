@@ -58,9 +58,8 @@ describe('アイコンキー', () => {
 const EMOJI_RE =
   /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{2190}-\u{21FF}\u{2460}-\u{24FF}★☆♪♨]/u;
 
-/** まだ 絵文字が のこっている ファイル(ここが からっぽに なるのが ゴール)。
-    gameData.ts の emoji フィールドは 表示側の 置き換えが すんだら 消す */
-const ALLOW = ['src/data/gameData.ts'];
+/** 絵文字を のこして よい ファイル(いまは なし。ふやさない) */
+const ALLOW: string[] = [];
 
 const tsFiles = (dir: string, acc: string[] = []): string[] => {
   for (const name of readdirSync(dir)) {

@@ -4,6 +4,7 @@
    ときどき「おおねぶたタイム」= ねぶたが せまってきて 得点2倍 が C 要素。
    実在のねぶた祭の「囃子に合わせて はねる」をそのまま動詞化 */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -66,14 +67,14 @@ export function renderNebuta(api: MinigameApi, prompt: string): void {
   ng.fillStyle(0x4a3b2a, 1);
   ng.fillRect(-140, 60, 280, 16);
   nebuta.add(ng);
-  nebuta.add(scene.add.text(0, -24, '👹', { fontSize: '58px' }).setOrigin(0.5));
+  nebuta.add(addIcon(scene, 0, -24, 'oni:crimson', 58));
   area.add(nebuta);
   scene.tweens.add({ targets: nebuta, y: 244, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
 
   // ハネト(はねる ひとたち)
-  const hanetos: Phaser.GameObjects.Text[] = [];
-  for (const [dx, e] of [[-160, '🧍'], [-60, '👘'], [60, '🧍'], [160, '👘']] as const) {
-    const h = scene.add.text(GAME_W / 2 + dx, 560, e, { fontSize: '34px' }).setOrigin(0.5);
+  const hanetos: Phaser.GameObjects.Image[] = [];
+  for (const [dx, e] of [[-160, 'person:teal'], [-60, 'person-kimono:crimson'], [60, 'person:navy'], [160, 'person-kimono:violet']] as const) {
+    const h = addIcon(scene, GAME_W / 2 + dx, 560, e, 34);
     area.add(h);
     hanetos.push(h);
   }
@@ -81,7 +82,7 @@ export function renderNebuta(api: MinigameApi, prompt: string): void {
   // 的と わっか
   const targetRing = scene.add.circle(TARGET.x, TARGET.y, TARGET.r).setStrokeStyle(5, 0xffffff, 0.95);
   area.add(targetRing);
-  const label = scene.add.text(TARGET.x, TARGET.y, '🥁', { fontSize: '30px' }).setOrigin(0.5);
+  const label = addIcon(scene, TARGET.x, TARGET.y, 'drum:crimson', 30);
   area.add(label);
 
   let ring: Phaser.GameObjects.Arc | null = null;

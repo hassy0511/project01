@@ -5,6 +5,7 @@
    ぜんぶ つかまえると「ごりやく ぜんぶ!」で 大ボーナス → つぎの くみが でてくる。
    じかんが たつと こどもは はやくなる。動作=うごく まもの おいかけタップ */
 import Phaser from 'phaser';
+import { addIcon, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -25,7 +26,7 @@ const SPD_END = 190;
 const FLEE_R = 150;
 
 interface Kid {
-  obj: Phaser.GameObjects.Text;
+  obj: Phaser.GameObjects.Image;
   x: number;
   y: number;
   vx: number;
@@ -63,9 +64,9 @@ export function renderBetcha(api: MinigameApi, prompt: string): void {
   });
 
   /* ---------- おに(プレイヤーの タップに ついていく) ---------- */
-  const oni = scene.add.text(GAME_W / 2, FIELD_BOTTOM, '👹', { fontSize: '46px' }).setOrigin(0.5);
+  const oni = addIcon(scene, GAME_W / 2, FIELD_BOTTOM, 'oni:crimson', 46);
   area.add(oni);
-  const sasara = scene.add.text(GAME_W / 2 + 28, FIELD_BOTTOM - 20, '🎍', { fontSize: '22px' }).setOrigin(0.5);
+  const sasara = addIcon(scene, GAME_W / 2 + 28, FIELD_BOTTOM - 20, 'bamboo:lime', 22);
   area.add(sasara);
 
   /* ---------- こども ---------- */
@@ -78,7 +79,7 @@ export function renderBetcha(api: MinigameApi, prompt: string): void {
       const x = 50 + Math.random() * (GAME_W - 100);
       const y = FIELD_TOP + 30 + Math.random() * (FIELD_BOTTOM - FIELD_TOP - 60);
       const a = Math.random() * Math.PI * 2;
-      const obj = scene.add.text(x, y, '🧒', { fontSize: '32px' }).setOrigin(0.5);
+      const obj = addIcon(scene, x, y, 'person-child:amber', 32);
       area.add(obj);
       kids.push({ obj, x, y, vx: Math.cos(a), vy: Math.sin(a), caught: false });
     }
@@ -110,7 +111,7 @@ export function renderBetcha(api: MinigameApi, prompt: string): void {
         burst(scene, k.x, k.y + api.areaY, 8, [0xffd34d, 0xffffff]);
         session.addPoints(KID_PTS, k.x, k.y + api.areaY - 40);
         floatUp(scene, k.x, k.y + api.areaY - 70, UI_TEXT.fest.betchaTouch, '#e0812a');
-        k.obj.setText('😄');
+        setIcon(k.obj, 'face-smile:cream');
         scene.tweens.add({ targets: k.obj, y: k.y - 30, alpha: 0, duration: 600, onComplete: () => k.obj.destroy() });
         if (kids.every((x) => x.caught)) {
           rounds++;

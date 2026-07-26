@@ -13,8 +13,9 @@ import { SFX } from '../audio/sfx';
 import { setBgmTrack } from '../audio/bgm';
 import { showTriviaOnce } from '../ui/trivia';
 import { COLORS, DEPTH, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
-import { makeGuideRow, Modal } from '../ui/widgets';
+import { makeGuideRow, makeIconRow, Modal } from '../ui/widgets';
 import { confetti, firework, screenFlash } from '../ui/effects';
+import { iconTexture } from '../ui/icons';
 import { renderFestival, type StallItem } from './minigames/festivalGame';
 import { renderDaruma } from './minigames/darumaGame';
 import { renderHanabi } from './minigames/hanabiGame';
@@ -64,6 +65,8 @@ import { renderRokugatsudo } from './minigames/rokugatsudoGame';
 import { renderTsunahiki } from './minigames/tsunahikiGame';
 import type { MinigameApi } from './minigames/types';
 
+/** おまつりが おわった ときの かざり(はなび—ちょうちん—はなび) */
+const FINALE_ROW = ['sparkle:amber', 'lantern:crimson', 'sparkle:amber'] as const;
 const TOP_H = 48;
 const GAME_AREA_Y = TOP_H + 4;
 
@@ -331,7 +334,8 @@ export class FestivalScene extends Phaser.Scene {
     }
     for (let i = 0; i < 8; i++) {
       const l = this.add
-        .text(40 + Math.random() * (GAME_W - 80), GAME_H + 30, '🏮', { fontSize: '30px' })
+        .image(40 + Math.random() * (GAME_W - 80), GAME_H + 30, iconTexture(this, 'lantern:crimson'))
+        .setDisplaySize(32, 32)
         .setDepth(DEPTH.overlay);
       this.tweens.add({
         targets: l,
@@ -347,7 +351,7 @@ export class FestivalScene extends Phaser.Scene {
       const pref = findPref(GAME_DATA, this.prefId);
       const best = store.state.festBest[r.id] ?? this.gameScore;
       const modal = new Modal(this, UI_TEXT.fest.doneTitle);
-      modal.add(this.add.text(0, 0, '🏮🎆🏮', { fontSize: '44px' }).setOrigin(0.5), 52);
+      modal.add(makeIconRow(this, FINALE_ROW, 44, 56), 52);
       modal.addText(UI_TEXT.fest.doneBody(r.name), 18);
       modal.addText(UI_TEXT.session.scoreLine(this.gameScore), 17, TEXT_COLORS.accent);
       modal.addText(

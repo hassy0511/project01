@@ -6,6 +6,7 @@
    ・火が MAX で「おむかえ」= おうぎみこしが すすんで 大とくてん
    動作=じょうげの ふり+わりこみタップ。まもりながら そだてる てざわり */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -28,7 +29,7 @@ const SPARK_EVERY_MS = 2600;
 const SPARK_PTS = 12;
 
 interface Spark {
-  obj: Phaser.GameObjects.Text;
+  obj: Phaser.GameObjects.Image;
   vx: number;
   vy: number;
   dead: boolean;
@@ -71,7 +72,7 @@ export function renderOugi(api: MinigameApi, prompt: string): void {
   mg.fillStyle(0xffd34d, 1);
   for (let i = 0; i < 3; i++) mg.fillCircle(0, -40 + i * 40, 13); // おうぎの かがみ
   mikoshi.add(mg);
-  mikoshi.add(scene.add.text(0, -80, '🪭', { fontSize: '26px' }).setOrigin(0.5));
+  mikoshi.add(addIcon(scene, 0, -80, 'fan:crimson', 26));
   area.add(mikoshi);
   let greeted = 0;
 
@@ -81,10 +82,10 @@ export function renderOugi(api: MinigameApi, prompt: string): void {
   tg.fillStyle(0x6b4a2a, 1);
   tg.fillRoundedRect(-9, 0, 18, 130, 6); // え
   torch.add(tg);
-  const flameObj = scene.add.text(0, -22, '🔥', { fontSize: '40px' }).setOrigin(0.5);
+  const flameObj = addIcon(scene, 0, -22, 'fire:orange', 40);
   torch.add(flameObj);
   area.add(torch);
-  const holder = scene.add.text(TORCH_X, TORCH_Y + 150, '🧑‍🚒', { fontSize: '34px' }).setOrigin(0.5);
+  const holder = addIcon(scene, TORCH_X, TORCH_Y + 150, 'person-worker:red', 34);
   area.add(holder);
 
   // 火の おおきさ ゲージ
@@ -115,7 +116,7 @@ export function renderOugi(api: MinigameApi, prompt: string): void {
     loop: true,
     callback: () => {
       if (session.isEnded()) return;
-      const obj = scene.add.text(TORCH_X, TORCH_Y - 40, '✨', { fontSize: '24px' }).setOrigin(0.5);
+      const obj = addIcon(scene, TORCH_X, TORCH_Y - 40, 'sparkle:gold', 24);
       area.add(obj);
       sparks.push({ obj, vx: -60 - Math.random() * 40, vy: -20 - Math.random() * 30, dead: false });
     },

@@ -6,6 +6,7 @@
    まちがえた うごきでも たおれない(コンボが きれるだけ)。
    動作=2しゅるいの うごきの うちわけ。1つの ボタンを たたく リズムゲームとは ちがう */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, cameraPulse, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -30,7 +31,7 @@ const SWIPE_MIN = 36;
 type Kind = 'hand' | 'foot';
 
 interface Note {
-  obj: Phaser.GameObjects.Text;
+  obj: Phaser.GameObjects.Image;
   x: number;
   kind: Kind;
   done: boolean;
@@ -51,13 +52,13 @@ export function renderAwaodori(api: MinigameApi, prompt: string): void {
   area.add(bg);
 
   // おどりて(れんぞくで はねる)
-  const dancers: Phaser.GameObjects.Text[] = [];
-  for (const [dx, e] of [[-150, '👘'], [-60, '🧑'], [60, '👘'], [150, '🧑']] as const) {
-    const t = scene.add.text(GAME_W / 2 + dx, 470, e, { fontSize: '34px' }).setOrigin(0.5);
+  const dancers: Phaser.GameObjects.Image[] = [];
+  for (const [dx, e] of [[-150, 'person-kimono:crimson'], [-60, 'person:teal'], [60, 'person-kimono:violet'], [150, 'person:navy']] as const) {
+    const t = addIcon(scene, GAME_W / 2 + dx, 470, e, 34);
     area.add(t);
     dancers.push(t);
   }
-  const kane = scene.add.text(GAME_W / 2, 570, '🪘', { fontSize: '30px' }).setOrigin(0.5);
+  const kane = addIcon(scene, GAME_W / 2, 570, 'drum:brown', 30);
   area.add(kane);
 
   // はんていバー
@@ -95,9 +96,7 @@ export function renderAwaodori(api: MinigameApi, prompt: string): void {
   const spawn = (): void => {
     if (session.isEnded()) return;
     const kind: Kind = Math.random() < 0.55 ? 'hand' : 'foot';
-    const obj = scene.add
-      .text(GAME_W - 30, BAR_Y, kind === 'hand' ? '👏' : '🦶', { fontSize: '30px' })
-      .setOrigin(0.5);
+    const obj = addIcon(scene, GAME_W - 30, BAR_Y, kind === 'hand' ? 'hand-clap:tan' : 'foot:tan', 30);
     area.add(obj);
     notes.push({ obj, x: GAME_W - 30, kind, done: false });
   };

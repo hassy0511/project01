@@ -6,6 +6,7 @@
    ちからが 0の まま はしると すすまない(たおれない=成功保証)。
    動作=れんだ + こうたいの さいはい(リレーかんり)。fukuotoko(ひとりで はしる)とは べつ */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -59,8 +60,8 @@ export function renderYamakasa(api: MinigameApi, prompt: string): void {
   yg.fillStyle(0xe8d9a8, 1);
   yg.fillRect(-70, 0, 140, 44);
   yama.add(yg);
-  yama.add(scene.add.text(0, -62, '⛩️', { fontSize: '34px' }).setOrigin(0.5));
-  yama.add(scene.add.text(0, 22, '🎎', { fontSize: '26px' }).setOrigin(0.5));
+  yama.add(addIcon(scene, 0, -62, 'shrine:red', 34));
+  yama.add(addIcon(scene, 0, 22, 'person-kimono:violet', 26));
   area.add(yama);
 
   /* ---------- かつぎ手 ---------- */
@@ -71,7 +72,7 @@ export function renderYamakasa(api: MinigameApi, prompt: string): void {
   const POS = [90, 190, 290, 390];
   for (let i = 0; i < RUNNERS; i++) {
     const c = scene.add.container(POS[i], 500);
-    c.add(scene.add.text(0, 0, '🧑', { fontSize: '34px' }).setOrigin(0.5));
+    c.add(addIcon(scene, 0, 0, 'person:teal', 34));
     c.setSize(96, 120);
     c.setInteractive({ useHandCursor: true });
     c.on('pointerdown', () => swap(i));
@@ -81,7 +82,7 @@ export function renderYamakasa(api: MinigameApi, prompt: string): void {
     area.add(g);
     gauges.push(g);
   }
-  const activeMark = scene.add.text(POS[0], 440, '⬇️', { fontSize: '24px' }).setOrigin(0.5);
+  const activeMark = addIcon(scene, POS[0], 440, 'arrow-down:navy', 24);
   area.add(activeMark);
 
   const drawGauges = (): void => {

@@ -6,6 +6,7 @@
    きえても ひだねが すぐ わたされるだけ(成功保証)。
    全部つくと「まちが あかるい!」でボーナス+ならびが 増える(C要素) */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -31,7 +32,7 @@ interface Torch {
   y: number;
   lit: boolean;
   g: Phaser.GameObjects.Graphics;
-  fire: Phaser.GameObjects.Text;
+  fire: Phaser.GameObjects.Image;
 }
 
 export function renderHimatsuri(api: MinigameApi, prompt: string): void {
@@ -74,7 +75,7 @@ export function renderHimatsuri(api: MinigameApi, prompt: string): void {
         g.fillStyle(0x4a3520, 1);
         g.fillRect(x - 4, row.y + 30, 8, 26);
         area.add(g);
-        const fire = scene.add.text(x, row.y - 22, '🔥', { fontSize: '26px' }).setOrigin(0.5).setAlpha(0);
+        const fire = addIcon(scene, x, row.y - 22, 'fire:orange', 26).setAlpha(0);
         area.add(fire);
         torches.push({ x, y: row.y, lit: false, g, fire });
       }
@@ -86,7 +87,7 @@ export function renderHimatsuri(api: MinigameApi, prompt: string): void {
   const seed = scene.add.container(GAME_W / 2, 600);
   const sg = scene.add.graphics();
   seed.add(sg);
-  const seedFire = scene.add.text(0, 0, '🔥', { fontSize: '30px' }).setOrigin(0.5);
+  const seedFire = addIcon(scene, 0, 0, 'fire:orange', 30);
   seed.add(seedFire);
   area.add(seed);
 

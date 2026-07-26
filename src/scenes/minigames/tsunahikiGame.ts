@@ -7,6 +7,7 @@
    まけても また はじまる(たいせつなのは なんかい かてるか)。
    動作=れんだ + ながおしの きりかえ。ほかの おまつりに ない てざわり */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -39,8 +40,8 @@ export function renderTsunahiki(api: MinigameApi, prompt: string): void {
   bg.fillEllipse(60, 200, 120, 70);
   bg.fillEllipse(GAME_W - 50, 190, 130, 80);
   area.add(bg);
-  area.add(scene.add.text(40, 150, '🌺', { fontSize: '26px' }).setOrigin(0.5));
-  area.add(scene.add.text(GAME_W - 40, 160, '🌴', { fontSize: '28px' }).setOrigin(0.5));
+  area.add(addIcon(scene, 40, 150, 'hibiscus:pink', 26));
+  area.add(addIcon(scene, GAME_W - 40, 160, 'tree:green', 28));
 
   api.sign(prompt);
   const session = new ArcadeSession(api, {
@@ -55,16 +56,16 @@ export function renderTsunahiki(api: MinigameApi, prompt: string): void {
   /* ---------- つな ---------- */
   const rope = scene.add.graphics();
   area.add(rope);
-  const fusa = scene.add.text(GAME_W / 2, CY, '🎀', { fontSize: '34px' }).setOrigin(0.5);
+  const fusa = addIcon(scene, GAME_W / 2, CY, 'flag:pink', 34);
   area.add(fusa);
   // ひきて(ひだり=あいて / みぎ=こちら)
-  const foes: Phaser.GameObjects.Text[] = [];
-  const ours: Phaser.GameObjects.Text[] = [];
+  const foes: Phaser.GameObjects.Image[] = [];
+  const ours: Phaser.GameObjects.Image[] = [];
   for (let i = 0; i < 4; i++) {
-    const f = scene.add.text(30 + i * 34, CY + 60, '🧑', { fontSize: '24px' }).setOrigin(0.5).setAlpha(0.85);
+    const f = addIcon(scene, 30 + i * 34, CY + 60, 'person:teal', 24).setAlpha(0.85);
     area.add(f);
     foes.push(f);
-    const o = scene.add.text(GAME_W - 30 - i * 34, CY + 60, '🧒', { fontSize: '26px' }).setOrigin(0.5);
+    const o = addIcon(scene, GAME_W - 30 - i * 34, CY + 60, 'person-child:amber', 26);
     area.add(o);
     ours.push(o);
   }

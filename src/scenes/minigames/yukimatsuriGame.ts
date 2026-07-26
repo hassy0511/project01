@@ -4,6 +4,7 @@
    ぜんぶ けずると 雪像かんせい! 3体ごとに「おおきな ゆきぞう」= 2倍 が C 要素。
    実在のさっぽろ雪まつりの「雪像を つくる」をそのまま動詞化。動作=見て けずる精密タップ */
 import Phaser from 'phaser';
+import { addIcon, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -23,10 +24,10 @@ const MISS_STUN_MS = 500;
 const BIG_EVERY = 3;
 
 /** 型: X=ぞうの部分(のこす) . =けずる */
-const PATTERNS: { emoji: string; rows: string[] }[] = [
-  { emoji: '⛄', rows: ['.XXX.', '.XXX.', '..X..', 'XXXXX', 'XXXXX'] },
-  { emoji: '🐟', rows: ['..XX.', '.XXXX', 'XXXXX', '.XXXX', '..XX.'] },
-  { emoji: '⭐', rows: ['..X..', '.XXX.', 'XXXXX', '.XXX.', '.X.X.'] },
+const PATTERNS: { icon: string; rows: string[] }[] = [
+  { icon: 'snowman:white', rows: ['.XXX.', '.XXX.', '..X..', 'XXXXX', 'XXXXX'] },
+  { icon: 'fish:sky', rows: ['..XX.', '.XXXX', 'XXXXX', '.XXXX', '..XX.'] },
+  { icon: 'star:gold', rows: ['..X..', '.XXX.', 'XXXXX', '.XXX.', '.X.X.'] },
 ];
 
 interface Cell {
@@ -62,7 +63,7 @@ export function renderYukimatsuri(api: MinigameApi, prompt: string): void {
   });
 
   // おてほん表示
-  const sample = scene.add.text(GAME_W - 60, 130, '', { fontSize: '40px' }).setOrigin(0.5);
+  const sample = addIcon(scene, GAME_W - 60, 130, PATTERNS[0].icon, 40);
   area.add(sample);
   const sampleLabel = scene.add
     .text(GAME_W - 60, 96, 'おてほん', { fontSize: '13px', color: '#9ad0f5' })
@@ -98,7 +99,7 @@ export function renderYukimatsuri(api: MinigameApi, prompt: string): void {
     building = false;
     const pat = PATTERNS[statueNo % PATTERNS.length];
     big = (statueNo + 1) % BIG_EVERY === 0;
-    sample.setText(pat.emoji);
+    setIcon(sample, pat.icon);
     carveLeft = 0;
     cells = [];
     for (let r = 0; r < GRID; r++) {

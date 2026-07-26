@@ -5,11 +5,13 @@
    ときどき「わっしょいタイム」= 得点2倍+紙吹雪が C 要素。
    実在の神田祭の神輿渡御(とぎょ)をそのまま動詞化 */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, confetti, floatUp, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
+import { CROWD } from './crowd';
 import type { MinigameApi } from './types';
 
 const AREA_H = 660;
@@ -53,9 +55,7 @@ export function renderMikoshi(api: MinigameApi, prompt: string): void {
   // 沿道の見物人(ゆれる)
   for (let i = 0; i < 10; i++) {
     const side = i % 2 === 0 ? 30 + (i / 2) * 22 : GAME_W - 30 - ((i - 1) / 2) * 22;
-    const p = scene.add.text(side, STREET_Y - 12 + (i % 3) * 8, ['🧑', '👧', '👦', '👩', '👴'][i % 5], {
-      fontSize: '22px',
-    }).setOrigin(0.5);
+    const p = addIcon(scene, side, STREET_Y - 12 + (i % 3) * 8, CROWD[i % CROWD.length], 22);
     area.add(p);
     scene.tweens.add({ targets: p, y: p.y - 5, duration: 400 + (i % 4) * 90, yoyo: true, repeat: -1 });
   }
@@ -86,10 +86,10 @@ export function renderMikoshi(api: MinigameApi, prompt: string): void {
   mg.fillStyle(0x3d3129, 1);
   mg.fillTriangle(-72, -32, 0, -74, 72, -32);
   mikoshi.add(mg);
-  mikoshi.add(scene.add.text(0, -88, '🐦', { fontSize: '24px' }).setOrigin(0.5));
+  mikoshi.add(addIcon(scene, 0, -88, 'bird:teal', 24));
   // 担ぎ手
-  for (const [dx, e] of [[-118, '🧑'], [-62, '👦'], [62, '👧'], [118, '🧑']] as const) {
-    mikoshi.add(scene.add.text(dx, 68, e, { fontSize: '28px' }).setOrigin(0.5));
+  for (const [dx, e] of [[-118, 'person:teal'], [-62, 'person-child:sky'], [62, 'person-child:pink'], [118, 'person:navy']] as const) {
+    mikoshi.add(addIcon(scene, dx, 68, e, 28));
   }
   area.add(mikoshi);
   // かつぎの上下ゆれ(まっすぐ担げている感)

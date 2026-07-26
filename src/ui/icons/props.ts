@@ -854,6 +854,86 @@ export const PROP_ICONS: Record<string, IconDraw> = {
     }
   },
 
+  /** かね(いしどり・しゃんしゃん傘の すず) */
+  bell: (g, c) => {
+    // つりて
+    line(g, c[1], 3);
+    g.beginPath();
+    g.arc(32, 13, 6, Math.PI, Math.PI * 2, false);
+    g.strokePath();
+    // かさの かたち
+    fill(g, c[0]);
+    g.beginPath();
+    g.moveTo(12, 46);
+    g.lineTo(15, 32);
+    g.arc(32, 32, 17, Math.PI, Math.PI * 2, false);
+    g.lineTo(52, 46);
+    g.closePath();
+    g.fillPath();
+    line(g, c[1]);
+    g.strokePath();
+    box(g, 9, 44, 46, 8, 4, c);
+    fill(g, c[1]);
+    g.fillCircle(32, 57, 5);
+    shine(g, 24, 32, 4, 7);
+  },
+
+  /** ほらがい(みなとの あいずの つのぶえ) */
+  horn: (g, c) => {
+    fill(g, c[0]);
+    g.beginPath();
+    g.moveTo(10, 44);
+    g.lineTo(30, 40);
+    g.lineTo(48, 20);
+    g.lineTo(56, 30);
+    g.lineTo(36, 50);
+    g.lineTo(14, 54);
+    g.closePath();
+    g.fillPath();
+    line(g, c[1]);
+    g.strokePath();
+    // すいくち
+    box(g, 4, 40, 10, 16, 4, [PAPER, PAPER_D]);
+    shine(g, 40, 30, 5, 3);
+  },
+
+  /** しゃみせん(かぶきの おはやし) */
+  shamisen: (g, c) => {
+    rod(g, 44, 12, 24, 40, [WOOD, WOOD_D], 5);
+    box(g, 10, 34, 28, 24, 5, c);
+    line(g, c[1], 2);
+    for (let i = 0; i < 3; i++) {
+      g.beginPath();
+      g.moveTo(43 - i * 2.2, 14 + i * 1.4);
+      g.lineTo(15 + i * 2.4, 52 - i * 1.6);
+      g.strokePath();
+    }
+    fill(g, WOOD_D);
+    g.fillCircle(46, 11, 4);
+  },
+
+  /** ふさ(つなひきの つなの まんなかの かざり) */
+  tassel: (g, c) => {
+    box(g, 26, 8, 12, 12, 4, [WOOD, WOOD_D]);
+    fill(g, c[0]);
+    g.beginPath();
+    g.moveTo(18, 20);
+    g.lineTo(46, 20);
+    g.lineTo(40, 54);
+    g.lineTo(24, 54);
+    g.closePath();
+    g.fillPath();
+    line(g, c[1]);
+    g.strokePath();
+    line(g, c[1], 1.8);
+    for (const x of [26, 32, 38] as const) {
+      g.beginPath();
+      g.moveTo(x, 22);
+      g.lineTo(x, 52);
+      g.strokePath();
+    }
+  },
+
   /** かにかご(あみを はった しかけかご) */
   cage: (g, c) => {
     dome(g, 32, 50, 27, c);

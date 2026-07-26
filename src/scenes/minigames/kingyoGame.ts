@@ -5,6 +5,7 @@
    動作=きめられた みちを はみ出さず なぞる(せいみつ トレース)。
    himatsuri(点から点へ ドラッグ)や owara(止めてキープ)とは ちがう てざわり */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -34,7 +35,7 @@ export function renderKingyo(api: MinigameApi, prompt: string): void {
   bar.lineStyle(6, 0x8a6a4a, 1);
   bar.lineBetween(0, 130, GAME_W, 130);
   area.add(bar);
-  const done: Phaser.GameObjects.Text[] = [];
+  const done: Phaser.GameObjects.Image[] = [];
 
   api.sign(prompt);
   const session = new ArcadeSession(api, {
@@ -51,7 +52,7 @@ export function renderKingyo(api: MinigameApi, prompt: string): void {
   area.add(guide);
   const ink = scene.add.graphics();
   area.add(ink);
-  const fish = scene.add.text(CX, CY, '🐟', { fontSize: '54px' }).setOrigin(0.5).setAlpha(0.18);
+  const fish = addIcon(scene, CX, CY, 'fish:sky', 54).setAlpha(0.18);
   area.add(fish);
 
   /** きんぎょの かたちの みち(からだの まわり+しっぽ) */
@@ -130,7 +131,7 @@ export function renderKingyo(api: MinigameApi, prompt: string): void {
     session.addPoints(DONE_BONUS, CX, CY + api.areaY - 120, false);
     floatUp(scene, CX, CY + api.areaY - 150, UI_TEXT.fest.kingyoDone, '#e0812a');
     // できた ちょうちんを バーに つるす
-    const t = scene.add.text(40 + ((made - 1) % 6) * 78, 160, '🐟', { fontSize: '34px' }).setOrigin(0.5);
+    const t = addIcon(scene, 40 + ((made - 1) % 6) * 78, 160, 'fish:sky', 34);
     t.setTint(0xe05b5b);
     area.add(t);
     done.push(t);

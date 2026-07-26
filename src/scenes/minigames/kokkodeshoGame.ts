@@ -6,6 +6,7 @@
    しっぱいしても だれも けがを しない(コンボが きれるだけ)。
    動作=2だんの タイミング(なげる/うける)。1だんの タップゲームとは べつの てざわり */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, cameraPulse, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -61,12 +62,12 @@ export function renderKokkodesho(api: MinigameApi, prompt: string): void {
   dg.fillStyle(0xc9a23f, 1);
   dg.fillRect(-88, -42, 176, 12);
   dai.add(dg);
-  dai.add(scene.add.text(0, 0, '🥁', { fontSize: '30px' }).setOrigin(0.5));
-  for (const dx of [-46, -16, 16, 46]) dai.add(scene.add.text(dx, -60, '🧒', { fontSize: '18px' }).setOrigin(0.5));
+  dai.add(addIcon(scene, 0, 0, 'drum:crimson', 30));
+  for (const dx of [-46, -16, 16, 46]) dai.add(addIcon(scene, dx, -60, 'person-child:amber', 18));
   area.add(dai);
-  const holders: Phaser.GameObjects.Text[] = [];
+  const holders: Phaser.GameObjects.Image[] = [];
   for (const dx of [-60, -20, 20, 60]) {
-    const t = scene.add.text(CX + dx, HOLD_Y + 60, '🧑', { fontSize: '26px' }).setOrigin(0.5);
+    const t = addIcon(scene, CX + dx, HOLD_Y + 60, 'person:teal', 26);
     area.add(t);
     holders.push(t);
   }

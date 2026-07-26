@@ -325,6 +325,37 @@ export const NATURE_ICONS: Record<string, IconDraw> = {
     tree(50, 58, 16);
   },
 
+  /** やしのき(おきなわ・あたたかい みなみの しま) */
+  palm: (g, c) => {
+    // みき(すこし そった ぼう)
+    line(g, 0x63492f, 8);
+    g.beginPath();
+    g.moveTo(30, 58);
+    g.lineTo(34, 40);
+    g.lineTo(31, 26);
+    g.strokePath();
+    line(g, 0x8a6a4a, 5);
+    g.beginPath();
+    g.moveTo(30, 58);
+    g.lineTo(34, 40);
+    g.lineTo(31, 26);
+    g.strokePath();
+    // はっぱ(6まい ほうしゃじょう)
+    for (let i = 0; i < 6; i++) {
+      const a = Math.PI + (i / 5) * Math.PI;
+      const ex = 31 + Math.cos(a) * 25;
+      const ey = 26 + Math.sin(a) * 17;
+      poly(g, [
+        [31, 26],
+        [(31 + ex) / 2, (26 + ey) / 2 - 7],
+        [ex, ey],
+        [(31 + ex) / 2, (26 + ey) / 2 + 5],
+      ], c, 1.8);
+    }
+    fill(g, 0x9a6b42);
+    g.fillCircle(35, 29, 4);
+  },
+
   /** さくら(はなみ・はる) */
   sakura: (g, c) => {
     for (let i = 0; i < 5; i++) {

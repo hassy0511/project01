@@ -6,6 +6,7 @@
    ぼうかたい(もえて ほしくない き)に 火を つれていくと 火が とまる(コンボが きれるだけ)。
    動作=なぞって みちびく。sweep(こする)とは ちがい、火の「せんとう」を つないでいく */
 import Phaser from 'phaser';
+import { addIcon, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -25,10 +26,12 @@ const GRASS_PTS = 9;
 const ROW_BONUS = 24;
 const ALL_BONUS = 55;
 /** き(ぼうかたい)の わりあい */
+/** やけあとの 大きさ(くさより ひとまわり 小さく のこる) */
+const BURNT_SIZE = 22;
 const TREE_CHANCE = 0.14;
 
 interface Cell {
-  obj: Phaser.GameObjects.Text;
+  obj: Phaser.GameObjects.Image;
   burnt: boolean;
   tree: boolean;
   col: number;
@@ -53,9 +56,9 @@ export function renderYamayaki(api: MinigameApi, prompt: string): void {
   bg.fillEllipse(GAME_W / 2, 660, 520, 460);
   area.add(bg);
   // ごじゅうのとう(なら)
-  const tou = scene.add.text(46, 250, '🏯', { fontSize: '34px' }).setOrigin(0.5);
+  const tou = addIcon(scene, 46, 250, 'castle:cream', 34);
   area.add(tou);
-  const deer = scene.add.text(GAME_W - 44, 600, '🦌', { fontSize: '30px' }).setOrigin(0.5);
+  const deer = addIcon(scene, GAME_W - 44, 600, 'deer:brown', 30);
   area.add(deer);
   scene.tweens.add({ targets: deer, x: GAME_W - 60, duration: 2400, yoyo: true, repeat: -1 });
 
@@ -77,9 +80,7 @@ export function renderYamayaki(api: MinigameApi, prompt: string): void {
     for (let row = 0; row < ROWS; row++) {
       for (let col = 0; col < COLS; col++) {
         const tree = Math.random() < TREE_CHANCE;
-        const obj = scene.add
-          .text(GRID_X + col * CELL_W, GRID_Y + row * CELL_H, tree ? '🌲' : '🌾', { fontSize: tree ? '30px' : '26px' })
-          .setOrigin(0.5);
+        const obj = addIcon(scene, GRID_X + col * CELL_W, GRID_Y + row * CELL_H, tree ? 'tree:deepgreen' : 'grain:amber', tree ? 30 : 26);
         if (!tree) obj.setTint(0xc9b26a); // かれくさ
         area.add(obj);
         cells.push({ obj, burnt: false, tree, col, row });
@@ -93,7 +94,7 @@ export function renderYamayaki(api: MinigameApi, prompt: string): void {
 
   /* ---------- 火の せんとう ---------- */
   let lit = false; // ひつけ が すんだか
-  const torch = scene.add.text(GRID_X - 40, GRID_Y + (ROWS - 1) * CELL_H + 40, '🔥', { fontSize: '34px' }).setOrigin(0.5);
+  const torch = addIcon(scene, GRID_X - 40, GRID_Y + (ROWS - 1) * CELL_H + 40, 'fire:orange', 34);
   area.add(torch);
   scene.tweens.add({ targets: torch, scale: { from: 1, to: 1.15 }, duration: 420, yoyo: true, repeat: -1 });
   const hint = scene.add
@@ -121,13 +122,17 @@ export function renderYamayaki(api: MinigameApi, prompt: string): void {
     impactRing(scene, c.obj.x, c.obj.y + api.areaY, 0xff8a3d, 8);
     burst(scene, c.obj.x, c.obj.y + api.areaY, 5, [0xff8a3d, 0xffd34d]);
     session.addPoints(GRASS_PTS, c.obj.x, c.obj.y + api.areaY - 26);
-    c.obj.setText('🔥').setTint(0xffffff);
+    setIcon(c.obj, 'fire:orange');
+    c.obj.setTint(0xffffff);
     scene.tweens.add({
       targets: c.obj,
       alpha: 0.35,
       scale: 0.8,
       duration: 700,
-      onComplete: () => c.obj.setText('⬛').setTint(0x4a3a2a).setAlpha(0.8).setScale(1),
+      onComplete: () => {
+        setIcon(c.obj, 'stone:dark', BURNT_SIZE);
+        c.obj.setTint(0x4a3a2a).setAlpha(0.8);
+      },
     });
     // よこ1れつ もえたら ボーナス
     const row = cells.filter((x) => x.row === c.row && !x.tree);

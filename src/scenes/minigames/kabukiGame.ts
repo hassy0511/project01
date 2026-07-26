@@ -5,6 +5,7 @@
    ときどき「ぐんじょう(見せ場)」= 3れんぞくの キメ。ぜんぶ そろえると 大ボーナス。
    動作=「まちの タイミングタップ」。太鼓リズム(ishidori)や 回転(gion)とは べつの てざわり */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -31,7 +32,7 @@ const SPEED_START = 130;
 const SPEED_END = 210;
 
 interface Cue {
-  obj: Phaser.GameObjects.Text;
+  obj: Phaser.GameObjects.Image;
   x: number;
   done: boolean;
   show: boolean;
@@ -61,12 +62,12 @@ export function renderKabuki(api: MinigameApi, prompt: string): void {
   bg.fillCircle(GAME_W - 90, STAGE_Y + 140, 20);
   area.add(bg);
 
-  const actor = scene.add.text(GAME_W / 2, STAGE_Y + 50, '🧑‍🎤', { fontSize: '58px' }).setOrigin(0.5);
+  const actor = addIcon(scene, GAME_W / 2, STAGE_Y + 50, 'person-kimono:crimson', 58);
   area.add(actor);
-  const fan = scene.add.text(GAME_W / 2 + 46, STAGE_Y + 40, '🪭', { fontSize: '30px' }).setOrigin(0.5).setAlpha(0);
+  const fan = addIcon(scene, GAME_W / 2 + 46, STAGE_Y + 40, 'fan:crimson', 30).setAlpha(0);
   area.add(fan);
-  for (const [dx, e] of [[-140, '🥁'], [140, '🎻']] as const) {
-    area.add(scene.add.text(GAME_W / 2 + dx, STAGE_Y + 96, e, { fontSize: '26px' }).setOrigin(0.5));
+  for (const [dx, e] of [[-140, 'drum:crimson'], [140, 'shamisen:tan']] as const) {
+    area.add(addIcon(scene, GAME_W / 2 + dx, STAGE_Y + 96, e, 26));
   }
 
   // せりふバーと キメの わく
@@ -114,7 +115,7 @@ export function renderKabuki(api: MinigameApi, prompt: string): void {
     }
     const show = showLeft > 0;
     if (show) showLeft--;
-    const obj = scene.add.text(BAR_X0, BAR_Y, show ? '🌟' : '🎭', { fontSize: show ? '30px' : '26px' }).setOrigin(0.5);
+    const obj = addIcon(scene, BAR_X0, BAR_Y, show ? 'sparkle:gold' : 'mask:violet', show ? 30 : 26);
     if (show) obj.setTint(0xffd34d);
     area.add(obj);
     cues.push({ obj, x: BAR_X0, done: false, show });

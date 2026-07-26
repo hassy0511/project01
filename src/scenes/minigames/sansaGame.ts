@@ -4,6 +4,7 @@
    はずしても コンボが切れるだけ(成功保証)。「パレードタイム」= 2倍 が C 要素。
    rhythm(1レーン横ながれ)との違い = 左右の手の つかいわけ */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -70,7 +71,7 @@ export function renderSansa(api: MinigameApi, prompt: string): void {
     drums.push(d);
   }
   // おどりて
-  const dancer = scene.add.text(GAME_W / 2, 600, '👘', { fontSize: '36px' }).setOrigin(0.5);
+  const dancer = addIcon(scene, GAME_W / 2, 600, 'person-kimono:crimson', 36);
   area.add(dancer);
   scene.tweens.add({ targets: dancer, y: 594, duration: 500, yoyo: true, repeat: -1 });
 

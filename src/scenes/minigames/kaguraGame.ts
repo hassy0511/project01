@@ -4,6 +4,7 @@
    8つ ぜんぶ たいじすると 大ボーナス → つぎの おろちが でてくる。
    動作=むきの ある スワイプ(方向はんだん)。ほかの おまつりに ない てざわり */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -22,11 +23,11 @@ const SHOW_MS_START = 2100;
 const SHOW_MS_END = 1150;
 
 type Dir = 'up' | 'down' | 'left' | 'right';
-const ARROW: Record<Dir, string> = { up: '⬆️', down: '⬇️', left: '⬅️', right: '➡️' };
+const ARROW: Record<Dir, string> = { up: 'arrow-up:navy', down: 'arrow-down:navy', left: 'arrow-left:navy', right: 'arrow-right:navy' };
 
 interface Head {
-  obj: Phaser.GameObjects.Text;
-  arrow: Phaser.GameObjects.Text;
+  obj: Phaser.GameObjects.Image;
+  arrow: Phaser.GameObjects.Image;
   dir: Dir;
   x: number;
   y: number;
@@ -49,7 +50,7 @@ export function renderKagura(api: MinigameApi, prompt: string): void {
   for (let i = 0; i < 10; i++) bg.fillRect(i * 50, 560, 40, 6);
   area.add(bg);
   // かぐらの まいて(すさのお)
-  const hero = scene.add.text(GAME_W / 2, 600, '🗡️', { fontSize: '40px' }).setOrigin(0.5);
+  const hero = addIcon(scene, GAME_W / 2, 600, 'knife:silver', 40);
   area.add(hero);
 
   api.sign(prompt);
@@ -77,8 +78,8 @@ export function renderKagura(api: MinigameApi, prompt: string): void {
       const y = 220 + row * 150;
       const dirs: Dir[] = ['up', 'down', 'left', 'right'];
       const dir = dirs[Math.floor(Math.random() * 4)];
-      const obj = scene.add.text(x, y, '🐉', { fontSize: '44px' }).setOrigin(0.5).setAlpha(0.25);
-      const arrow = scene.add.text(x, y - 52, ARROW[dir], { fontSize: '26px' }).setOrigin(0.5).setVisible(false);
+      const obj = addIcon(scene, x, y, 'dragon:green', 44).setAlpha(0.25);
+      const arrow = addIcon(scene, x, y - 52, ARROW[dir], 26).setVisible(false);
       area.add(obj);
       area.add(arrow);
       heads.push({ obj, arrow, dir, x, y, alive: true, active: false });

@@ -4,11 +4,13 @@
    配点アップ(C要素=リスクとリワードの はしご)。よろけたら レベル1に もどるだけ(成功保証)。
    mikoshi(左右押し)との違い = 指で「したを うごかして うえを ささえる」倒立バランス */
 import Phaser from 'phaser';
+import { addIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, confetti, floatUp, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
+import { CROWD } from './crowd';
 import type { MinigameApi } from './types';
 
 const AREA_H = 660;
@@ -41,7 +43,7 @@ export function renderKantou(api: MinigameApi, prompt: string): void {
   bg.fillRect(0, HAND_Y, GAME_W, AREA_H - HAND_Y);
   area.add(bg);
   for (let i = 0; i < 8; i++) {
-    const p = scene.add.text(20 + i * 62, HAND_Y - 8, ['🧑', '👧', '👦', '👩'][i % 4], { fontSize: '20px' }).setOrigin(0.5);
+    const p = addIcon(scene, 20 + i * 62, HAND_Y - 8, CROWD[i % CROWD.length], 20);
     area.add(p);
     scene.tweens.add({ targets: p, y: p.y - 4, duration: 420 + (i % 3) * 90, yoyo: true, repeat: -1 });
   }
@@ -72,7 +74,7 @@ export function renderKantou(api: MinigameApi, prompt: string): void {
       g.lineBetween(-70, y, 70, y);
       pole.add(g);
       for (let i = -2; i <= 2; i++) {
-        const lan = scene.add.text(i * 34, y + 18, '🏮', { fontSize: '20px' }).setOrigin(0.5);
+        const lan = addIcon(scene, i * 34, y + 18, 'lantern:crimson', 20);
         pole.add(lan);
       }
     }
@@ -81,7 +83,7 @@ export function renderKantou(api: MinigameApi, prompt: string): void {
   buildPole();
 
   // ささえる て(ドラッグで動く)
-  const hand = scene.add.text(GAME_W / 2, HAND_Y + 26, '🖐️', { fontSize: '40px' }).setOrigin(0.5);
+  const hand = addIcon(scene, GAME_W / 2, HAND_Y + 26, 'hand:tan', 40);
   area.add(hand);
 
   /* ---------- 状態 ---------- */
