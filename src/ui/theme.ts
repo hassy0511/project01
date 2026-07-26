@@ -49,6 +49,8 @@ export const TEXT_COLORS = {
 /** 重なり順(depth) */
 export const DEPTH = {
   content: 0,
+  /** あそびかたの ゆびマーク。ゲームの 絵より 上、ヘッダーより 下 */
+  howto: 700,
   header: 800,
   nav: 850,
   modal: 900,

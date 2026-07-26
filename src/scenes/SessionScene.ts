@@ -18,6 +18,7 @@ import { showTriviaOnce } from '../ui/trivia';
 import { COLORS, DEPTH, FONT, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { makeStarRow, Modal, showToast } from '../ui/widgets';
 import { confetti, screenFlash } from '../ui/effects';
+import { showHowTo, type HowToHandle } from '../ui/howto';
 import { addIcon } from '../ui/icons';
 import { renderCatch } from './minigames/catchGame';
 import { renderChain } from './minigames/chainGame';
@@ -50,6 +51,8 @@ export class SessionScene extends Phaser.Scene {
   private area?: Phaser.GameObjects.Container;
   /** ヘッダーの「もどる」。けっかの モーダルが 出たら かくす(おしても なにも おきない ボタンを のこさない) */
   private backBtn?: Phaser.GameObjects.Text;
+  /** あそびかたの ゆびマーク(クイズに すすむ ときに 止める) */
+  private howto?: HowToHandle;
 
   constructor() {
     super('SessionScene');
@@ -187,6 +190,12 @@ export class SessionScene extends Phaser.Scene {
     } else {
       renderFish(api, prompt);
     }
+
+    // あそびかたの ゆびマーク(データに ある ゲームだけ)。字が 読めなくても わかるように
+    this.howto?.stop();
+    this.howto = showHowTo(this, engine, GAME_AREA_Y);
+    store.state.playedGame[engine] = true;
+    store.save();
   }
 
   private sign(text: string): void {
@@ -210,6 +219,8 @@ export class SessionScene extends Phaser.Scene {
 
   /* ---------- クイズステップ(スコアボーナス) ---------- */
   private renderQuiz(): void {
+    this.howto?.stop();
+    this.howto = undefined;
     if (this.mode === 'care') {
       this.finish();
       return;

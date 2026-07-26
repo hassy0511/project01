@@ -1289,6 +1289,32 @@ export const ACTOR_ICONS: Record<string, IconDraw> = {
     line(g, c[1]);
     g.strokeRoundedRect(18, 28, 30, 27, 9);
   },
+  /** ゆびさし(あそびかたの 「ここを おす」の しるし)。うえむきの ひとさしゆび */
+  'hand-point': (g, c) => {
+    // ひとさしゆび(まっすぐ うえ)
+    fill(g, SKIN);
+    g.fillRoundedRect(25, 6, 13, 26, 6.5);
+    line(g, c[1], 2.2);
+    g.strokeRoundedRect(25, 6, 13, 26, 6.5);
+    // にぎった てのひら
+    fill(g, SKIN);
+    g.fillRoundedRect(19, 26, 27, 30, 10);
+    line(g, c[1], 2.4);
+    g.strokeRoundedRect(19, 26, 27, 30, 10);
+    // おやゆび
+    fill(g, SKIN);
+    g.fillRoundedRect(13, 33, 12, 15, 6);
+    line(g, c[1], 2.2);
+    g.strokeRoundedRect(13, 33, 12, 15, 6);
+    // まがった ゆびの すじ(にぎって いる ことが わかる)
+    line(g, c[1], 1.6);
+    for (const y of [36, 43, 50]) {
+      g.beginPath();
+      g.moveTo(27, y);
+      g.lineTo(44, y);
+      g.strokePath();
+    }
+  },
   /** ぱちぱち(はくしゅ・おいわい) */
   'hand-clap': (g, c) => {
     line(g, c[0], 3.2);
