@@ -73,11 +73,33 @@ export function defaultState(): SaveState {
   };
 }
 
-/** 旧セーブに無いキーは defaultState で補完(v0.4 と同じシャローマージ方式のマイグレーション) */
+/** 旧セーブに無いキーは defaultState で補完する。
+    ここは「こわれた セーブでも ぜったいに 起動する」ことが しごと ―
+    シャローマージだけだと、保存値の null や 型ちがい(オブジェクトのはずが 配列 など)が
+    そのまま 入って あとで TypeError に なり、白い画面で 何も できなく なる。
+    そこで **キーごとに 型を たしかめて、あわない ものは 既定値に もどす** */
 export function loadState(storage: StorageLike): SaveState {
+  const base = defaultState();
   try {
     const raw = storage.getItem(SAVE_KEY);
-    if (raw) return Object.assign(defaultState(), JSON.parse(raw)) as SaveState;
+    if (!raw) return base;
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return base;
+    const src = parsed as Record<string, unknown>;
+    const out = base as unknown as Record<string, unknown>;
+    for (const key of Object.keys(base)) {
+      const v = src[key];
+      const def = out[key];
+      if (v === null || v === undefined) continue; // 既定値の まま
+      if (Array.isArray(def)) {
+        if (Array.isArray(v)) out[key] = v;
+      } else if (typeof def === 'object') {
+        if (typeof v === 'object' && !Array.isArray(v)) out[key] = v;
+      } else if (typeof v === typeof def) {
+        out[key] = v;
+      }
+    }
+    return base;
   } catch {
     /* 破損時は初期化 */
   }

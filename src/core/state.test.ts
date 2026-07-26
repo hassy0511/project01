@@ -137,3 +137,34 @@ describe('adminUnlockAll(かんりしゃ: ぜんぶ かいほう)', () => {
     expect(new Set(s.recipes).size).toBe(s.recipes.length);
   });
 });
+
+describe('こわれたセーブでも 起動する(白画面の 再発防止)', () => {
+  const mem = (raw: string): StorageLike => ({
+    getItem: () => raw,
+    setItem: () => undefined,
+  });
+
+  it('null が 入っていても 既定値で 補う', () => {
+    const s = loadState(mem(JSON.stringify({ flags: null, plots: null, unlocked: null, currentRegion: null })));
+    expect(s.flags).toEqual({});
+    expect(s.plots).toEqual({});
+    expect(s.unlocked).toEqual([]);
+    expect(s.currentRegion).toBe('kanto');
+  });
+
+  it('型が ちがっても 既定値で 補う(配列のはずが 数値 など)', () => {
+    const s = loadState(mem(JSON.stringify({ unlocked: 3, zukanMat: [], currentRegion: 42 })));
+    expect(s.unlocked).toEqual([]);
+    expect(s.zukanMat).toEqual({});
+    expect(s.currentRegion).toBe('kanto');
+  });
+
+  it('JSON として こわれていても 初期状態に なる', () => {
+    expect(loadState(mem('{こわれた')).currentRegion).toBe('kanto');
+  });
+
+  it('配列や 文字列が 入っていても 初期状態に なる', () => {
+    expect(loadState(mem('[1,2,3]')).unlocked).toEqual([]);
+    expect(loadState(mem('"もじ"')).unlocked).toEqual([]);
+  });
+});
