@@ -6,7 +6,7 @@
    ・火が MAX で「おむかえ」= おうぎみこしが すすんで 大とくてん
    動作=じょうげの ふり+わりこみタップ。まもりながら そだてる てざわり */
 import Phaser from 'phaser';
-import { addIcon } from '../../ui/icons';
+import { addIcon, iconScale } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -105,7 +105,7 @@ export function renderOugi(api: MinigameApi, prompt: string): void {
     gauge.fillStyle(flame > 0.85 ? 0xffd34d : 0xff8a3d, 1);
     gauge.fillRoundedRect(70, 590, Math.max(6, (GAME_W - 140) * flame), 18, 9);
     gaugeText.setText(UI_TEXT.fest.ougiFlame(Math.round(flame * 100), greeted));
-    flameObj.setScale(0.7 + flame * 0.9);
+    flameObj.setScale(iconScale(flameObj, 0.7 + flame * 0.9));
     flameObj.setAlpha(0.6 + flame * 0.4);
   };
   drawGauge();

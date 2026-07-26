@@ -6,7 +6,7 @@
    きえても ひだねが すぐ わたされるだけ(成功保証)。
    全部つくと「まちが あかるい!」でボーナス+ならびが 増える(C要素) */
 import Phaser from 'phaser';
-import { addIcon } from '../../ui/icons';
+import { addIcon, iconScale } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -97,7 +97,7 @@ export function renderHimatsuri(api: MinigameApi, prompt: string): void {
     sg.clear();
     sg.fillStyle(0xffd34d, 0.25 + 0.35 * fuel);
     sg.fillCircle(0, 0, 22 + 16 * fuel);
-    seedFire.setScale(0.6 + 0.6 * fuel);
+    seedFire.setScale(iconScale(seedFire, 0.6 + 0.6 * fuel));
   };
   drawSeed();
 
@@ -121,7 +121,7 @@ export function renderHimatsuri(api: MinigameApi, prompt: string): void {
         if (fuel <= 0) continue;
         t.lit = true;
         t.fire.setAlpha(1);
-        scene.tweens.add({ targets: t.fire, y: t.y - 30, scale: { from: 0.6, to: 1 }, duration: 220 });
+        scene.tweens.add({ targets: t.fire, y: t.y - 30, scale: { from: iconScale(t.fire, 0.6), to: iconScale(t.fire) }, duration: 220 });
         scene.tweens.add({ targets: t.fire, alpha: 0.75, duration: 420, yoyo: true, repeat: -1 });
         SFX.pop();
         impactRing(scene, t.x, t.y + api.areaY - 20, 0xffd34d, 10);

@@ -8,7 +8,7 @@
      ぜんぶ はずすと ボーナス。きんいろの おおつぶは 大とくてん(C要素)。
    pluck(ゆっくり=安全)とちがい、こちらは はやすぎ・おそすぎの 両方が だめ = 速度ゾーンの遊び */
 import Phaser from 'phaser';
-import { addIcon } from '../../ui/icons';
+import { addIcon, iconScale } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -180,13 +180,13 @@ export function renderShell(api: MinigameApi, target: string, prompt: string): v
       targets: obj,
       x: basket.x - bunch.x,
       y: basket.y - bunch.y,
-      scale: 0.4,
+      scale: iconScale(obj, 0.4),
       alpha: 0,
       duration: 260,
       ease: 'Quad.easeIn',
       onComplete: () => obj.destroy(),
     });
-    scene.tweens.add({ targets: basket, scaleY: 0.86, duration: 90, yoyo: true, delay: 240 });
+    scene.tweens.add({ targets: basket, scaleY: iconScale(basket, 0.86), duration: 90, yoyo: true, delay: 240 });
     if (shells.every((x) => x.peeled)) finishPeel(true);
   };
 

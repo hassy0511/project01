@@ -5,7 +5,7 @@
    ときどき「おおざら」= 目標が 8つで 2倍(C要素)。
    実在の かにまつりの「その場で かにを さばいて 食べる」をそのまま動詞化 */
 import Phaser from 'phaser';
-import { addIcon } from '../../ui/icons';
+import { addIcon, iconScale } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -160,7 +160,7 @@ export function renderKani(api: MinigameApi, prompt: string): void {
         s.ring.setStrokeStyle(4, 0xffffff, 0.9);
         s.mi = addIcon(scene, s.x, s.y, 'heart:white', 20);
         area.add(s.mi);
-        scene.tweens.add({ targets: s.mi, scale: { from: 0.6, to: 1.1 }, duration: 400, yoyo: true, repeat: -1 });
+        scene.tweens.add({ targets: s.mi, scale: { from: iconScale(s.mi, 0.6), to: iconScale(s.mi, 1.1) }, duration: 400, yoyo: true, repeat: -1 });
       } else {
         // 2タップめ: みを とって おさらへ
         SFX.good();

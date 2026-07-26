@@ -6,7 +6,7 @@
    ぼうかたい(もえて ほしくない き)に 火を つれていくと 火が とまる(コンボが きれるだけ)。
    動作=なぞって みちびく。sweep(こする)とは ちがい、火の「せんとう」を つないでいく */
 import Phaser from 'phaser';
-import { addIcon, setIcon } from '../../ui/icons';
+import { addIcon, iconScale, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -96,7 +96,7 @@ export function renderYamayaki(api: MinigameApi, prompt: string): void {
   let lit = false; // ひつけ が すんだか
   const torch = addIcon(scene, GRID_X - 40, GRID_Y + (ROWS - 1) * CELL_H + 40, 'fire:orange', 34);
   area.add(torch);
-  scene.tweens.add({ targets: torch, scale: { from: 1, to: 1.15 }, duration: 420, yoyo: true, repeat: -1 });
+  scene.tweens.add({ targets: torch, scale: { from: iconScale(torch), to: iconScale(torch, 1.15) }, duration: 420, yoyo: true, repeat: -1 });
   const hint = scene.add
     .text(GAME_W / 2, 246, UI_TEXT.fest.yamayakiLight, {
       fontFamily: 'sans-serif',

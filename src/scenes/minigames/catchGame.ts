@@ -2,7 +2,7 @@
    金の実はボーナス、枝はハズレ(コンボが切れる)。時間経過で落下が速く・多くなる。
    かごは指へ吸い付くように追従しつつ慣性で傾く(手応えレイヤー) */
 import Phaser from 'phaser';
-import { addIcon } from '../../ui/icons';
+import { addIcon, iconScale } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, impactRing, missShake, squashStretch } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -153,7 +153,7 @@ export function renderCatch(api: MinigameApi, target: string, prompt: string): v
               targets: item,
               x: basket.x,
               y: BASKET_Y,
-              scale: 0.3,
+              scale: iconScale(item, 0.3),
               alpha: 0,
               duration: 160,
               onComplete: () => item.destroy(),
@@ -169,7 +169,7 @@ export function renderCatch(api: MinigameApi, target: string, prompt: string): v
           session.resetCombo();
           burst(scene, item.x, BASKET_Y + 20 + api.areaY, 5, [0x9ccb6f, 0x7cb356]);
         }
-        scene.tweens.add({ targets: item, scaleY: 0.4, alpha: 0, duration: 220, onComplete: () => item.destroy() });
+        scene.tweens.add({ targets: item, scaleY: iconScale(item, 0.4), alpha: 0, duration: 220, onComplete: () => item.destroy() });
       },
     });
 

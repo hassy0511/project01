@@ -4,7 +4,7 @@
    「はなふぶきタイム」= 得点2倍 が C 要素。
    実在の花笠まつりの「笠を まわして おどる」をそのまま動詞化。動作=円ジェスチャー */
 import Phaser from 'phaser';
-import { addIcon, setIcon } from '../../ui/icons';
+import { addIcon, iconScale, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, confetti, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -76,7 +76,7 @@ export function renderHanagasa(api: MinigameApi, prompt: string): void {
   // むきの やじるし
   const arrow = addIcon(scene, CX, CY - 140, 'spin-right:gold', 46);
   area.add(arrow);
-  scene.tweens.add({ targets: arrow, scale: { from: 1, to: 1.2 }, duration: 500, yoyo: true, repeat: -1 });
+  scene.tweens.add({ targets: arrow, scale: { from: iconScale(arrow), to: iconScale(arrow, 1.2) }, duration: 500, yoyo: true, repeat: -1 });
 
   /* ---------- 状態 ---------- */
   let dir = 1; // 1=とけいまわり

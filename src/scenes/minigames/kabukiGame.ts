@@ -5,7 +5,7 @@
    ときどき「ぐんじょう(見せ場)」= 3れんぞくの キメ。ぜんぶ そろえると 大ボーナス。
    動作=「まちの タイミングタップ」。太鼓リズム(ishidori)や 回転(gion)とは べつの てざわり */
 import Phaser from 'phaser';
-import { addIcon } from '../../ui/icons';
+import { addIcon, iconScale } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -130,12 +130,12 @@ export function renderKabuki(api: MinigameApi, prompt: string): void {
 
   const pose = (good: boolean): void => {
     // きまりポーズ: 扇を ひらいて ぴたっと とまる
-    fan.setAlpha(1).setScale(good ? 1.2 : 0.9);
+    fan.setAlpha(1).setScale(iconScale(fan, good ? 1.2 : 0.9));
     scene.tweens.add({ targets: fan, alpha: 0, duration: good ? 520 : 300 });
     scene.tweens.add({
       targets: actor,
-      scaleX: { from: good ? 1.18 : 1.06, to: 1 },
-      scaleY: { from: good ? 0.88 : 0.96, to: 1 },
+      scaleX: { from: iconScale(actor, good ? 1.18 : 1.06), to: iconScale(actor) },
+      scaleY: { from: iconScale(actor, good ? 0.88 : 0.96), to: iconScale(actor) },
       duration: 260,
       ease: 'Back.easeOut',
     });

@@ -7,7 +7,7 @@
    ちょうどの ときは 大よろこび。ちがっても おこらない(コンボが きれるだけ)。
    動作=ながおしの りょう調整。タップの タイミングとは べつの てざわり */
 import Phaser from 'phaser';
-import { addIcon, setIcon } from '../../ui/icons';
+import { addIcon, iconScale, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -81,7 +81,9 @@ export function renderYukake(api: MinigameApi, prompt: string): void {
     guest.setX(90 + Math.random() * (GAME_W - 180));
     bubble.setX(guest.x);
     bubble.setText(want === 'hot' ? UI_TEXT.fest.yukakeWantHot : UI_TEXT.fest.yukakeWantWarm);
-    scene.tweens.add({ targets: [guest, bubble], scale: { from: 0.85, to: 1 }, duration: 220, ease: 'Back.easeOut' });
+    // おきゃくは アイコン、ふきだしは 文字なので それぞれの もとの 大きさで ぷるんと させる
+    scene.tweens.add({ targets: guest, scale: { from: iconScale(guest, 0.85), to: iconScale(guest) }, duration: 220, ease: 'Back.easeOut' });
+    scene.tweens.add({ targets: bubble, scale: { from: 0.85, to: 1 }, duration: 220, ease: 'Back.easeOut' });
     SFX.hint();
   };
   nextGuest();
@@ -104,7 +106,7 @@ export function renderYukake(api: MinigameApi, prompt: string): void {
     gauge.fillRoundedRect(90 + (GAME_W - 180) * HOT_LINE, 620, (GAME_W - 180) * (1 - HOT_LINE), 22, 11);
     gauge.fillStyle(0xe05b5b, 1);
     gauge.fillRoundedRect(90 + (GAME_W - 180) * fill - 4, 612, 8, 38, 4);
-    hishaku.setScale(1 + fill * 0.45);
+    hishaku.setScale(iconScale(hishaku, 1 + fill * 0.45));
   };
   draw();
   area.add(

@@ -4,7 +4,7 @@
    8つ ぜんぶ たいじすると 大ボーナス → つぎの おろちが でてくる。
    動作=むきの ある スワイプ(方向はんだん)。ほかの おまつりに ない てざわり */
 import Phaser from 'phaser';
-import { addIcon, resetIcon } from '../../ui/icons';
+import { addIcon, iconScale, resetIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -110,8 +110,8 @@ export function renderKagura(api: MinigameApi, prompt: string): void {
     h.obj.setAlpha(1);
     h.arrow.setVisible(true);
     SFX.hint();
-    scene.tweens.add({ targets: h.obj, scale: { from: 0.7, to: 1.15 }, duration: 260, ease: 'Back.easeOut' });
-    scene.tweens.add({ targets: h.arrow, scale: { from: 1, to: 1.25 }, duration: 300, yoyo: true, repeat: -1 });
+    scene.tweens.add({ targets: h.obj, scale: { from: iconScale(h.obj, 0.7), to: iconScale(h.obj, 1.15) }, duration: 260, ease: 'Back.easeOut' });
+    scene.tweens.add({ targets: h.arrow, scale: { from: iconScale(h.arrow), to: iconScale(h.arrow, 1.25) }, duration: 300, yoyo: true, repeat: -1 });
     showTimer = scene.time.delayedCall(showMs(), () => {
       if (h.active) {
         // ひっこんだ(コンボ切れ)

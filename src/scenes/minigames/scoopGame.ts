@@ -5,7 +5,7 @@
    すくいあげずに 待ちすぎると、なみで こぼれる(ためた ぶんが へるだけ=成功保証)。
    catch(落ちてくる実を受ける)との違い = 「ためて、いいタイミングで あげる」リスク判断 */
 import Phaser from 'phaser';
-import { addIcon } from '../../ui/icons';
+import { addIcon, iconScale } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -237,7 +237,7 @@ export function renderScoop(api: MinigameApi, target: string, prompt: string): v
           targets: obj,
           x: zaru.x,
           y: zaru.y + ZARU_R * 0.4,
-          scale: 0.4,
+          scale: iconScale(obj, 0.4),
           alpha: 0,
           duration: 160,
           onComplete: () => obj.destroy(),

@@ -5,7 +5,7 @@
    くびは のばしすぎると もどってしまう(のびる かぎりが ある = のばす きょりの かけひき)。
    ぜんぶの もんを おはらいすると 大ボーナス。動作=のばして ねらう(のびる くびの コントロール) */
 import Phaser from 'phaser';
-import { addIcon, resetIcon, setIcon } from '../../ui/icons';
+import { addIcon, iconScale, resetIcon, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -78,7 +78,7 @@ export function renderUshioni(api: MinigameApi, prompt: string): void {
     target = rest.length ? rest[Math.floor(Math.random() * rest.length)] : null;
     if (target) {
       target.obj.setTint(0xffd34d);
-      scene.tweens.add({ targets: target.obj, scale: { from: 1, to: 1.16 }, duration: 420, yoyo: true, repeat: -1 });
+      scene.tweens.add({ targets: target.obj, scale: { from: iconScale(target.obj), to: iconScale(target.obj, 1.16) }, duration: 420, yoyo: true, repeat: -1 });
     }
   };
 

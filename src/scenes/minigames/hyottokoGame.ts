@@ -5,7 +5,7 @@
    だんだん あいずが はやくなり、ときどき「まねっこ!」で さっきと おなじ ものが つづく。
    まちがえても おこられない(コンボが きれるだけ)。動作=3たくの はんしゃ */
 import Phaser from 'phaser';
-import { addIcon, setIcon } from '../../ui/icons';
+import { addIcon, iconScale, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, cameraPulse, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -95,7 +95,7 @@ export function renderHyottoko(api: MinigameApi, prompt: string): void {
     last = want;
     setIcon(dancer, MASKS[want]);
     dancer.setAlpha(1);
-    scene.tweens.add({ targets: dancer, scale: { from: 0.8, to: 1 }, duration: 200, ease: 'Back.easeOut' });
+    scene.tweens.add({ targets: dancer, scale: { from: iconScale(dancer, 0.8), to: iconScale(dancer) }, duration: 200, ease: 'Back.easeOut' });
     cueText.setText(same ? UI_TEXT.fest.hyottokoSame : UI_TEXT.fest.hyottokoCue(UI_TEXT.fest.hyottokoNames[want]));
     SFX.hint();
     cueTimer = scene.time.delayedCall(cueMs(), () => {

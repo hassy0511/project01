@@ -127,7 +127,7 @@ export function renderChain(api: MinigameApi, target: string, prompt: string, ri
       targets: s.obj,
       alpha: 0,
       y: s.y + 12,
-      scaleY: 0.6,
+      scaleY: iconScale(s.obj, 0.6),
       duration: 600,
       onComplete: () => {
         clearSpot(s);

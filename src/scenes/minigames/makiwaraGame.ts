@@ -5,7 +5,7 @@
    はんえんが 1つ 完成すると ボーナス+ふねが 川を すすむ。
    ちがう場所を タップしても なにも起きないだけ(成功保証) */
 import Phaser from 'phaser';
-import { addIcon } from '../../ui/icons';
+import { addIcon, iconScale } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -155,7 +155,7 @@ export function renderMakiwara(api: MinigameApi, prompt: string): void {
     s.lamp.setAlpha(1);
     s.ring.setVisible(false);
     scene.tweens.killTweensOf(s.ring);
-    scene.tweens.add({ targets: s.lamp, scale: { from: 1.5, to: 1 }, duration: 240, ease: 'Back.easeOut' });
+    scene.tweens.add({ targets: s.lamp, scale: { from: iconScale(s.lamp, 1.5), to: iconScale(s.lamp) }, duration: 240, ease: 'Back.easeOut' });
     SFX.pop();
     impactRing(scene, wx, wy + api.areaY, 0xffd34d, 8);
     burst(scene, wx, wy + api.areaY, 4, [0xffd34d, 0xffffff]);

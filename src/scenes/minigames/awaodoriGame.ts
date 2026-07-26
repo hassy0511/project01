@@ -6,7 +6,7 @@
    まちがえた うごきでも たおれない(コンボが きれるだけ)。
    動作=2しゅるいの うごきの うちわけ。1つの ボタンを たたく リズムゲームとは ちがう */
 import Phaser from 'phaser';
-import { addIcon } from '../../ui/icons';
+import { addIcon, iconScale } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, cameraPulse, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
@@ -114,7 +114,7 @@ export function renderAwaodori(api: MinigameApi, prompt: string): void {
     for (const [i, d] of dancers.entries()) {
       scene.tweens.add({ targets: d, y: 470 - (big ? 30 : 16), duration: 130, yoyo: true, delay: i * 30 });
     }
-    scene.tweens.add({ targets: kane, scale: { from: 1.2, to: 1 }, duration: 160 });
+    scene.tweens.add({ targets: kane, scale: { from: iconScale(kane, 1.2), to: iconScale(kane) }, duration: 160 });
   };
 
   const judge = (kind: Kind): void => {
