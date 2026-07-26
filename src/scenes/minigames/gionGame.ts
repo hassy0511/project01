@@ -13,6 +13,7 @@ import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../.
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
+import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
 
 const AREA_H = 660;
@@ -127,6 +128,7 @@ export function renderGion(api: MinigameApi, prompt: string): void {
   };
 
   const clearBamboo = (): void => {
+    scene.tweens.killTweensOf(bamboos); // うごかす tween を のこすと けした あとも 追いかけて しまう
     for (const b of bamboos) b.destroy();
     bamboos.length = 0;
   };
@@ -169,6 +171,12 @@ export function renderGion(api: MinigameApi, prompt: string): void {
   };
 
   const finishTurn = (): void => {
+    // まわし切った あと 500ms は やまほこが もどる えんしゅつ中。
+    // その あいだも phase が 'turn' の ままだと、もう1かい つかんで まわすと
+    // finishTurn が なんども はしって こうさてんが とびこし・竹が 二重に でて 止まる
+    if (phase !== 'turn') return;
+    phase = 'bamboo';
+    turned = 0;
     SFX.fanfare();
     bigImpact(scene, CX, CY + api.areaY, 0xffd34d);
     session.addPoints(TURN_PTS, CX, CY + api.areaY - 120, false);
@@ -231,12 +239,12 @@ export function renderGion(api: MinigameApi, prompt: string): void {
   };
   scene.input.on('pointerdown', onDown);
   scene.input.on('pointermove', onMove);
-  scene.input.on('pointerup', onUp);
+  onPointerRelease(scene, onUp);
 
   const cleanup = (): void => {
     scene.input.off('pointerdown', onDown);
     scene.input.off('pointermove', onMove);
-    scene.input.off('pointerup', onUp);
+    offPointerRelease(scene, onUp);
   };
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, cleanup);
 }

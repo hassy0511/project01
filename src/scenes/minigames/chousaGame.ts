@@ -21,6 +21,8 @@ const LIFT_PTS = 40;
 /** ゲージが さがる はやさ(/s。だんだん はやくなる) */
 const DROP_START = 0.19;
 const DROP_END = 0.34;
+/** これ以上 ちからが ある かたは 「たすける ひつようが ない」 */
+const FULL_LINE = 0.9;
 /** タップ1かいで もどる ぶん */
 const RECOVER = 0.3;
 /** さしあげ に ひつような たかさ */
@@ -116,12 +118,17 @@ export function renderChousa(api: MinigameApi, prompt: string): void {
 
   const tap = (i: number): void => {
     if (session.isEnded()) return;
+    // ちからが みちている かたを たたいても 点は 入らない。
+    // (どこでも れんだするだけで 点が つみあがると 「さがった かたを 見つける」
+    //  ゲームに ならず、★も 実力と 合わなくなる。おしても おこられはしない)
+    const wasFull = power[i] > FULL_LINE;
     power[i] = Math.min(1, power[i] + RECOVER);
     SFX.pop();
-    burst(scene, POS[i][0], POS[i][1] + api.areaY - 40, 3, [0xffd34d, 0xffffff]);
-    session.addPoints(TAP_PTS, POS[i][0], POS[i][1] + api.areaY - 90);
     scene.tweens.add({ targets: shoulders[i], y: POS[i][1] - 10, duration: 110, yoyo: true });
     drawGauges();
+    if (wasFull) return;
+    burst(scene, POS[i][0], POS[i][1] + api.areaY - 40, 3, [0xffd34d, 0xffffff]);
+    session.addPoints(TAP_PTS, POS[i][0], POS[i][1] + api.areaY - 90);
   };
 
   const doLift = (): void => {

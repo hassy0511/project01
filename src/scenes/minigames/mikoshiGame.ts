@@ -11,6 +11,7 @@ import { burst, confetti, floatUp, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
+import { offPointerRelease, onPointerRelease } from './input';
 import { CROWD } from './crowd';
 import type { MinigameApi } from './types';
 
@@ -129,7 +130,7 @@ export function renderMikoshi(api: MinigameApi, prompt: string): void {
   const onUp = (): void => setPress(scene.input.activePointer, false);
   scene.input.on('pointerdown', onDown);
   scene.input.on('pointermove', onMove);
-  scene.input.on('pointerup', onUp);
+  onPointerRelease(scene, onUp);
 
   /* ---------- 状態 ---------- */
   let deg = 0;
@@ -206,7 +207,7 @@ export function renderMikoshi(api: MinigameApi, prompt: string): void {
   const cleanup = (): void => {
     scene.input.off('pointerdown', onDown);
     scene.input.off('pointermove', onMove);
-    scene.input.off('pointerup', onUp);
+    offPointerRelease(scene, onUp);
     scene.events.off(Phaser.Scenes.Events.UPDATE, onUpdate);
     windTimer?.remove();
     wasshoiTimer.remove();

@@ -10,6 +10,8 @@ import { setHook } from '../game/testHooks';
 import { COLORS, FONT, TEXT_COLORS } from './theme';
 import { makeButton, Modal, setButtonStyle } from './widgets';
 
+/** クイズが 出てから こたえを うけつけるまでの ま(ms) */
+const ANSWER_GUARD_MS = 450;
 const CHOICE_W = 340;
 const CHOICE_H = 46;
 const ANSWER_DELAY_OK = 800;
@@ -101,6 +103,10 @@ export function buildQuizView(
   cursor += q.height + 14;
 
   let answered = false;
+  // クイズが 出た しゅんかんに 指が あった ところが そのまま こたえに ならない ように、
+  // すこしの あいだ うけつけない。アーケードの さいごの タップや れんだの ゆびが
+  // 「よまずに こたえた」ことに なるのを ふせぐ
+  const readyAt = scene.time.now + ANSWER_GUARD_MS;
   const buttons: { btn: Phaser.GameObjects.Container; choiceIdx: number }[] = [];
   const hintY = cursor + 3 * (CHOICE_H + 10) + 4;
 
@@ -118,8 +124,16 @@ export function buildQuizView(
     const g = btn.list[0] as Phaser.GameObjects.Graphics;
     g.lineStyle(2, COLORS.panelLine, 1);
     g.strokeRoundedRect(-CHOICE_W / 2, -CHOICE_H / 2, CHOICE_W, CHOICE_H, 14);
+    // その ボタンの うえで おして、その ボタンの うえで はなした ときだけ こたえに する
+    let pressedHere = false;
+    btn.on('pointerdown', () => {
+      pressedHere = true;
+    });
+    btn.on('pointerout', () => {
+      pressedHere = false;
+    });
     btn.on('pointerup', () => {
-      if (answered) return;
+      if (answered || !pressedHere || scene.time.now < readyAt) return;
       answered = true;
       const ok = ci === quiz.answer;
       const label = btn.list[1] as Phaser.GameObjects.Text;

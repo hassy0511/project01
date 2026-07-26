@@ -18,6 +18,9 @@ export interface ButtonOpts {
 }
 
 /** 角丸ボタン(中心原点) */
+/** ボタンの 文字が わくに ふれない ように あける よはく(左右あわせて) */
+const LABEL_PAD = 12;
+
 export function makeButton(scene: Phaser.Scene, o: ButtonOpts): Phaser.GameObjects.Container {
   const c = scene.add.container(o.x, o.y);
   const g = scene.add.graphics();
@@ -30,8 +33,13 @@ export function makeButton(scene: Phaser.Scene, o: ButtonOpts): Phaser.GameObjec
       fontSize: `${o.fontSize ?? 18}px`,
       color: o.textColor ?? TEXT_COLORS.white,
       fontStyle: 'bold',
+      align: 'center',
+      wordWrap: { width: o.w - LABEL_PAD },
     })
     .setOrigin(0.5);
+  // おれかえしても はみ出す ながい ことば(「あかまつの やまを まもる」など)は
+  // 字を 小さく して わくに おさめる
+  shrinkToWidth(t, o.w - LABEL_PAD, 10, o.h - 6);
   c.add([g, t]);
   c.setSize(o.w, o.h);
   c.setInteractive({ useHandCursor: true });
@@ -70,7 +78,16 @@ export class Modal {
   private closed = false;
 
   static isOpen(): boolean {
-    return Modal.current !== null;
+    const m = Modal.current;
+    if (!m) return false;
+    // シーンごと きえた モーダルが のこっていたら わすれる。
+    // (シーンを 切りかえた ときに close() が よばれず、
+    //  「ずっと モーダルが 出ている」ことに なって 地図が タップできなく なっていた)
+    if (m.closed || !m.root.scene || !m.scene.scene.isActive()) {
+      Modal.current = null;
+      return false;
+    }
+    return true;
   }
 
   static closeCurrent(): void {
@@ -103,6 +120,9 @@ export class Modal {
       .setOrigin(0.5, 0);
     this.box.add(head);
     this.cursorY = 40;
+
+    // シーンが かたづく ときは モーダルも わすれる(static が のこらない ように)
+    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.close());
 
     if (closable) {
       const x = addIcon(scene, MODAL_W / 2 - 24, 14, 'cross:gray', 24).setInteractive({ useHandCursor: true });
@@ -229,6 +249,22 @@ export function makeGuideRow(
   g.strokeRoundedRect(-w / 2 + 60, -h / 2, bubbleW + 12, h, 14);
   c.add([g, pikke, t]);
   return { container: c, height: h };
+}
+
+/** よこはばに おさまるまで 字を 小さく する。それでも 入らない ときは おわりを … に。
+    カードの 名まえが ボタンに かさなるのを ふせぐ ため(ベタ書きの 幅指定を ふやさない) */
+export function shrinkToWidth(t: Phaser.GameObjects.Text, maxW: number, minPx = 11, maxH = Infinity): void {
+  let px = Number.parseInt(String(t.style.fontSize), 10) || 16;
+  while ((t.width > maxW || t.height > maxH) && px > minPx) {
+    px -= 1;
+    t.setFontSize(px);
+  }
+  if (t.width <= maxW) return;
+  let body = t.text;
+  while (body.length > 1 && t.width > maxW) {
+    body = body.slice(0, -1);
+    t.setText(`${body}…`);
+  }
 }
 
 /** アイコンを よこ1れつに ならべた ひとまとまり(まとめて フェード・スケールできる)。

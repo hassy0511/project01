@@ -11,6 +11,7 @@ import { burst, floatUp, missShake, padHitArea } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
+import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
 
 const AREA_H = 660;
@@ -375,11 +376,11 @@ export function renderReap(api: MinigameApi, targetIcon: string, prompt: string)
   };
   scene.input.on('pointerdown', onDown);
   scene.input.on('pointermove', onMove);
-  scene.input.on('pointerup', onUp);
+  onPointerRelease(scene, onUp);
   const cleanupInput = (): void => {
     scene.input.off('pointerdown', onDown);
     scene.input.off('pointermove', onMove);
-    scene.input.off('pointerup', onUp);
+    offPointerRelease(scene, onUp);
     birdTimer?.remove();
   };
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, cleanupInput);

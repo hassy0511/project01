@@ -9,7 +9,7 @@ import { pickKaitakuQuiz, recordQuizAsked } from '../core/quiz';
 import { infraStock, plotState, matIdOfKey } from '../core/plots';
 import { findMaterial } from '../data/gameData';
 import { store } from '../game/store';
-import { getMapAsset } from '../game/mapData';
+import { getMapAsset, hasMapAsset } from '../game/mapData';
 import { SFX } from '../audio/sfx';
 import { buildHeader, buildNav, HEADER_H } from '../ui/nav';
 import { runQuizModal } from '../ui/quizRunner';
@@ -17,20 +17,27 @@ import { COLORS, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { makeGuideRow, Modal, showToast, type MascotMood } from '../ui/widgets';
 import { confetti } from '../ui/effects';
 
+/** セーブが こわれていた ときに もどる エリア(はじめの エリア) */
+const FALLBACK_REGION = 'kanto';
 const GUIDE_UPDATE_MS = 3000;
 const TIP_ROTATE_MS = 9000;
 
 export class MapScene extends Phaser.Scene {
   private guideBox?: Phaser.GameObjects.Container;
   private lastGuideText = '';
-  private regionId = 'kanto';
+  private regionId = FALLBACK_REGION;
 
   constructor() {
     super('MapScene');
   }
 
   init(data: { regionId?: string }): void {
-    this.regionId = data.regionId ?? store.state.currentRegion ?? 'kanto';
+    // セーブに 知らない エリア名が 入っていても 白い画面に しない。
+    // (むかしの セーブ・ためしに いじった セーブ・データから 消した エリアで
+    //  地図の よみこみに しっぱいして なにも 出なくなる ことが あった)
+    const want = data.regionId ?? store.state.currentRegion ?? FALLBACK_REGION;
+    const known = GAME_DATA.regions.some((r) => r.id === want && r.active) && hasMapAsset(want);
+    this.regionId = known ? want : FALLBACK_REGION;
   }
 
   create(): void {

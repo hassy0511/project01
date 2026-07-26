@@ -10,6 +10,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { FONT, GAME_W } from '../../ui/theme';
 import { drawBasket, drawMeadow } from '../../ui/scenery';
 import { ArcadeSession } from './arcade';
+import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
 
 const AREA_H = 660;
@@ -147,7 +148,7 @@ export function renderFlick(api: MinigameApi, target: string, prompt: string): v
   };
   scene.input.on('pointerdown', onDown);
   scene.input.on('pointermove', onMove);
-  scene.input.on('pointerup', onUp);
+  onPointerRelease(scene, onUp);
 
   const resolveMiss = (): void => {
     if (resolved) return;
@@ -274,7 +275,7 @@ export function renderFlick(api: MinigameApi, target: string, prompt: string): v
     scene.events.off(Phaser.Scenes.Events.UPDATE, onUpdate);
     scene.input.off('pointerdown', onDown);
     scene.input.off('pointermove', onMove);
-    scene.input.off('pointerup', onUp);
+    offPointerRelease(scene, onUp);
     basketTween?.stop();
   };
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, cleanup);

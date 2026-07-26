@@ -89,6 +89,7 @@ export function makeDriver(page, shotsDir) {
 
   async function answerQuiz() {
     await page.waitForFunction(() => window.__mq?.kind === 'quiz', null, { timeout: 8000 });
+    await page.waitForTimeout(600); // 出たては こたえを うけつけない(よまずに こたえるのを ふせぐ ため)
     const correct = await page.evaluate(() => {
       const t = window.__mq.correctText;
       window.__mq = { kind: 'done' }; // 次の問題のフックと混同しない
@@ -101,6 +102,7 @@ export function makeDriver(page, shotsDir) {
   /** わざと不正解を選ぶ(★のおせわ保険・開拓失敗の検証用) */
   async function answerQuizWrong() {
     await page.waitForFunction(() => window.__mq?.kind === 'quiz', null, { timeout: 8000 });
+    await page.waitForTimeout(600); // 出たては こたえを うけつけない
     const { correctText, choices } = await page.evaluate(() => {
       const { correctText, choices } = window.__mq;
       window.__mq = { kind: 'done' };

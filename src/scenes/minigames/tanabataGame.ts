@@ -9,6 +9,7 @@ import { bigImpact, burst, confetti, floatUp, impactRing } from '../../ui/effect
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
+import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
 
 const AREA_H = 660;
@@ -159,11 +160,11 @@ export function renderTanabata(api: MinigameApi, prompt: string): void {
 
   scene.input.on('pointerdown', onDown);
   scene.input.on('pointermove', onMove);
-  scene.input.on('pointerup', onUp);
+  onPointerRelease(scene, onUp);
   const cleanup = (): void => {
     scene.input.off('pointerdown', onDown);
     scene.input.off('pointermove', onMove);
-    scene.input.off('pointerup', onUp);
+    offPointerRelease(scene, onUp);
     cur?.timer.remove();
   };
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, cleanup);

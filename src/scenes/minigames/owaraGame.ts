@@ -11,6 +11,7 @@ import { burst, confetti, floatUp } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
+import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
 
 const AREA_H = 660;
@@ -90,10 +91,10 @@ export function renderOwara(api: MinigameApi, prompt: string): void {
 
   const onDown = (p: Phaser.Input.Pointer): void => {
     holding = true;
-    check(p);
+    check(p.worldX, p.worldY);
   };
   const onMove = (p: Phaser.Input.Pointer): void => {
-    if (p.isDown) check(p);
+    if (p.isDown) check(p.worldX, p.worldY);
   };
   const onUp = (): void => {
     holding = false;
@@ -102,9 +103,14 @@ export function renderOwara(api: MinigameApi, prompt: string): void {
       ring.setStrokeStyle(6, 0xffe0a3, 0.95);
     }
   };
-  const check = (p: Phaser.Input.Pointer): void => {
+  /** さいごに 指が あった ところ。わくが うごいた あとの 判定に つかう */
+  let fingerX = 0;
+  let fingerY = 0;
+  const check = (wx: number, wy: number): void => {
+    fingerX = wx;
+    fingerY = wy;
     const was = inside;
-    inside = Math.hypot(p.worldX - ring.x, p.worldY - api.areaY - ring.y) <= RING_R;
+    inside = Math.hypot(wx - ring.x, wy - api.areaY - ring.y) <= RING_R;
     if (inside !== was) {
       ring.setStrokeStyle(6, inside ? 0x9ccb6f : 0xffe0a3, 0.95);
       if (inside) {
@@ -117,7 +123,7 @@ export function renderOwara(api: MinigameApi, prompt: string): void {
   };
   scene.input.on('pointerdown', onDown);
   scene.input.on('pointermove', onMove);
-  scene.input.on('pointerup', onUp);
+  onPointerRelease(scene, onUp);
 
   // かぜタイム(C要素)
   const windTimer = scene.time.addEvent({
@@ -142,13 +148,16 @@ export function renderOwara(api: MinigameApi, prompt: string): void {
     phase += (speed / 260) * dt * Math.PI;
     ring.setPosition(cx(), cy());
     inner.setPosition(ring.x, ring.y);
+    // わくが うごいた ぶんを 見なおす。うごかさずに おしっぱなしでも 得点が
+    // 入りつづけて しまう のを ふせぐ(わくは にげていくので ついていく ひつようが ある)
+    if (holding) check(fingerX, fingerY);
   };
   scene.events.on(Phaser.Scenes.Events.UPDATE, onUpdate);
 
   const cleanup = (): void => {
     scene.input.off('pointerdown', onDown);
     scene.input.off('pointermove', onMove);
-    scene.input.off('pointerup', onUp);
+    offPointerRelease(scene, onUp);
     scene.events.off(Phaser.Scenes.Events.UPDATE, onUpdate);
     tick.remove();
     windTimer.remove();

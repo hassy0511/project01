@@ -10,6 +10,7 @@ import { burst, confetti, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
+import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
 
 const AREA_H = 660;
@@ -129,7 +130,7 @@ export function renderHanagasa(api: MinigameApi, prompt: string): void {
     lastAngle = null;
   };
   scene.input.on('pointermove', onMove);
-  scene.input.on('pointerup', onUp);
+  onPointerRelease(scene, onUp);
 
   // むきの きりかえ
   let reverseTimer: Phaser.Time.TimerEvent | undefined;
@@ -165,7 +166,7 @@ export function renderHanagasa(api: MinigameApi, prompt: string): void {
 
   const cleanup = (): void => {
     scene.input.off('pointermove', onMove);
-    scene.input.off('pointerup', onUp);
+    offPointerRelease(scene, onUp);
     reverseTimer?.remove();
     fubukiTimer.remove();
   };

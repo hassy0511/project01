@@ -11,6 +11,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { GAME_W } from '../../ui/theme';
 import { drawMeadow } from '../../ui/scenery';
 import { ArcadeSession } from './arcade';
+import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
 
 const AREA_H = 660;
@@ -272,11 +273,11 @@ export function renderPluck(api: MinigameApi, target: string, prompt: string, un
 
   scene.input.on('pointerdown', onDown);
   scene.input.on('pointermove', onMove);
-  scene.input.on('pointerup', onUp);
+  onPointerRelease(scene, onUp);
   const cleanupInput = (): void => {
     scene.input.off('pointerdown', onDown);
     scene.input.off('pointermove', onMove);
-    scene.input.off('pointerup', onUp);
+    offPointerRelease(scene, onUp);
   };
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, cleanupInput);
 

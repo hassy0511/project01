@@ -23,12 +23,16 @@ import { buildNav } from '../ui/nav';
 import { runQuizModal } from '../ui/quizRunner';
 import { showTriviaOnce } from '../ui/trivia';
 import { COLORS, DEPTH, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
-import { makeButton, makeGuideRow, Modal, ScrollArea, showToast } from '../ui/widgets';
+import { makeButton, makeGuideRow, Modal, ScrollArea, showToast, shrinkToWidth } from '../ui/widgets';
 import { confetti, wobble } from '../ui/effects';
 import { addIcon, type IconKey } from '../ui/icons';
 
 const CARD_W = 452;
 const CARD_H = 80;
+/** カードの 文字を おける よこはば。
+    文字は x=-CARD_W/2+70 から。ボタンは x=CARD_W/2-66 が 中心で はば116 なので
+    その ひだり端(CARD_W/2-124)より 10px 手前まで */
+const TEXT_MAX_W = CARD_W - 124 - 70 - 10;
 const CARD_GAP = 10;
 const BANNER_H = 88;
 const TOP_H = 48;
@@ -245,16 +249,16 @@ export class PrefScene extends Phaser.Scene {
   ): Phaser.GameObjects.Image {
     const img = addIcon(this, -CARD_W / 2 + 36, 0, icon, 34);
     c.add(img);
-    c.add(
-      this.add
-        .text(-CARD_W / 2 + 70, -14, name, {
-          fontFamily: FONT,
-          fontSize: '16px',
-          color: TEXT_COLORS.main,
-          fontStyle: 'bold',
-        })
-        .setOrigin(0, 0.5),
-    );
+    const nameT = this.add
+      .text(-CARD_W / 2 + 70, -14, name, {
+        fontFamily: FONT,
+        fontSize: '16px',
+        color: TEXT_COLORS.main,
+        fontStyle: 'bold',
+      })
+      .setOrigin(0, 0.5);
+    shrinkToWidth(nameT, TEXT_MAX_W); // ボタンに かさならない はばに おさめる
+    c.add(nameT);
     const subT = this.add
       .text(-CARD_W / 2 + 70, 12, sub, {
         fontFamily: FONT,
@@ -284,7 +288,7 @@ export class PrefScene extends Phaser.Scene {
         h: 40,
         label,
         color,
-        fontSize: label.length > 7 ? 11 : 14,
+        fontSize: 14, // ながい ことばは makeButton が おりかえし+縮小で おさめる
         onClick,
       }),
     );

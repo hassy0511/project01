@@ -11,6 +11,7 @@ import { bigImpact, burst, confetti, floatUp, missShake } from '../../ui/effects
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
+import { offPointerRelease, onPointerRelease } from './input';
 import { CROWD } from './crowd';
 import type { MinigameApi } from './types';
 
@@ -118,7 +119,7 @@ export function renderTako(api: MinigameApi, prompt: string): void {
     pressing = false;
   };
   scene.input.on('pointerdown', onDown);
-  scene.input.on('pointerup', onUp);
+  onPointerRelease(scene, onUp);
 
   const tick = scene.time.addEvent({
     delay: TICK_MS,
@@ -194,7 +195,7 @@ export function renderTako(api: MinigameApi, prompt: string): void {
 
   const cleanup = (): void => {
     scene.input.off('pointerdown', onDown);
-    scene.input.off('pointerup', onUp);
+    offPointerRelease(scene, onUp);
     scene.events.off(Phaser.Scenes.Events.UPDATE, onUpdate);
     tick.remove();
     rivalTimer.remove();

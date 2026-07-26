@@ -148,7 +148,10 @@ export function renderMine(api: MinigameApi, prompt: string, targetIcon: string)
       burst(scene, wx, wy, 12);
       SFX.good();
       session.addPoints(TREASURE_PTS, wx, wy - 30, false);
-      if (found >= TREASURES) boardCleared();
+      if (found >= TREASURES) {
+        boardCleared();
+        return;
+      }
     } else {
       // 数字ヒント: まわり8マスの お宝の数
       const n = neighborCount(r, c);
@@ -164,13 +167,16 @@ export function renderMine(api: MinigameApi, prompt: string, targetIcon: string)
       t.c.add(hint);
       scene.tweens.add({ targets: hint, scale: 1, ease: 'Back.easeOut', duration: 240 });
       SFX.bad();
-      if (shovels <= 0) {
-        // シャベル切れ: 少し待って新しい掘り場へ(ペナルティなし・時間だけが過ぎる)
-        floatUp(scene, GAME_W / 2, 400 + api.areaY, UI_TEXT.arcade.noShovels, '#c04545');
-        scene.time.delayedCall(1100, () => {
-          if (!session.isEnded()) newBoard();
-        });
-      }
+    }
+    // シャベル切れ: 少し待って新しい掘り場へ(ペナルティなし・時間だけが過ぎる)。
+    // お宝を ほって シャベルが 0 に なった ときも ここを 通る ―
+    // まえは 「はずれ」の ときだけ 見ていたので、最後の 1ぷりで お宝が 出ると
+    // つぎの 掘り場が こないまま 盤面が 死んでいた
+    if (shovels <= 0) {
+      floatUp(scene, GAME_W / 2, 400 + api.areaY, UI_TEXT.arcade.noShovels, '#c04545');
+      scene.time.delayedCall(1100, () => {
+        if (!session.isEnded()) newBoard();
+      });
     }
   };
 

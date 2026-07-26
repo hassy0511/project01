@@ -12,6 +12,7 @@ import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../.
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
+import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
 
 const AREA_H = 660;
@@ -192,7 +193,7 @@ export function renderOugi(api: MinigameApi, prompt: string): void {
   };
   scene.input.on('pointerdown', onDown);
   scene.input.on('pointermove', onMove);
-  scene.input.on('pointerup', onUp);
+  onPointerRelease(scene, onUp);
 
   const onUpdate = (_t: number, dtMs: number): void => {
     if (session.isEnded()) return;
@@ -225,7 +226,7 @@ export function renderOugi(api: MinigameApi, prompt: string): void {
   const cleanup = (): void => {
     scene.input.off('pointerdown', onDown);
     scene.input.off('pointermove', onMove);
-    scene.input.off('pointerup', onUp);
+    offPointerRelease(scene, onUp);
     scene.events.off(Phaser.Scenes.Events.UPDATE, onUpdate);
     sparkTimer.remove();
   };

@@ -92,6 +92,11 @@ export async function loadMapAsset(baseUrl: string): Promise<void> {
 }
 
 /** Boot で読み込み済みの県形マップを取得(未ロードなら例外) */
+/** その エリアの 地図が よみこめて いるか(セーブが こわれていた ときの みはり) */
+export function hasMapAsset(regionId: string): boolean {
+  return Boolean(prefMaps[regionId]);
+}
+
 export function getMapAsset(regionId = 'kanto'): MapAsset {
   const m = prefMaps[regionId];
   if (!m) throw new Error(`map asset not loaded: ${regionId}`);

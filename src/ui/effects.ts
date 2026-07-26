@@ -214,15 +214,33 @@ export function screenFlash(scene: Phaser.Scene, color = 0xffffff, peakAlpha = 0
 
 /** ジャスト成功の画面パルス(ズームがふっと寄って戻る)。
     HiDPI でカメラの基準ズームが 1 でない場合があるため、必ず現在値からの相対で書く */
+/** いま はしっている パルスと、その もとの ズーム(シーンごと) */
+const pulses = new WeakMap<Phaser.Scene, { tween: Phaser.Tweens.Tween; base: number }>();
+/** パルスで ひろげる わりあい */
+const PULSE_SCALE = 1.045;
+
 export function cameraPulse(scene: Phaser.Scene): void {
   const cam = scene.cameras.main;
-  const base = cam.zoom;
-  scene.tweens.add({
+  // まえの パルスが まだ うごいている あいだに よばれると、とちゅうの ズームを
+  // 「もとの 大きさ」と かんちがいして だんだん 画面が よっていって しまう。
+  // うごいている ときは 記おくした もとの 大きさを つかい、ふるい tween は とめる
+  const active = pulses.get(scene);
+  let base: number;
+  if (active && active.tween.isPlaying()) {
+    base = active.base;
+    active.tween.stop();
+  } else {
+    base = cam.zoom;
+  }
+  cam.setZoom(base * PULSE_SCALE);
+  const tween = scene.tweens.add({
     targets: cam,
-    zoom: { from: base * 1.045, to: base },
+    zoom: base,
     duration: 260,
     ease: 'Quad.easeOut',
+    onComplete: () => cam.setZoom(base), // ぴったり もとに もどす(はんぱな 値を のこさない)
   });
+  pulses.set(scene, { tween, base });
 }
 
 /** はずれの小さな揺れ */
