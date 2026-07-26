@@ -6,9 +6,11 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { hasShape } from '../ui/icons/registry';
 import { GAME_AREA_H, GAME_W } from '../ui/theme';
 import { GAME_DATA } from './gameData';
-import { HOW_TO, type HowTo, type Pt } from './howto';
+import { HARVEST_ICON, HOW_TO, type HowTo, type Pt } from './howto';
+import { UI_TEXT } from './uiText';
 
 /** データから 「そざいを とる ときに つかう エンジン」を 集める(ベタ書きしない) */
 const harvestEngines = (): string[] => {
@@ -89,6 +91,26 @@ describe('ゆびマーク(HOW_TO)', () => {
       if (h.kind !== 'tapTarget' && h.kind !== 'dragTarget') continue;
       expect(names.has(h.name), `${key} の 名まえ「${h.name}」は setName されていない`).toBe(true);
     }
+  });
+
+  it('しゅうかくゲームの 名まえ・あそびかた・絵が そろっている(ずかん用)', () => {
+    for (const e of harvestEngines()) {
+      const info = UI_TEXT.howto.harvest[e as keyof typeof UI_TEXT.howto.harvest];
+      expect(info, `エンジン「${e}」の 名まえ・あそびかたが ない`).toBeTruthy();
+      expect(HARVEST_ICON[e], `エンジン「${e}」の 絵が ない`).toBeTruthy();
+      const [shape] = (HARVEST_ICON[e] ?? '').split(':');
+      expect(hasShape(shape), `エンジン「${e}」の かたち「${shape}」が ない`).toBe(true);
+    }
+  });
+
+  it('おまつりの 名まえ・絵は データから ひける(ゲーム名は 47県で ユニーク)', () => {
+    const byKind = new Map<string, string[]>();
+    for (const r of GAME_DATA.recipes) {
+      if (!r.festGame) continue;
+      byKind.set(r.festGame, [...(byKind.get(r.festGame) ?? []), r.id]);
+    }
+    const dup = [...byKind.entries()].filter(([, ids]) => ids.length > 1);
+    expect(dup.map(([k, ids]) => `${k}: ${ids.join(',')}`)).toEqual([]);
   });
 
   it('おなじ しぐさの ていぎが 2つ ない(キーの 重なり)', () => {

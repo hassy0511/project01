@@ -166,3 +166,23 @@ export const HOW_TO: Record<string, HowTo> = {
 
 /** その ゲームの ゆびマークが あるか */
 export const hasHowTo = (key: string): boolean => key in HOW_TO;
+
+/* -----------------------------------------------------
+   ずかんの 「あそびかた」に ならべる ときの 絵。
+   おまつりは レシピの icon を つかう(データから ひける)ので、
+   ここは しゅうかくゲームの ぶんだけ。
+   ----------------------------------------------------- */
+export const HARVEST_ICON: Record<string, string> = {
+  mine: 'pick:gray',
+  catch: 'basket:tan',
+  chain: 'berry:purple',
+  reap: 'grain:amber',
+  pluck: 'strawberry:red',
+  rhythm: 'tealeaf:deepgreen',
+  sweep: 'snow:white',
+  scoop: 'net:tan',
+  shell: 'shell:cream',
+  flick: 'melon:lime',
+  fish: 'fish:sky',
+  care: 'bug:green',
+};

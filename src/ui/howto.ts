@@ -14,7 +14,7 @@ import Phaser from 'phaser';
 import { HOW_TO, type HowTo, type Pt } from '../data/howto';
 import { UI_TEXT } from '../data/uiText';
 import { addIcon, iconScale } from './icons';
-import { COLORS, DEPTH, GAME_W } from './theme';
+import { COLORS, DEPTH, GAME_AREA_H, GAME_W } from './theme';
 import { Modal } from './widgets';
 
 /** ゆびの 大きさ・こさ */
@@ -59,19 +59,39 @@ const findTarget = (scene: Phaser.Scene, name: string, areaY: number): Pt | null
   return hit;
 };
 
+export interface HowToOpts {
+  /** 小さな 見本わくの 中に 出す ときの いれもの(ずかんの 「あそびかた」)。
+      ない ときは ゲーム画面ぜんたいに 出す */
+  parent?: Phaser.GameObjects.Container;
+  /** 見本わくの 大きさ(1 = ゲーム画面と おなじ) */
+  scale?: number;
+}
+
 /**
  * ゆびマークを 出す。data に その ゲームの ぶんが なければ 何も しない。
  * @param scene ミニゲームの シーン
  * @param key   HOW_TO の キー(エンジン名 / おまつりゲーム名)
  * @param areaY ゲームの area の ずれ(MinigameApi.areaY を そのまま わたす)
+ * @param opts  ずかんの 見本わく用(小さく して いれものの 中に 出す)
  */
-export function showHowTo(scene: Phaser.Scene, key: string, areaY: number): HowToHandle {
+export function showHowTo(scene: Phaser.Scene, key: string, areaY: number, opts: HowToOpts = {}): HowToHandle {
   const spec = HOW_TO[key];
   if (!spec) return NOOP;
 
-  const layer = scene.add.container(0, areaY).setDepth(DEPTH.howto);
+  // 見本わくの 中では ほんものの ゲームの ものが ない。まん中を さして 動きだけ 見せる
+  const demo = !!opts.parent;
+  // 小さな わくの 中では ゆびも 小さく なって しまうので、ゆびだけ 大きめに 描く
+  const boost = demo ? 0.55 / (opts.scale ?? 1) : 1;
+  const layer = scene.add.container(0, areaY);
+  if (opts.parent) {
+    const sc = opts.scale ?? 1;
+    layer.setScale(sc).setPosition((-GAME_W / 2) * sc, (-GAME_AREA_H / 2) * sc);
+    opts.parent.add(layer);
+  } else {
+    layer.setDepth(DEPTH.howto);
+  }
   const glow = scene.add.graphics();
-  const hand = addIcon(scene, GAME_W / 2, 0, HAND_ICON, HAND_SIZE).setAlpha(0);
+  const hand = addIcon(scene, GAME_W / 2, 0, HAND_ICON, HAND_SIZE * boost).setAlpha(0);
   const trail = scene.add.graphics();
   layer.add([trail, glow, hand]);
 
@@ -89,13 +109,13 @@ export function showHowTo(scene: Phaser.Scene, key: string, areaY: number): HowT
 
   /** ゆびを その ばしょへ すぐに 置く(ゆびさきが at に あたるように) */
   const put = (at: Pt): void => {
-    hand.setPosition(at[0], at[1] + TIP_DY);
+    hand.setPosition(at[0], at[1] + TIP_DY * boost);
     // ゆびさきの まわりを ぼんやり 明るく する。こい 背景でも ゆびを 見のがさない
     glow.clear();
     glow.fillStyle(0x000000, 0.22);
-    glow.fillCircle(at[0], at[1], GLOW_R * 1.25);
+    glow.fillCircle(at[0], at[1], GLOW_R * 1.25 * boost);
     glow.fillStyle(0xffffff, 0.4);
-    glow.fillCircle(at[0], at[1], GLOW_R);
+    glow.fillCircle(at[0], at[1], GLOW_R * boost);
   };
 
   /** トン と おす しぐさ(なみもんが ひろがる) */
@@ -113,8 +133,8 @@ export function showHowTo(scene: Phaser.Scene, key: string, areaY: number): HowT
         }),
       );
       const ring = scene.add.graphics();
-      ring.lineStyle(3, 0xffffff, 0.9);
-      ring.strokeCircle(at[0], at[1], 12);
+      ring.lineStyle(3 * boost, 0xffffff, 0.9);
+      ring.strokeCircle(at[0], at[1], 12 * boost);
       layer.add(ring);
       tweens.push(
         scene.tweens.add({
@@ -134,7 +154,7 @@ export function showHowTo(scene: Phaser.Scene, key: string, areaY: number): HowT
     put(from);
     hand.setAlpha(HAND_ALPHA);
     trail.clear();
-    trail.lineStyle(7, 0xffffff, 0.5);
+    trail.lineStyle(7 * boost, 0xffffff, 0.5);
     const pen = { t: 0 };
     tweens.push(
       scene.tweens.add({
@@ -156,7 +176,7 @@ export function showHowTo(scene: Phaser.Scene, key: string, areaY: number): HowT
   const circleAround = (at: Pt, r: number, ms: number): void => {
     hand.setAlpha(HAND_ALPHA);
     trail.clear();
-    trail.lineStyle(7, 0xffffff, 0.5);
+    trail.lineStyle(7 * boost, 0xffffff, 0.5);
     const pen = { t: 0 };
     let prev: Pt = [at[0] + r, at[1]];
     tweens.push(
@@ -184,6 +204,9 @@ export function showHowTo(scene: Phaser.Scene, key: string, areaY: number): HowT
     for (let i = 0; i < 3; i++) tapAt(at, (ms / 3) * i);
   };
 
+  /** 見本わくの 中で うごく ものの かわりに さす ところ */
+  const CENTER: Pt = [GAME_W / 2, GAME_AREA_H / 2];
+
   const DIR_VEC: Record<string, Pt> = {
     up: [0, -1],
     down: [0, 1],
@@ -203,7 +226,7 @@ export function showHowTo(scene: Phaser.Scene, key: string, areaY: number): HowT
         return 4 * 420 + 400;
       }
       case 'tapTarget': {
-        const p = findTarget(scene, s.name, areaY);
+        const p = findTarget(scene, s.name, areaY) ?? (demo ? CENTER : null);
         if (!p) return 600; // まだ 出ていない: すぐ もう一度 さがす
         tapAt(p, 0);
         return 900;
@@ -213,7 +236,7 @@ export function showHowTo(scene: Phaser.Scene, key: string, areaY: number): HowT
         return 1400;
       }
       case 'dragTarget': {
-        const p = findTarget(scene, s.name, areaY);
+        const p = findTarget(scene, s.name, areaY) ?? (demo ? CENTER : null);
         if (!p) return 600;
         dragAlong(p, [p[0] + (s.dx ?? 0), p[1] + (s.dy ?? 0)], 800);
         return 1100;
