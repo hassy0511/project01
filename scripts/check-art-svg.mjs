@@ -26,6 +26,7 @@ const ART_ICON_DIR = 'public/art/icons';
 const ART_BG_DIR = 'public/art/bg';
 const ART_REF_DIR = 'docs/art-ref';
 const MINIGAME_DIR = 'src/scenes/minigames';
+const ART_LIST = 'docs/ART_ASSET_LIST.md';
 
 /* ---------- 期待される 名まえ ---------- */
 const expectedShapes = new Set();
@@ -40,21 +41,26 @@ const expectedBg = new Set(
     .map((f) => f.replace(/Game\.ts$/, '')),
 );
 
-/* ---------- パレット(§5) ---------- */
-const PALETTE = new Set(
-  [
-    '#E0584F', '#A83A33', '#C0392B', '#8E2A20', '#F28BA0', '#C25F74',
-    '#F0913C', '#BC6A22', '#F2B544', '#BF8622', '#F5D84E', '#C2A52C',
-    '#A7CF5A', '#77993A', '#6FB04A', '#4B7C30', '#3F7D3C', '#2A5828',
-    '#4FB3A3', '#2F8175', '#76C4E8', '#4A94B8', '#4F86C6', '#33608F',
-    '#3B4F7D', '#27365A', '#A77BC4', '#7A5293', '#8E6BB5', '#644A86',
-    '#9A6B42', '#6D492B', '#D8B483', '#A8865A', '#F6E7C4', '#B59253',
-    '#FAF6EC', '#9C8F76', '#9AA0A6', '#6C7278', '#4A4A52', '#2C2C33',
-    '#E8C14A', '#B28F22', '#D6DDE3', '#8A949E',
-    // 「その ものの 色」として 指示書が みとめて いる もの(§5・作例)
-    '#5AA04A', '#37702C', '#FFFFFF', '#000000', 'none',
-  ].map((c) => c.toUpperCase()),
-);
+/* ---------- パレット(§5)。kit.ts が 正なので そこから よむ ---------- */
+const PALETTE_OF = {}; // いろ名 -> [MAIN, DARK]
+{
+  const kit = fs.readFileSync(path.join(ICON_DIR, 'kit.ts'), 'utf8');
+  for (const m of kit.matchAll(/^\s{2}(\w+): \[(0x[0-9a-f]{6}), (0x[0-9a-f]{6})\]/gm)) {
+    PALETTE_OF[m[1]] = [m[2].replace('0x', '#').toUpperCase(), m[3].replace('0x', '#').toUpperCase()];
+  }
+}
+/** 「その ものの 色」として 指示書が みとめて いる もの(§5・作例) */
+const EXTRA_OK = ['#5AA04A', '#37702C', '#FFFFFF', '#000000', 'NONE'];
+const PALETTE = new Set([...Object.values(PALETTE_OF).flat(), ...EXTRA_OK]);
+
+/* ---------- その かたちが つかう いろ(ART_ASSET_LIST.md から) ---------- */
+const usedColors = {}; // かたち名 -> いろ名[]
+{
+  const list = fs.readFileSync(ART_LIST, 'utf8');
+  for (const m of list.matchAll(/^\| `([a-z0-9-]+)\.svg` \| [^|]*\| ([^|]*)\|/gm)) {
+    usedColors[m[1]] = m[2].trim().split(/\s+/).filter((c) => PALETTE_OF[c]);
+  }
+}
 
 const ALLOWED_TAGS = new Set(['svg', 'g', 'path', 'circle', 'ellipse', 'rect', 'polygon', 'polyline', 'line', 'title', 'desc']);
 const FORBIDDEN_TAGS = ['image', 'text', 'filter', 'clipPath', 'mask', 'use', 'linearGradient', 'radialGradient', 'pattern', 'animate', 'animateTransform', 'style', 'foreignObject', 'tspan', 'switch', 'symbol', 'marker'];
@@ -62,8 +68,9 @@ const FORBIDDEN_TAGS = ['image', 'text', 'filter', 'clipPath', 'mask', 'use', 'l
 /**
  * 1まいを しらべる。
  * @param kind 'icon' | 'bg'
+ * @param name かたちの 名まえ(その かたちが つかう いろを 見る ため)
  */
-function checkOne(file, kind) {
+function checkOne(file, kind, name) {
   const bad = [];
   const warn = [];
   const src = fs.readFileSync(file, 'utf8');
@@ -119,6 +126,25 @@ function checkOne(file, kind) {
     if (!PALETTE.has(c.toUpperCase())) bad.push(`パレット外の 色 ${c}`);
   }
 
+  /* --- §5 「いろちがいに した とき 消える 色」の 検出。
+         直に 書いた 色が、その かたちが つかう いろの MAIN/DARK と 同じだと、
+         その いろちがいの ときだけ 見えなくなる。
+         (いちごの たねを #F6E7C4 に して、strawberry:cream で 消えた のが これ) --- */
+  if (kind === 'icon') {
+    for (const c of new Set(colors)) {
+      if (c === '#MAIN' || c === '#DARK') continue;
+      const hex = c.toUpperCase();
+      for (const col of usedColors[name] ?? []) {
+        const [main, dark] = PALETTE_OF[col];
+        if (hex === main) {
+          warn.push(`直に 書いた 色 ${c} は 「${col}」の 本体色と 同じ。${name}:${col} の ときに 消えます(#DARK に する か、べつの 色に する)`);
+        } else if (hex === dark) {
+          warn.push(`直に 書いた 色 ${c} は 「${col}」の こい色と 同じ。${name}:${col} の ときに ふちどりに とけます`);
+        }
+      }
+    }
+  }
+
   /* --- §4 セーフエリア。path の d は 相対指定が あって はんだんできない ので、
          まちがいなく 絶対座標の 属性(cx/cy/x/y/r/rx/ry)だけを 見る --- */
   if (kind === 'icon') {
@@ -150,7 +176,7 @@ const scan = (dir, kind, expected, prefix = '') => {
       problems.push(`${dir}/${f}: この 名まえは 一覧に ない(ART_ASSET_LIST.md の 名まえと 1文字も かえない)`);
       continue;
     }
-    const { bad, warn } = checkOne(path.join(dir, f), kind);
+    const { bad, warn } = checkOne(path.join(dir, f), kind, name);
     for (const b of bad) problems.push(`${dir}/${f}: ${b}`);
     for (const w of warn) warnings.push(`${dir}/${f}: ${w}`);
     // 下絵(PNG)なしで SVG だけ 出て いたら しらせる(ART_DIRECTION §8-0)
