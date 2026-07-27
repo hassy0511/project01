@@ -8,7 +8,7 @@ import { addIcon, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { GAME_AREA_H, GAME_W } from '../../ui/theme';
+import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
 
@@ -62,13 +62,28 @@ export function renderYukimatsuri(api: MinigameApi, prompt: string): void {
     },
   });
 
-  // おてほん表示
-  const sample = addIcon(scene, GAME_W - 60, 130, PATTERNS[0].icon, 40);
-  area.add(sample);
-  const sampleLabel = scene.add
-    .text(GAME_W - 60, 96, 'おてほん', { fontSize: '13px', color: '#9ad0f5' })
-    .setOrigin(0.5);
-  area.add(sampleLabel);
+  /* 何を つくるか の 見本。
+     まえは 画面右上に 「おてほん」と だけ 出して いたので、
+     おせる ボタンだと 思われて いた(おしても 何も おきない)。
+     まん中に 「これを つくる ○」の 1行に して、絵の 説明だと 分かるように する。 */
+  const TARGET_Y = 128;
+  const targetLabel = scene.add
+    .text(0, TARGET_Y, UI_TEXT.fest.yukiTarget, {
+      fontFamily: FONT,
+      fontSize: '14px',
+      color: '#dceaf7',
+      fontStyle: 'bold',
+    })
+    .setOrigin(0, 0.5);
+  const SAMPLE_SIZE = 34;
+  const rowW = targetLabel.width + 8 + SAMPLE_SIZE;
+  targetLabel.setX(GAME_W / 2 - rowW / 2);
+  const sample = addIcon(scene, GAME_W / 2 + rowW / 2 - SAMPLE_SIZE / 2, TARGET_Y, PATTERNS[0].icon, SAMPLE_SIZE);
+  // うすい わくを しいて 「よみもの」に 見せる(ボタンの 角丸とは 分ける ため よこ長の わく)
+  const targetBg = scene.add.graphics();
+  targetBg.fillStyle(0xffffff, 0.12);
+  targetBg.fillRoundedRect(GAME_W / 2 - rowW / 2 - 12, TARGET_Y - 22, rowW + 24, 44, 8);
+  area.add([targetBg, targetLabel, sample]);
 
   let cells: Cell[][] = [];
   let statueNo = 0;

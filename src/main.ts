@@ -29,6 +29,11 @@ const config: Phaser.Types.Core.GameConfig = {
   // おとは じぶんで WebAudio 合成しているので、Phaser 側の サウンドは つかわない
   // (AudioContext が 2つ できると iOS で とりあいに なる)
   audio: { noAudio: true },
+  // ★ゆびを 2本 つかう ゲームが ある(ひだり・みぎの たいこを 同時に たたく など)。
+  //   Phaser の 既定は タッチ1本なので、指定しないと 2本目が とどかず
+  //   「同時に たたけない」= 遊びとして 成立しない 状態に なる。
+  //   3 = ゆび2本 + よゆう1(はなす とちゅうに つぎを おいた とき とりこぼさない)
+  input: { activePointers: 3 },
   scene: [BootScene, StoryScene, RegionScene, MapScene, PrefScene, SessionScene, FestivalScene, ZukanScene, InvScene],
 };
 
