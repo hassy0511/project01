@@ -180,8 +180,12 @@ const scan = (dir, kind, expected, prefix = '') => {
     for (const b of bad) problems.push(`${dir}/${f}: ${b}`);
     for (const w of warn) warnings.push(`${dir}/${f}: ${w}`);
     // 下絵(PNG)なしで SVG だけ 出て いたら しらせる(ART_DIRECTION §8-0)
-    const ref = path.join(ART_REF_DIR, `${prefix}${name}.png`);
-    if (!fs.existsSync(ref)) warnings.push(`${dir}/${f}: 下絵 ${ref} が ない(先に 下絵を 作る)`);
+    const ref = ['webp', 'png', 'jpg'].map((e) => path.join(ART_REF_DIR, `${prefix}${name}.${e}`));
+    const hit = ref.find((r) => fs.existsSync(r));
+    if (!hit) warnings.push(`${dir}/${f}: 下絵 ${ref[0]} が ない(先に 下絵を 作る)`);
+    else if (fs.statSync(hit).size > 300 * 1024) {
+      warnings.push(`${dir}/${f}: 下絵 ${hit} が ${(fs.statSync(hit).size / 1024 / 1024).toFixed(2)}MB。512px の WebP に 縮める`);
+    }
   }
   return files;
 };

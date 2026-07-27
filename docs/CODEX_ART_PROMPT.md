@@ -55,15 +55,18 @@ PNG は アプリでは 使いません(§4 で `<image>` を 禁止している
 ### 出す ところ
 
 ```
-docs/art-ref/strawberry.png
-docs/art-ref/fish.png
-docs/art-ref/person.png
-docs/art-ref/lantern.png
-docs/art-ref/bowl.png
+docs/art-ref/strawberry.webp
+docs/art-ref/fish.webp
+docs/art-ref/person.webp
+docs/art-ref/lantern.webp
+docs/art-ref/bowl.webp
 ```
 
 - `docs/` は アプリに 含まれません。ここは **参考置き場**です
-- 1024×1024 まで。**正方形**で 生成する
+- **512×512 の WebP で 保存する**(`.webp`)。**正方形**。
+  1回目に 1024px の PNG で 出したら 1まい 1MB に なりました。
+  202個ぶん たまると リポジトリが 200MB 近くに なって しまいます。
+  生成は 大きいままで よいので、**保存する ときに 512px の WebP に 縮めてください**
 - 1つの かたちに 1枚。色ちがいは 作らない
 
 ### 画像生成プロンプト(この ひな形を 使う)
@@ -266,7 +269,7 @@ npm run art:check          # きまりの 自動チェック(これが 通るま
 
 ### 背景の 回(第6回)だけ 変わる ところ
 
-- 下絵: `docs/art-ref/bg-<ゲーム名>.png`。**よこ長(480:748 に 近い たて長)**で 生成
+- 下絵: `docs/art-ref/bg-<ゲーム名>.webp`(512px 相当・WebP)。**たて長(480:748)**で 生成
 - 納品: `public/art/bg/bg-<ゲーム名>.svg`、`viewBox="0 0 480 748"`
 - ART_DIRECTION.md **§7** を あわせて 読ませる
 - 画像生成プロンプトの `Subject:` は **場所だけ**。人・道具・食べものは 描かせない
