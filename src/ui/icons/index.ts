@@ -17,9 +17,11 @@
 import Phaser from 'phaser';
 import { ICON_COLORS, S, type IconDraw } from './kit';
 import { DRAW } from './registry';
+import { applySvg } from './svg';
 
 export { ICON_COLORS } from './kit';
 export { allShapes, hasShape } from './registry';
+export { hasSvg, svgShapes, svgTextureKey } from './svg';
 export type IconKey = string;
 
 /** テクスチャは 見た目の 2ばいの ドットで 焼く(HiDPI で ぼやけない ように) */
@@ -49,10 +51,13 @@ export function iconTexture(scene: Phaser.Scene, key: IconKey): string {
 /** どの 大きさで おいたかを おぼえておく ための しるし */
 const SIZE_KEY = '__iconSize';
 
-/** アイコンを おく(size = 見た目の 1辺 px) */
+/** アイコンを おく(size = 見た目の 1辺 px)。
+    手描きの SVG が ある かたちは、焼けしだい そちらに 差しかわる
+    (それまでは コード描画。202個 そろうのを 待たない ため) */
 export function addIcon(scene: Phaser.Scene, x: number, y: number, key: IconKey, size = 64): Phaser.GameObjects.Image {
   const img = scene.add.image(x, y, iconTexture(scene, key)).setOrigin(0.5).setDisplaySize(size, size);
   img.setData(SIZE_KEY, size);
+  applySvg(img, key, size);
   return img;
 }
 
@@ -82,6 +87,7 @@ export function setIcon(img: Phaser.GameObjects.Image, key: IconKey, size?: numb
   img.setTexture(iconTexture(img.scene, key));
   img.setDisplaySize(w, w);
   img.setData(SIZE_KEY, w);
+  applySvg(img, key, w);
 }
 
 

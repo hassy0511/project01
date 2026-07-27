@@ -7,6 +7,9 @@
        ?size=96&cols=6        … 1つの 大きさ と よこの 数
        ?from=40&to=80         … かたちの ならびの 何番目から 何番目まで
        ?small=1               … 実際の UI の 小ささ(28px)で 見る
+       ?svg=1                 … 手描き SVG が ある かたちだけ
+       ?svg=compare           … 手描き SVG と コード描画を 上下に ならべて 見くらべる
+                                (上=SVG / 下=コード。差しかえの 良否を 見る)
      いろは データ(gameData)で じっさいに 使われている いろを つかう。
      どこにも 使われて いない かたちは グレーの わくで しめし、
      かたちが 見える ように こい いろを あてる(cream だと 白っぽくて 判別できない)。 -->
@@ -23,11 +26,11 @@
     <script type="module">
       import Phaser from 'phaser';
       // 相対パスで 書く(vite の base 設定に 左右されない ように)
-      import { addIcon, allShapes } from './src/ui/icons/index.ts';
+      import { addIcon, allShapes, iconTexture, svgShapes, svgTextureKey } from './src/ui/icons/index.ts';
       import { GAME_DATA } from './src/data/gameData.ts';
 
       // 開発ツール(スクショ・ドット数の 計測)から つかえる ように 出しておく
-      window.__sheet = { Phaser, addIcon, allShapes, GAME_DATA };
+      window.__sheet = { Phaser, addIcon, allShapes, svgShapes, GAME_DATA };
 
       const q = new URLSearchParams(location.search);
       const num = (k, d) => (q.has(k) ? Number(q.get(k)) : d);
@@ -64,16 +67,26 @@
       };
 
       const all = allShapes();
+      /* ?svg=1 / ?svg=compare … 手描き SVG が ある かたちだけ 見る。
+         compare は 1マスに 上=SVG / 下=コード描画 を ならべる */
+      const SVG_MODE = q.get('svg');
+      const withSvg = svgShapes();
       // ?only=cup,jar,… で 見たい かたちだけ 出す(直した ところの 確認に つかう)
       const only = q.get('only');
-      const shapes = only ? only.split(',').filter((s) => all.includes(s)) : all.slice(num('from', 0), num('to', all.length));
+      const shapes = only
+        ? only.split(',').filter((s) => all.includes(s))
+        : SVG_MODE
+          ? withSvg
+          : all.slice(num('from', 0), num('to', all.length));
       const rows = Math.ceil(shapes.length / COLS);
+      const COMPARE = SVG_MODE === 'compare';
+      const CELL_H = COMPARE ? CELL + ICON + 18 : CELL;
 
       new Phaser.Game({
         type: Phaser.AUTO,
         parent: 'app',
         width: COLS * CELL,
-        height: rows * CELL + 40,
+        height: rows * CELL_H + 40,
         backgroundColor: '#f7f3e6',
         scene: {
           create() {
@@ -81,7 +94,7 @@
               const col = i % COLS;
               const row = Math.floor(i / COLS);
               const x = col * CELL + CELL / 2;
-              const y = row * CELL + CELL / 2 + 10;
+              const y = row * CELL_H + CELL / 2 + 10;
               // 使われて いない かたちは cream だと 白っぽくて 見えないので こい いろを まわす
               const SPARE = ['brown', 'green', 'blue', 'orange', 'purple', 'teal'];
               const color = topColor(shape) ?? SPARE[i % SPARE.length];
@@ -90,11 +103,34 @@
                 this.add.rectangle(x, y - 10, CELL - 10, ICON + 8).setStrokeStyle(1.5, 0xc0b8a4);
               }
               addIcon(this, x, y - 10, `${shape}:${color}`, ICON);
+              if (COMPARE) {
+                // 上の 1つは SVG に 差しかわる。下に コード描画を そのまま 出して 見くらべる
+                this.add
+                  .text(x, y + ICON / 2 - 4, '↑ SVG', {
+                    fontFamily: 'sans-serif',
+                    fontSize: '9px',
+                    color: '#3f7d3c',
+                  })
+                  .setOrigin(0.5);
+                const cy = y - 10 + ICON + 18;
+                this.add
+                  .image(x, cy, iconTexture(this, `${shape}:${color}`))
+                  .setOrigin(0.5)
+                  .setDisplaySize(ICON, ICON);
+                this.add
+                  .text(x, cy + ICON / 2 + 2, '↑ コード', {
+                    fontFamily: 'sans-serif',
+                    fontSize: '9px',
+                    color: '#9a8c72',
+                  })
+                  .setOrigin(0.5);
+              }
+              const labelY = COMPARE ? y - 10 + ICON * 2 + 34 : y + ICON / 2 + 2;
               this.add
-                .text(x, y + ICON / 2 + 2, shape, { fontFamily: 'sans-serif', fontSize: '12px', color: '#5a4632' })
+                .text(x, labelY, shape, { fontFamily: 'sans-serif', fontSize: '12px', color: '#5a4632' })
                 .setOrigin(0.5);
               this.add
-                .text(x, y + ICON / 2 + 16, `${color} ×${uses(shape)}`, {
+                .text(x, labelY + 14, `${color} ×${uses(shape)}`, {
                   fontFamily: 'sans-serif',
                   fontSize: '10px',
                   color: '#9a8c72',

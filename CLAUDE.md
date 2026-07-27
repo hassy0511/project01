@@ -39,8 +39,10 @@ src/
 ├─ data/        # ゲームデータ(県・そざい・レシピ・クイズ・トリビア)
 ├─ scenes/      # Phaserシーン(Boot/Preload/Map/Pref/Session/Zukan)
 ├─ ui/          # 共通UI(ボタン・モーダル・マスコット・トースト)
+│   └─ icons/    # ベクターアイコン。public/art/icons/*.svg があればそちらを優先
 └─ audio/       # サウンド
 public/assets/  # 画像・音・地図パスJSON
+public/art/     # 手描きSVG(置くだけで差しかわる。iconsheet.html?svg=compare で見くらべ)
 docs/           # 仕様書・ロードマップ・移植計画
 reference/      # v0.4 HTML試作版(参照用。編集禁止)
 ```
