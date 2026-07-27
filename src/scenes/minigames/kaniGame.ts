@@ -106,7 +106,8 @@ export function renderKani(api: MinigameApi, prompt: string): void {
     const row = Math.floor(Math.random() * 4);
     const x = kani.x + side * (110 + Math.random() * 70);
     const y = 300 - 34 + row * 24;
-    const ring = scene.add.circle(x, y, 22).setStrokeStyle(4, 0xffd34d, 0.95);
+    // 名まえを つけて おく と、あそびかたの ゆびマークが この わっかを 追える
+    const ring = scene.add.circle(x, y, 22).setStrokeStyle(4, 0xffd34d, 0.95).setName('mg-spot');
     area.add(ring);
     scene.tweens.add({ targets: ring, scale: { from: 1, to: 1.2 }, alpha: { from: 1, to: 0.6 }, duration: 500, yoyo: true, repeat: -1 });
     const s: Spot = {

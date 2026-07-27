@@ -123,6 +123,8 @@ export function renderRokugatsudo(api: MinigameApi, prompt: string): void {
       c.on('pointerdown', () => tap(idx));
       area.add(c);
       dots.push({ x, y, obj: c, done: false });
+      // つぎに おす 点だけに 名まえを つける。あそびかたの ゆびマークが これを 追う
+      if (i === 0) c.setName('mg-dot');
     }
   };
 
@@ -181,6 +183,9 @@ export function renderRokugatsudo(api: MinigameApi, prompt: string): void {
       return;
     }
     dots[i].done = true;
+    // 名まえを つぎの 点へ わたす(ゆびマークが いつも 「つぎ」を さす ように)
+    dots[i].obj.setName('');
+    dots.find((d) => !d.done)?.obj.setName('mg-dot');
     SFX.pop();
     impactRing(scene, dots[i].x, dots[i].y + api.areaY, 0xffd34d, 8);
     burst(scene, dots[i].x, dots[i].y + api.areaY, 3, [0xe05b5b, 0xffffff]);
