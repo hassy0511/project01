@@ -183,6 +183,11 @@ export function renderRokugatsudo(api: MinigameApi, prompt: string): void {
       return;
     }
     dots[i].done = true;
+    // つないだ 点は もう おせない ように する。
+    // まえは うすく なる だけで まだ おせた ので、さっき おした ところを
+    // 確かめるように もう一度 ふれる = 「じゅんばん ちがい」あつかいで
+    // コンボが きれる、という 罰に なって いた
+    dots[i].obj.disableInteractive();
     // 名まえを つぎの 点へ わたす(ゆびマークが いつも 「つぎ」を さす ように)
     dots[i].obj.setName('');
     dots.find((d) => !d.done)?.obj.setName('mg-dot');
@@ -190,7 +195,15 @@ export function renderRokugatsudo(api: MinigameApi, prompt: string): void {
     impactRing(scene, dots[i].x, dots[i].y + api.areaY, 0xffd34d, 8);
     burst(scene, dots[i].x, dots[i].y + api.areaY, 3, [0xe05b5b, 0xffffff]);
     session.addPoints(DOT_PTS, dots[i].x, dots[i].y + api.areaY - 22);
-    dots[i].obj.setAlpha(0.45);
+    // すんだ 点は 「白い まる + すうじ」= ボタンの みため を やめて、
+    // せんと 同じ 赤い 点に する(おせない ことが 絵で わかる)
+    const done = dots[i].obj;
+    for (const child of [...done.list]) child.destroy();
+    const dg = scene.add.graphics();
+    dg.fillStyle(0x8a2f2f, 1);
+    dg.fillCircle(0, 0, 7);
+    done.add(dg);
+    done.setAlpha(0.85);
     redrawLine();
     if (dots.every((d) => d.done)) finish();
   };

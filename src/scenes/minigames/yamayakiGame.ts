@@ -176,19 +176,26 @@ export function renderYamayaki(api: MinigameApi, prompt: string): void {
       }
       return;
     }
-    const c = cellAt(p.worldX, y);
-    if (c) burn(c);
+    spread(p.worldX, y);
   };
 
-  const onMove = (p: Phaser.Input.Pointer): void => {
-    if (!p.isDown || !lit || session.isEnded()) return;
-    const c = cellAt(p.worldX, p.worldY - api.areaY);
+  /** となりに 火が ある ますだけ もえる(火は とびこえない)。
+      これが この あそびの 芯 なので タップでも ドラッグでも 同じ きまり。
+      まえは onDown だけ となり判定が なく、画面の どこでも 単発タップすれば
+      もえた ため、火みちを なぞる 意味が まるごと 消えて いた
+      (しかも なぞると き に ふれて コンボが きれる ので タップの ほうが 得) */
+  const spread = (wx: number, ay: number): void => {
+    const c = cellAt(wx, ay);
     if (!c) return;
-    // となりに 火が ある ときだけ もえひろがる(火は とびこえない)
     const near = cells.some(
       (x) => x.burnt && !x.tree && Math.abs(x.col - c.col) <= 1 && Math.abs(x.row - c.row) <= 1,
     );
     if (near) burn(c);
+  };
+
+  const onMove = (p: Phaser.Input.Pointer): void => {
+    if (!p.isDown || !lit || session.isEnded()) return;
+    spread(p.worldX, p.worldY - api.areaY);
   };
   scene.input.on('pointerdown', onDown);
   scene.input.on('pointermove', onMove);

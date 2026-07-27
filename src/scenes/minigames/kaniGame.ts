@@ -9,7 +9,7 @@ import { addIcon, iconScale } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { GAME_AREA_H, GAME_W } from '../../ui/theme';
+import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
 
@@ -45,11 +45,31 @@ export function renderKani(api: MinigameApi, prompt: string): void {
   bg.fillTriangle(-10, 120, GAME_W / 2, 40, GAME_W + 10, 120); // テント
   bg.fillStyle(0xf5f7fa, 1);
   bg.fillRoundedRect(20, 150, GAME_W - 40, 330, 20); // まないた
-  bg.fillStyle(0xdfe6ee, 1);
-  bg.fillRoundedRect(70, 500, GAME_W - 140, 110, 55); // おおざら
   area.add(bg);
-  area.add(addIcon(scene, GAME_W / 2 - 52, 556, 'plate:cream', 26));
-  const plateLabel = scene.add.text(GAME_W / 2 + 8, 556, '', { fontSize: '20px', color: '#3d3129', fontStyle: 'bold' }).setOrigin(0.5);
+
+  /* もりつけの おさら。
+     まえは 「0/6」「0/8 おおざら!」という 数字だけで、
+     おさらの 絵は 大きさも 色も かわらなかった ので、
+     おおざら(目標が 6→8、ボーナス2倍)に なった ことが 絵で 伝わらなかった。
+     いまは おさら自体が 大きく・きんいろに かわり、
+     のこりの 数だけ かにを ならべて 見せる(すすみぐあいも 絵で わかる) */
+  const plateDish = scene.add.graphics();
+  area.add(plateDish);
+  const drawDish = (isBig: boolean): void => {
+    const w = isBig ? GAME_W - 90 : GAME_W - 140;
+    plateDish.clear();
+    plateDish.fillStyle(isBig ? 0xf7e3a8 : 0xdfe6ee, 1);
+    plateDish.fillRoundedRect((GAME_W - w) / 2, 500, w, 110, 55);
+    if (isBig) {
+      plateDish.lineStyle(5, 0xe0b23c, 1);
+      plateDish.strokeRoundedRect((GAME_W - w) / 2, 500, w, 110, 55);
+    }
+  };
+  /** おさらに のった かに(もりつけた 数だけ 出す) */
+  const onPlate: Phaser.GameObjects.Image[] = [];
+  const plateLabel = scene.add
+    .text(GAME_W / 2, 590, '', { fontFamily: FONT, fontSize: '16px', color: '#3d3129', fontStyle: 'bold' })
+    .setOrigin(0.5);
   area.add(plateLabel);
 
   api.sign(prompt);
@@ -87,7 +107,16 @@ export function renderKani(api: MinigameApi, prompt: string): void {
   let target = PLATE_NORMAL;
   let big = false;
   const refreshPlate = (): void => {
-    plateLabel.setText(`${plate}/${target}${big ? ' おおざら!' : ''}`);
+    drawDish(big);
+    plateLabel.setText(big ? UI_TEXT.fest.kaniBigPlate : '');
+    // のせた かにを ならべなおす(数を 数えなくても すすみが わかる)
+    for (const o of onPlate.splice(0)) o.destroy();
+    const gap = Math.min(46, (GAME_W - 130) / target);
+    for (let i = 0; i < plate; i++) {
+      const c = addIcon(scene, GAME_W / 2 + (i - (target - 1) / 2) * gap, 548, 'crab:red', 26);
+      area.add(c);
+      onPlate.push(c);
+    }
   };
   refreshPlate();
 

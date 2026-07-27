@@ -13,7 +13,7 @@ import { SFX } from '../audio/sfx';
 import { setBgmTrack } from '../audio/bgm';
 import { showTriviaOnce } from '../ui/trivia';
 import { COLORS, DEPTH, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
-import { makeGuideRow, makeIconRow, Modal } from '../ui/widgets';
+import { makeGuideRow, makeIconRow, Modal, swallowPointer } from '../ui/widgets';
 import { confetti, firework, screenFlash } from '../ui/effects';
 import { addHelpButton, showHowTo, type HowToHandle } from '../ui/howto';
 import { iconTexture } from '../ui/icons';
@@ -113,6 +113,8 @@ export class FestivalScene extends Phaser.Scene {
       })
       .setOrigin(0, 0.5)
       .setInteractive({ useHandCursor: true });
+    // 「もどる」の タップも ゲームに ながさない(ミニゲームは scene.input 直づけ)
+    swallowPointer(back);
     back.on('pointerup', () => this.scene.start('PrefScene', { prefId: this.prefId }));
     head.add(back);
     head.add(

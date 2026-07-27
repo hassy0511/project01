@@ -81,6 +81,34 @@ export function renderTsunahiki(api: MinigameApi, prompt: string): void {
     .text(GAME_W / 2, 220, '', { fontFamily: FONT, fontSize: '22px', color: '#c04545', fontStyle: 'bold' })
     .setOrigin(0.5);
   area.add(warn);
+  /* 「いまは おしっぱなし」を 絵で 見せる しるし。
+     まえは 赤い 22px の ことば 1行 だけ だった ので、
+     字が 読めない子は 切りかえの あいずに 気づけず れんだを つづけて
+     つなを もっていかれて いた。
+     ゆびマークと 赤い わくを ふんばり中 ずっと 出す(消えたら はなす あいず) */
+  // つな(CY)や ふさを かくさない ばしょ = ひきての した の あき地
+  const holdSign = scene.add.container(GAME_W / 2, 520).setAlpha(0);
+  const hg = scene.add.graphics();
+  hg.lineStyle(5, 0xc04545, 0.9);
+  hg.strokeRoundedRect(-92, -40, 184, 80, 18);
+  hg.fillStyle(0xffffff, 0.28);
+  hg.fillRoundedRect(-92, -40, 184, 80, 18);
+  holdSign.add(hg);
+  holdSign.add(addIcon(scene, 0, 0, 'hand-point:cream', 52));
+  area.add(holdSign);
+  let signOn = false;
+  const showHoldSign = (on: boolean): void => {
+    if (on === signOn) return;
+    signOn = on;
+    scene.tweens.killTweensOf(holdSign);
+    if (on) {
+      holdSign.setAlpha(1).setScale(1);
+      // どきどき させて 「いま」だと わかる ように する
+      scene.tweens.add({ targets: holdSign, scale: { from: 1, to: 1.14 }, duration: 260, yoyo: true, repeat: -1 });
+    } else {
+      holdSign.setAlpha(0).setScale(1);
+    }
+  };
   const info = scene.add
     .text(GAME_W / 2, 600, '', { fontFamily: FONT, fontSize: '15px', color: '#5a4632', fontStyle: 'bold' })
     .setOrigin(0.5);
@@ -162,6 +190,7 @@ export function renderTsunahiki(api: MinigameApi, prompt: string): void {
     const dt = Math.min(dtMs, 33) / 1000;
     const strong = Date.now() < strongUntil;
     warn.setText(strong ? UI_TEXT.fest.tsunaWarn : '');
+    showHoldSign(strong);
     if (strong) {
       // ふんばれていれば ほとんど もっていかれない
       const foe = holding ? FOE_STRONG * 0.12 : FOE_STRONG;

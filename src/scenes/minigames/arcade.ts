@@ -54,6 +54,10 @@ export class ArcadeSession {
     this.onEnd = opts.onEnd;
     this.durationSec = scaledDuration(opts.engine);
     this.startedAt = Date.now();
+    // いま いる UPDATE の ききみみ = Phaser 内部の もの(と、セッションより
+    // 先に つける ゲームの ぶん。catchGame の かご追従など、止めなくても
+    // こまらない ものだけ)。freezeGameUpdates で これは はずさない
+    this.baseUpdaters = new Set(this.scene.events.listeners(Phaser.Scenes.Events.UPDATE));
     this.buildHud();
     setHook({ kind: 'arcade', engine: this.engine, score: 0, secLeft: this.durationSec });
 
@@ -81,7 +85,10 @@ export class ArcadeSession {
   }
 
   private onHelpOpen(): void {
-    if (!this.ended && !this.pausedAt) this.pausedAt = Date.now();
+    if (!this.ended && !this.pausedAt) {
+      this.pausedAt = Date.now();
+      this.freezeGameUpdates();
+    }
   }
 
   private onHelpClose(): void {
@@ -90,6 +97,39 @@ export class ArcadeSession {
     this.startedAt += Date.now() - this.pausedAt;
     this.lastHitAt += Date.now() - this.pausedAt;
     this.pausedAt = 0;
+    this.thawGameUpdates();
+  }
+
+  /* あそびかたを 読んでいる あいだ、ゲームの うごきも 止める。
+
+     時計(pausedAt)を 止めるだけでは ミニゲーム側の
+     scene.events.on(UPDATE, onUpdate) は まわりつづける ので、
+     説明を 読んでいる あいだに ノーツ・さかな・きゃくが ながれて いき、
+     ミス判定を こえて コンボが きれて いた。
+     字が 読めない子ほど 長く 読む ので、読むほど 損を する 形に なる。
+
+     時計そのもの(scene.time)は 止めない。止めると モーダルの 中の
+     ゆびマークの くりかえしも 止まる(ui/howto.ts は delayedCall で まわす)。
+
+     Phaser 内部(Clock / TweenManager)も UPDATE を きいて いる ので、
+     ぜんぶ はずすと 時計も トゥイーンも 死ぬ。
+     セッションを つくった 時点で いた ききみみ を おぼえておき、
+     そのあと ミニゲームが つけた ぶん だけ はずす。 */
+  private readonly baseUpdaters: Set<unknown>;
+  private frozenUpdaters: ((...a: never[]) => void)[] = [];
+
+  private freezeGameUpdates(): void {
+    const ev = Phaser.Scenes.Events.UPDATE;
+    for (const fn of this.scene.events.listeners(ev) as ((...a: never[]) => void)[]) {
+      if (this.baseUpdaters.has(fn)) continue;
+      this.scene.events.off(ev, fn);
+      this.frozenUpdaters.push(fn);
+    }
+  }
+
+  private thawGameUpdates(): void {
+    const ev = Phaser.Scenes.Events.UPDATE;
+    for (const fn of this.frozenUpdaters.splice(0)) this.scene.events.on(ev, fn);
   }
 
   secLeft(): number {

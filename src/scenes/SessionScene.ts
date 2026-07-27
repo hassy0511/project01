@@ -12,11 +12,10 @@ import { calcStars, harvestYield, totalScore } from '../core/stars';
 import { markSanchiCompleteOnce, registerMaterial } from '../core/state';
 import { store } from '../game/store';
 import { setHook } from '../game/testHooks';
-import { SFX } from '../audio/sfx';
 import { buildQuizView } from '../ui/quizRunner';
 import { showTriviaOnce } from '../ui/trivia';
 import { COLORS, DEPTH, FONT, GAME_W, TEXT_COLORS } from '../ui/theme';
-import { makeStarRow, Modal, showToast } from '../ui/widgets';
+import { makeStarRow, Modal, swallowPointer } from '../ui/widgets';
 import { confetti, screenFlash } from '../ui/effects';
 import { addHelpButton, showHowTo, type HowToHandle } from '../ui/howto';
 import { addIcon } from '../ui/icons';
@@ -100,6 +99,8 @@ export class SessionScene extends Phaser.Scene {
       })
       .setOrigin(0, 0.5)
       .setInteractive({ useHandCursor: true });
+    // 「もどる」の タップも ゲームに ながさない(ミニゲームは scene.input 直づけ)
+    swallowPointer(back);
     back.on('pointerup', () => this.scene.start('PrefScene', { prefId: this.prefId }));
     head.add(back);
     this.backBtn = back;
@@ -272,8 +273,13 @@ export class SessionScene extends Phaser.Scene {
     if (this.mode === 'care') {
       markCareDone(s, this.matId, this.prefId);
       store.save();
-      showToast(this, UI_TEXT.session.careDoneToast);
-      this.scene.start('PrefScene', { prefId: this.prefId });
+      // しらせは 県ページで 出す。ここで showToast すると 次の 行の
+      // scene.start で この シーンごと 消え、1フレームも 見えないまま
+      // 「おせわ できた」の 手ごたえが 無く なる
+      this.scene.start('PrefScene', {
+        prefId: this.prefId,
+        toast: UI_TEXT.session.careDoneToast,
+      });
       return;
     }
 
@@ -291,13 +297,6 @@ export class SessionScene extends Phaser.Scene {
     registerMaterial(s, this.matId, this.prefId, stars, yieldN);
     const compNow = markSanchiCompleteOnce(s, this.material);
     store.save();
-
-    if (compNow) {
-      this.time.delayedCall(1200, () => {
-        showToast(this, UI_TEXT.session.sanchiComp(this.material.name));
-        SFX.fanfare();
-      });
-    }
 
     const g = this.material.gather;
     const successWord =
@@ -329,7 +328,17 @@ export class SessionScene extends Phaser.Scene {
     modal.addText(`${UI_TEXT.session.gotItems(this.material.name, yieldN)}\n${note}`, 15, TEXT_COLORS.sub);
     modal.addButton(UI_TEXT.session.backBtn, COLORS.primary, () => {
       modal.close();
-      showTriviaOnce(this, this.matId, () => this.scene.start('PrefScene', { prefId: this.prefId }));
+      // 産地コンプの お祝いも 県ページで 出す。
+      // まえは 1.2秒後の delayedCall だったので、子供が それより 早く
+      // 「もどる」を おすと Clock ごと 消えて 一生 見られなかった
+      // (フラグは もう 立って いる ので 二度と 出ない)
+      showTriviaOnce(this, this.matId, () =>
+        this.scene.start('PrefScene', {
+          prefId: this.prefId,
+          toast: compNow ? UI_TEXT.session.sanchiComp(this.material.name) : undefined,
+          fanfare: compNow,
+        }),
+      );
     });
     modal.show();
   }

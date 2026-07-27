@@ -15,7 +15,7 @@ import { HOW_TO, type HowTo, type Pt } from '../data/howto';
 import { UI_TEXT } from '../data/uiText';
 import { addIcon, iconScale } from './icons';
 import { COLORS, DEPTH, GAME_AREA_H, GAME_W } from './theme';
-import { Modal } from './widgets';
+import { Modal, swallowPointer } from './widgets';
 import { HELP_CLOSE, HELP_OPEN } from '../scenes/minigames/arcade';
 
 /** ゆびの 大きさ・こさ */
@@ -343,6 +343,9 @@ export function addHelpButton(
     .setName('nav-help')
     .setDepth(DEPTH.header + 1)
     .setInteractive({ useHandCursor: true });
+  // 「?」を おした タップを ゲームに ながさない。
+  // ながすと 「あそびかたを 読む」だけで コンボが きれる(わらじ・あわおどり ほか)
+  swallowPointer(btn);
   btn.on(Phaser.Input.Events.GAMEOBJECT_POINTER_UP, () => {
     // 読んでいる あいだ アーケードの 時計を 止める(読むだけで 点が へらない ように)
     scene.events.emit(HELP_OPEN);

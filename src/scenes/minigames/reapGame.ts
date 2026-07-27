@@ -11,7 +11,7 @@ import { burst, floatUp, missShake, padHitArea } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
-import { offPointerRelease, onPointerRelease } from './input';
+import { offPointerRelease, onPointerRelease, PerPointer } from './input';
 import type { MinigameApi } from './types';
 
 const AREA_H = GAME_AREA_H;
@@ -289,20 +289,24 @@ export function renderReap(api: MinigameApi, targetIcon: string, prompt: string)
   };
   scheduleBird(BIRD_FIRST_MS);
 
-  let strokeId = 0;
-  let strokeActive = false;
+  /** ひとふで(なぞり)は ゆびごと。1つの へんすうに すると
+      2本目の ゆびが おりた だけで 1本目の ひとふでが 別番号に なり、
+      かたほうを はなすと もう かたほうの なぞりも 死んで いた */
+  type Stroke = { id: number; trail: { x: number; y: number }; alive: boolean };
+  const strokes = new PerPointer<Stroke>();
+  let nextStrokeId = 0;
 
   let stunnedUntil = 0;
 
-  const cutAt = (px: number, py: number): void => {
+  const cutAt = (px: number, py: number, stroke: Stroke): void => {
     if (session.isEnded() || Date.now() < stunnedUntil) return;
     const y = py - api.areaY;
     // なぞりの途中でカエルに触れた: びっくりして一筆が途切れる+しばらく かたまる
-    if (strokeActive) {
+    if (stroke.alive) {
       for (const f of frogs) {
         if (!f.obj.active) continue;
         if (Math.hypot(px - f.obj.x, y - f.obj.y) < FROG_RADIUS) {
-          strokeActive = false;
+          stroke.alive = false;
           stunnedUntil = Date.now() + FROG_STUN_MS;
           session.resetCombo();
           missShake(scene);
@@ -320,7 +324,7 @@ export function renderReap(api: MinigameApi, targetIcon: string, prompt: string)
       for (const st of rows[r]) {
         if (!st.alive || Math.abs(px - st.obj.x) > CUT_RADIUS || Math.abs(y - st.obj.y) > 46) continue;
         st.alive = false;
-        st.strokeId = strokeId;
+        st.strokeId = stroke.id;
         SFX.pop();
         burst(scene, st.obj.x, st.obj.y + api.areaY - 14, 5, [0xffd34d, 0xe8c66a, 0xbfa14a]);
         session.addPoints(STALK_PTS, st.obj.x, st.obj.y + api.areaY - 30);
@@ -336,7 +340,7 @@ export function renderReap(api: MinigameApi, targetIcon: string, prompt: string)
         });
         // 列を刈りきった?
         if (rows[r].every((x) => !x.alive)) {
-          const oneStroke = rows[r].every((x) => x.strokeId === strokeId);
+          const oneStroke = rows[r].every((x) => x.strokeId === stroke.id);
           if (oneStroke) {
             session.addPoints(ROW_BONUS, GAME_W / 2, rowY + api.areaY - 40, false);
             floatUp(scene, GAME_W / 2, rowY + api.areaY - 66, UI_TEXT.arcade.cleanRow, '#3f7d2c');
@@ -350,29 +354,28 @@ export function renderReap(api: MinigameApi, targetIcon: string, prompt: string)
     }
   };
 
-  let lastTrail: { x: number; y: number } | null = null;
   const onDown = (p: Phaser.Input.Pointer): void => {
-    strokeId++;
-    strokeActive = true;
-    lastTrail = { x: p.worldX, y: p.worldY };
-    cutAt(p.worldX, p.worldY);
+    nextStrokeId++;
+    const stroke: Stroke = { id: nextStrokeId, trail: { x: p.worldX, y: p.worldY }, alive: true };
+    strokes.set(p, stroke);
+    cutAt(p.worldX, p.worldY, stroke);
   };
   const onMove = (p: Phaser.Input.Pointer): void => {
-    if (!p.isDown || !strokeActive) return;
-    cutAt(p.worldX, p.worldY);
+    const stroke = strokes.get(p);
+    if (!p.isDown || !stroke || !stroke.alive) return;
+    cutAt(p.worldX, p.worldY, stroke);
     // 鎌の軌跡: 指のあとを ひとすじの光が追いかける
-    if (lastTrail) {
-      const seg = scene.add.graphics();
-      seg.lineStyle(7, 0xffffff, 0.6);
-      seg.lineBetween(lastTrail.x, lastTrail.y - api.areaY, p.worldX, p.worldY - api.areaY);
-      area.add(seg);
-      scene.tweens.add({ targets: seg, alpha: 0, duration: 230, onComplete: () => seg.destroy() });
-    }
-    lastTrail = { x: p.worldX, y: p.worldY };
+    // (ゆびごとに おぼえる。1つに すると 2本の ゆびの あいだに
+    //  画面を よこぎる 線が 出て しまう)
+    const seg = scene.add.graphics();
+    seg.lineStyle(7, 0xffffff, 0.6);
+    seg.lineBetween(stroke.trail.x, stroke.trail.y - api.areaY, p.worldX, p.worldY - api.areaY);
+    area.add(seg);
+    scene.tweens.add({ targets: seg, alpha: 0, duration: 230, onComplete: () => seg.destroy() });
+    stroke.trail = { x: p.worldX, y: p.worldY };
   };
-  const onUp = (): void => {
-    strokeActive = false;
-    lastTrail = null;
+  const onUp = (p: Phaser.Input.Pointer): void => {
+    strokes.take(p);
   };
   scene.input.on('pointerdown', onDown);
   scene.input.on('pointermove', onMove);

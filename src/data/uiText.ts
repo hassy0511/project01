@@ -473,6 +473,8 @@ export const UI_TEXT = {
     kaniCrack: 'ぱきっ!',
     kaniMi: 'みが とれた!',
     kaniOozara: 'おおざら もりつけ!',
+    /** おさらが きんいろに なって いる あいだの ひとこと(点は 2ばい) */
+    kaniBigPlate: 'おおざら! 2ばい',
     kaniPlate: 'もりつけ かんせい!',
     hiLit: 'ひが ついた!',
     hiOut: 'きえちゃった!',

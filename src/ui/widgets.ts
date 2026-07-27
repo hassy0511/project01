@@ -66,6 +66,43 @@ export function setButtonStyle(btn: Phaser.GameObjects.Container, w: number, h: 
 
 const MODAL_W = 440;
 
+/** この「もの」を さわった タップを ここで 止める(うしろへ わたさない)。
+
+    Phaser は 「もの」の あつかいが おわった あと、かならず
+    scene.input からも おなじ タップを 出す
+    (InputPlugin.processDownEvents → this.emit(POINTER_DOWN))。
+    ミニゲームは ほぼ scene.input 直づけで タップを うけて いる ので、
+    ボタンを おした タップが そのまま ゲームにも 入って しまう:
+      ・わらじ: 右上の 「?」(x=452)が 「みぎ足」の タップに なり、
+        つぎが ひだり足なら よろけ = コンボ切れ + 450ms 停止
+      ・あわおどり: judge() が 走り、ノーツが ないので かならず ミス
+      ・山車: pull() が 走り、めもりが ゾーン外なら ミス
+    Phaser が わたして くる EventData の stopPropagation() を よぶと
+    そこで 止まる(processDownEvents:48 の _eventData.cancelled)。 */
+export function swallowPointer(obj: Phaser.GameObjects.GameObject): void {
+  const stop = (
+    _p: Phaser.Input.Pointer,
+    _x: number,
+    _y: number,
+    ev: Phaser.Types.Input.EventData,
+  ): void => {
+    ev.stopPropagation();
+  };
+  obj.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, stop);
+  obj.on(Phaser.Input.Events.GAMEOBJECT_POINTER_MOVE, stop);
+  obj.on(Phaser.Input.Events.GAMEOBJECT_POINTER_UP, stop);
+}
+
+/** モーダルが 出ている あいだ ゲームに とどかせない イベント。
+    ミニゲームが つかうのは この 5つ だけ(minigames/input.ts も 同じ) */
+const MODAL_MUTED_EVENTS = [
+  Phaser.Input.Events.POINTER_DOWN,
+  Phaser.Input.Events.POINTER_MOVE,
+  Phaser.Input.Events.POINTER_UP,
+  Phaser.Input.Events.POINTER_UP_OUTSIDE,
+  Phaser.Input.Events.GAME_OUT,
+] as const;
+
 /** 縦積みレイアウトのモーダル。add() で上から順に積み、show() で確定する */
 export class Modal {
   private static current: Modal | null = null;
@@ -77,6 +114,8 @@ export class Modal {
   private cursorY = 0;
   private closed = false;
   private readonly closeHooks: (() => void)[] = [];
+  /** モーダルの あいだ はずして おいた scene.input の ききみみ(とじたら もどす) */
+  private readonly suspended: { ev: string; fn: (...a: never[]) => void }[] = [];
 
   static isOpen(): boolean {
     const m = Modal.current;
@@ -103,8 +142,15 @@ export class Modal {
     this.root = scene.add.container(0, 0).setDepth(DEPTH.modal);
     const dim = scene.add
       .rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, COLORS.dim, 0.45)
-      .setInteractive(); // 背面へのタップを遮断
+      .setInteractive(); // 背面の「もの」へのタップを遮断
     this.root.add(dim);
+    // くらい まくは 「もの」への タップは とめられるが、
+    // scene.input 直づけの ききみみ(ミニゲームは ほぼ これ)には とどいて しまう。
+    // = 「あそびかた」を ひらいて とじる あいだの タップが ゲームにも 入り、
+    //   コンボが きれたり かってに 点が 入ったり して いた。
+    // Phaser に 「まえの ものが すいとる」しくみが ない ので、
+    // モーダルの あいだだけ ききみみを はずして、とじたら もどす。
+    this.suspendSceneInput();
 
     this.box = scene.add.container(GAME_W / 2, GAME_H / 2);
     this.bg = scene.add.graphics();
@@ -127,6 +173,7 @@ export class Modal {
 
     if (closable) {
       const x = addIcon(scene, MODAL_W / 2 - 24, 14, 'cross:gray', 24).setInteractive({ useHandCursor: true });
+      swallowPointer(x);
       x.on('pointerup', () => this.close());
       this.box.add(x);
     }
@@ -160,7 +207,12 @@ export class Modal {
   }
 
   addButton(label: string, color: number, onClick: () => void, w = 260, h = 48): Phaser.GameObjects.Container {
-    return this.add(makeButton(this.scene, { x: 0, y: 0, w, h, label, color, onClick }), h);
+    const btn = makeButton(this.scene, { x: 0, y: 0, w, h, label, color, onClick });
+    // ボタンを おした タップ そのものは ここで 止める。
+    // ききみみを もどすのは close() の 中 = この タップの とちゅう なので、
+    // 止めないと 「とじる」タップだけ ゲームに とどいて しまう
+    swallowPointer(btn);
+    return this.add(btn, h);
   }
 
   /** 内容に合わせて背景を描き、縦中央に配置する */
@@ -181,10 +233,30 @@ export class Modal {
     this.closeHooks.push(fn);
   }
 
+  /** scene.input 直づけの ききみみを いったん はずす(モーダルの あいだ) */
+  private suspendSceneInput(): void {
+    const input = this.scene.input;
+    for (const ev of MODAL_MUTED_EVENTS) {
+      // listeners() は 関数だけ かえす。ゲーム側は どこも context を
+      // わたして いない(scene.input.on(ev, fn) の 2ひきすう)ので これで もどせる
+      for (const fn of input.listeners(ev) as ((...a: never[]) => void)[]) {
+        input.off(ev, fn);
+        this.suspended.push({ ev, fn });
+      }
+    }
+  }
+
   close(): void {
     if (this.closed) return;
     this.closed = true;
     if (Modal.current === this) Modal.current = null;
+    const input = this.scene.input;
+    // シーンが かたづいた あとは もどす 先が ない
+    if (this.scene.scene.isActive()) {
+      for (const { ev, fn } of this.suspended.splice(0)) input.on(ev, fn);
+    } else {
+      this.suspended.length = 0;
+    }
     for (const fn of this.closeHooks.splice(0)) fn();
     this.root.destroy();
   }

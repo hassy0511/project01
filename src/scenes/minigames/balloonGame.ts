@@ -44,10 +44,16 @@ export function renderBalloon(api: MinigameApi, prompt: string): void {
   const bg = scene.add.graphics();
   bg.fillGradientStyle(0x9fd8f5, 0x9fd8f5, 0xffe6c0, 0xffe6c0, 1);
   bg.fillRect(0, 0, GAME_W, AREA_H);
-  // かぜの そうの めやす
-  bg.fillStyle(0xffffff, 0.14);
-  bg.fillRect(0, 0, GAME_W, HI_Y);
-  bg.fillRect(0, MID_Y, GAME_W, GROUND_Y - MID_Y);
+  // かぜの そうの めやす。うえと したは かぜが 逆むき なので、
+  // まえは 同じ 白がけで 見た目が そっくり だった(ちがいは 13px の 文字だけ)。
+  // 字が 読めなくても むきが わかる ように 色を わけて、
+  // ながれる やじるしを うかべる
+  bg.fillStyle(0xbfe4ff, 0.5);
+  bg.fillRect(0, 0, GAME_W, HI_Y); // ひがしへ = あおめ
+  bg.fillStyle(0xffffff, 0.1);
+  bg.fillRect(0, HI_Y, GAME_W, MID_Y - HI_Y); // ほぼ とまる = うすい
+  bg.fillStyle(0xffd9b0, 0.55);
+  bg.fillRect(0, MID_Y, GAME_W, GROUND_Y - MID_Y); // にしへ = だいだいめ
   bg.fillStyle(0x8fbf6a, 1);
   bg.fillRect(0, GROUND_Y, GAME_W, AREA_H - GROUND_Y); // ちくごがわの かわらの りくちきち
   area.add(bg);
@@ -62,6 +68,25 @@ export function renderBalloon(api: MinigameApi, prompt: string): void {
         .setOrigin(1, 0.5)
         .setAlpha(0.9),
     );
+  }
+  /* かぜの むきを 見せる やじるし。その そうの かぜと 同じ むきへ ながれる。
+     まんなかの そう(ほぼ とまる)には 出さない = 「うごかない そう」も 絵で わかる */
+  for (const [y, dir] of [
+    [HI_Y / 2 + 26, 1],
+    [(MID_Y + GROUND_Y) / 2 + 26, -1],
+  ] as const) {
+    for (let k = 0; k < 3; k++) {
+      const a = addIcon(scene, 0, y, dir > 0 ? 'arrow-right:sky' : 'arrow-left:orange', 22).setAlpha(0.75);
+      area.add(a);
+      // 3つを ずらして ながす(かぜが ふきぬけて いる ように 見せる)
+      scene.tweens.add({
+        targets: a,
+        x: { from: dir > 0 ? -30 : GAME_W + 30, to: dir > 0 ? GAME_W + 30 : -30 },
+        duration: 3600,
+        repeat: -1,
+        delay: k * 1200,
+      });
+    }
   }
   // ほかの ききゅう(はいけい)
   for (const [x, y] of [[60, 120], [400, 180], [330, 90]] as const) {

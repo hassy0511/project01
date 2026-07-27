@@ -42,3 +42,42 @@ export function offPointerRelease(scene: Phaser.Scene, fn: Release): void {
     wrapped.delete(fn);
   }
 }
+
+/* ゆびごとの おぼえがき。
+
+   ドラッグや スワイプを 見る ゲームは 「おしはじめの ばしょ」や
+   「まえの ばしょ」を おぼえて おく 必要が ある。
+   これを シーンで 1つの へんすうに して しまうと、
+   2本目の ゆびが おりた しゅんかんに 1本目の きろくが うわがきされ、
+
+     ・ありもしない スワイプに なる(ふくおとこ: 2本指タップで こける)
+     ・ドラッグの むきが めちゃくちゃに なる(おうぎみこし)
+     ・かたほうの ゆびを はなすと もう かたほうも 死ぬ(いねかり)
+
+   という「同時に つかうと こわれる」ゲームに なる。
+   子供は 平気で 2本 3本 つかうので、ゆびごと(p.id ごと)に わけて おぼえる。
+
+   Phaser 側の 同時タッチ数は main.ts の input.activePointers で ふやして ある。 */
+export class PerPointer<T> {
+  private readonly byId = new Map<number, T>();
+
+  set(p: Phaser.Input.Pointer, v: T): void {
+    this.byId.set(p.id, v);
+  }
+
+  get(p: Phaser.Input.Pointer): T | undefined {
+    return this.byId.get(p.id);
+  }
+
+  /** よみだして わすれる(その ゆびを はなした とき) */
+  take(p: Phaser.Input.Pointer): T | undefined {
+    const v = this.byId.get(p.id);
+    this.byId.delete(p.id);
+    return v;
+  }
+
+  /** その ゆびの きろくだけ すてる(なぞりが とぎれた とき など) */
+  drop(p: Phaser.Input.Pointer): void {
+    this.byId.delete(p.id);
+  }
+}

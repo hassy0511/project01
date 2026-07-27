@@ -12,7 +12,7 @@ import { bigImpact, burst, confetti, fillBar, floatUp, impactRing, missShake } f
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
-import { offPointerRelease, onPointerRelease } from './input';
+import { offPointerRelease, onPointerRelease, PerPointer } from './input';
 import type { MinigameApi } from './types';
 
 const AREA_H = GAME_AREA_H;
@@ -141,14 +141,14 @@ export function renderFukuotoko(api: MinigameApi, prompt: string): void {
   };
 
   /* ---------- にゅうりょく: れんだ + スワイプ ---------- */
-  let downAt = 0;
-  let downX = 0;
-  let downY = 0;
+  /** ゆびごとの 「おしはじめ」。1つの へんすうに すると
+      2本目の ゆびが おしはじめを うわがきし、1本目を はなした ときに
+      2本の あいだの きょり(=大きい)が スワイプと 見なされて
+      よけて いないのに よけた ことに なる(=たいてい こける) */
+  const downs = new PerPointer<{ at: number; x: number; y: number }>();
 
   const onDown = (p: Phaser.Input.Pointer): void => {
-    downAt = Date.now();
-    downX = p.worldX;
-    downY = p.worldY;
+    downs.set(p, { at: Date.now(), x: p.worldX, y: p.worldY });
   };
 
   const dodge = (kind: ObstKind): void => {
@@ -181,9 +181,11 @@ export function renderFukuotoko(api: MinigameApi, prompt: string): void {
 
   const onUp = (p: Phaser.Input.Pointer): void => {
     if (session.isEnded()) return;
-    const dt = Date.now() - downAt;
-    const dx = p.worldX - downX;
-    const dy = p.worldY - downY;
+    const st = downs.take(p);
+    if (!st) return; // この ゆびの おしはじめを 知らない
+    const dt = Date.now() - st.at;
+    const dx = p.worldX - st.x;
+    const dy = p.worldY - st.y;
     const swipe = Math.hypot(dx, dy) > 40 && dt < 500;
     if (swipe) {
       dodge(Math.abs(dy) > Math.abs(dx) && dy < 0 ? 'jump' : 'side');

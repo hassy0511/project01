@@ -12,7 +12,7 @@ import { bigImpact, burst, confetti, fillBar, floatUp, impactRing, missShake } f
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
-import { offPointerRelease, onPointerRelease } from './input';
+import { offPointerRelease, onPointerRelease, PerPointer } from './input';
 import type { MinigameApi } from './types';
 
 const AREA_H = GAME_AREA_H;
@@ -124,8 +124,10 @@ export function renderOugi(api: MinigameApi, prompt: string): void {
   });
 
   /* ---------- ふる(ドラッグ) ---------- */
-  let lastY: number | null = null;
-  let lastDir = 0;
+  /** ゆびごとの 「まえの たかさ」と 「うごいて いた むき」。
+      1つの へんすうに すると 2本目の ゆびが 1本目の たかさで うわがきされ、
+      とんでもない さ(d)に なって ありもしない ふりかえしに なる */
+  const drags = new PerPointer<{ y: number; dir: number }>();
   let swung = 0;
 
   const swing = (): void => {
@@ -171,25 +173,25 @@ export function renderOugi(api: MinigameApi, prompt: string): void {
         return;
       }
     }
-    lastY = y;
-    lastDir = 0;
+    drags.set(p, { y, dir: 0 });
   };
 
   const onMove = (p: Phaser.Input.Pointer): void => {
-    if (!p.isDown || session.isEnded() || lastY === null) return;
+    const st = drags.get(p);
+    if (!p.isDown || session.isEnded() || !st) return;
     const y = p.worldY - api.areaY;
-    const d = y - lastY;
+    const d = y - st.y;
     if (Math.abs(d) < SWING_PX) return;
     const dir = d > 0 ? 1 : -1;
-    lastY = y;
+    st.y = y;
     // ふりかえし(上→下→上)で 1かい とカウント。おなじ むきに ずっとでは あがらない
-    if (dir !== lastDir) {
-      lastDir = dir;
+    if (dir !== st.dir) {
+      st.dir = dir;
       swing();
     }
   };
-  const onUp = (): void => {
-    lastY = null;
+  const onUp = (p: Phaser.Input.Pointer): void => {
+    drags.take(p);
   };
   scene.input.on('pointerdown', onDown);
   scene.input.on('pointermove', onMove);

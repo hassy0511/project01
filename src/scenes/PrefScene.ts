@@ -75,14 +75,22 @@ export class PrefScene extends Phaser.Scene {
   private lastSig = '';
   /** 「いま やること」の 1行(状態が かわった ときだけ 作りなおす) */
   private taskRow?: Phaser.GameObjects.Container;
+  private arrivalToast?: string;
+  private arrivalFanfare = false;
   private lastTaskText = '';
 
   constructor() {
     super('PrefScene');
   }
 
-  init(data: { prefId: string }): void {
+  /** toast は 「まえの ばめんで 出したかった しらせ」。
+      おせわ完了や 産地コンプの お祝いは、出した 直後に scene.start する と
+      その シーンごと 消えて 1フレームも 見えない ので、
+      こちらへ もってきて 出す(fanfare は 音も 鳴らす) */
+  init(data: { prefId: string; toast?: string; fanfare?: boolean }): void {
     this.prefId = data.prefId;
+    this.arrivalToast = data.toast;
+    this.arrivalFanfare = data.fanfare ?? false;
   }
 
   create(): void {
@@ -102,6 +110,15 @@ export class PrefScene extends Phaser.Scene {
     this.rebuildCards();
     buildNav(this, 'map');
     this.updateTaskRow();
+    // まえの ばめんで 出したかった しらせ(おせわ できた / 産地コンプ)
+    if (this.arrivalToast) {
+      const msg = this.arrivalToast;
+      const fanfare = this.arrivalFanfare;
+      this.arrivalToast = undefined;
+      this.arrivalFanfare = false;
+      showToast(this, msg);
+      if (fanfare) SFX.fanfare();
+    }
     // はじめて けんに ついた ときだけ 「この まちで やること」を 3コマで 見せる
     if (!store.state.seenPrefGuide) this.time.delayedCall(400, () => this.showFirstGuide());
 
