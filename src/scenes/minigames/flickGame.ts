@@ -129,9 +129,22 @@ export function renderFlick(api: MinigameApi, target: string, prompt: string): v
     if (!aiming) return;
     aiming = false;
     clearAim();
+    // ポインタの ばしょが わからない ときは 「ねらうのを やめた」に する。
+    // ここで NaN を とおすと power も vx/vy も NaN に なり、
+    // とんだ ことにも 止まった ことにも ならず、つぎの みが 出てこなくなる
+    if (!p || !Number.isFinite(p.worldX) || !Number.isFinite(p.worldY)) {
+      fruit.setAngle(0);
+      resetIcon(fruit);
+      return;
+    }
     const dx = fruit.x - p.worldX;
     const dy = fruit.y - (p.worldY - api.areaY);
     const power = Math.hypot(dx, dy);
+    if (!Number.isFinite(power)) {
+      fruit.setAngle(0);
+      resetIcon(fruit);
+      return;
+    }
     fruit.setAngle(0);
     if (power < 14) {
       resetIcon(fruit);
@@ -219,6 +232,16 @@ export function renderFlick(api: MinigameApi, target: string, prompt: string): v
   const onUpdate = (_t: number, dtMs: number): void => {
     if (!rolling || resolved || session.isEnded() || !fruit.active) return;
     const dt = Math.min(dtMs, 33) / 1000;
+    // ★はやさが おかしく なったら 「止まった」ことに する。
+    //   NaN は どんな くらべ方でも false に なる ので、
+    //   ここが ないと 「ゴールも しない・止まりも しない」で つぎの みが 出なくなる
+    if (!Number.isFinite(vx) || !Number.isFinite(vy)) {
+      vx = 0;
+      vy = 0;
+      rolling = false;
+      resolveMiss();
+      return;
+    }
     fruit.x += vx * dt;
     fruit.y += vy * dt;
     fruit.angle += vx * dt * 1.6; // ごろごろ回る

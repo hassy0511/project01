@@ -28,7 +28,15 @@ const UP_SPEED = 130;
 const DOWN_SPEED = 70;
 const NEAR_PTS = 60;
 const OK_PTS = 22;
-const FAR_PTS = 6;
+/** はずれ。0 に しないのは 「なにも もらえない」を つくらない ため。
+    ただし 「まとを 見ずに おとすだけ」が 得に ならない 高さに とどめる */
+const FAR_PTS = 2;
+/** ★マーカーは 有限。もっていない ときは おとせない。
+    こうしないと 「まとを 見ずに おとすボタンを れんだ」が いちばん 高い とくてんに なり、
+    バーナーで 高さを かえる = この ゲームの 芯 を やる 意味が なくなる */
+const MARKER_MAX = 5;
+/** 1こ もどるまで(60秒で 5 + 約18 = 23かい おとせる) */
+const MARKER_REFILL_MS = 3200;
 
 export function renderBalloon(api: MinigameApi, prompt: string): void {
   const { scene, area } = api;
@@ -130,8 +138,42 @@ export function renderBalloon(api: MinigameApi, prompt: string): void {
   });
 
   let drops = 0;
+  let markers = MARKER_MAX;
+  let dropping = false;
+
+  /* のこりの マーカーを 絵で 見せる(字が 読めない 子むけ。
+     かずの 文字だけだと 「あと 何回 おとせるか」が わからない) */
+  const stockIcons: Phaser.GameObjects.Image[] = [];
+  for (let i = 0; i < MARKER_MAX; i++) {
+    const ic = addIcon(scene, GAME_W - 190 + i * 26, 588, 'target:teal', 20);
+    area.add(ic);
+    stockIcons.push(ic);
+  }
+  const drawStock = (): void => {
+    stockIcons.forEach((ic, i) => ic.setAlpha(i < markers ? 1 : 0.22));
+    // もっていない ときは ボタンも うすくして 「いま おせない」を 見せる
+    dropBtn.setAlpha(markers > 0 ? 1 : 0.4);
+  };
+  drawStock();
+
+  // すこし ずつ もどる。おとしっぱなしに できず、待つ あいだに 高さを あわせる ことに なる
+  const refill = scene.time.addEvent({
+    delay: MARKER_REFILL_MS,
+    loop: true,
+    callback: () => {
+      if (session.isEnded() || markers >= MARKER_MAX) return;
+      markers++;
+      drawStock();
+      const ic = stockIcons[markers - 1];
+      scene.tweens.add({ targets: ic, scale: { from: ic.scale * 1.3, to: ic.scale }, duration: 220 });
+    },
+  });
+
   dropBtn.on('pointerdown', () => {
-    if (session.isEnded()) return;
+    if (session.isEnded() || dropping || markers <= 0) return;
+    markers--;
+    dropping = true;
+    drawStock();
     const dx = Math.abs(balloon.x - targetX);
     const marker = addIcon(scene, balloon.x, balloon.y + 30, 'target:teal', 22);
     area.add(marker);
@@ -163,6 +205,7 @@ export function renderBalloon(api: MinigameApi, prompt: string): void {
         }
         burst(scene, marker.x, GROUND_Y + 20 + api.areaY, near ? 12 : 5);
         marker.destroy();
+        dropping = false;
         newTarget();
       },
     });
@@ -186,6 +229,7 @@ export function renderBalloon(api: MinigameApi, prompt: string): void {
   scene.events.on(Phaser.Scenes.Events.UPDATE, onUpdate);
 
   const cleanup = (): void => {
+    refill.remove();
     scene.events.off(Phaser.Scenes.Events.UPDATE, onUpdate);
   };
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, cleanup);
