@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <path d="M32 15c15 0 26 9 26 23 0 13-11 21-26 21S6 51 6 38c0-14 11-23 26-23z"
+        fill="#MAIN" stroke="#DARK" stroke-width="2.8"
+        stroke-linejoin="round"/>
+  <!-- うえは 「へた」だけ。よこに のびる はっぱは つけない。
+       citrus(みかん)は 「まるい み + はっぱ 1まい」で、
+       round は 「まるい み + へた 1つ」。round に はっぱを つけると
+       round:orange(かきのみ)と citrus:orange(みかん)が 同じ絵に なる。
+       じっさいに かさなる いろ: amber / deepgreen / gold / lime / orange。
+       いろは §5 が みとめて いる はっぱ色(#5AA04A / #37702C)。
+       ちゃいろの じくに すると brown / tan の こい色と かさなる -->
+  <path d="M32 20c-6 0-10-2-13-6 4-2 9-2 13 0 4-2 9-2 13 0-3 4-7 6-13 6z"
+        fill="#5AA04A" stroke="#37702C" stroke-width="2.2"
+        stroke-linejoin="round"/>
+  <path d="M32 14V7"
+        fill="none" stroke="#37702C" stroke-width="3.4"
+        stroke-linecap="round"/>
+</svg>
