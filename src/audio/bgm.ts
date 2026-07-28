@@ -3,7 +3,15 @@
    シーンから setBgmTrack() で切り替える(FestivalScene: fest、はなびは night)。
    ミュート(sfx.ts)と連動: ミュート中は鳴らさず、解除で再開する。
    iOS 対策: 初回 pointerdown(main.ts)から startBgm を呼ぶ */
-import { audioOut, isMuted, onAudioResume, onMuteChange, sharedAudioContext } from './sfx';
+import {
+  audioOut,
+  isAudioHidden,
+  isMuted,
+  onAudioHidden,
+  onAudioResume,
+  onMuteChange,
+  sharedAudioContext,
+} from './sfx';
 
 export type BgmTrackName = 'day' | 'fest' | 'night';
 
@@ -113,6 +121,8 @@ let timer: ReturnType<typeof setInterval> | null = null;
 let step = 0;
 let nextTime = 0;
 let noiseBuf: AudioBuffer | null = null;
+/** 画面から きえた ので スケジューラだけ 止めている(曲と 位置は のこす) */
+let hidePaused = false;
 
 function voice(
   ctx: AudioContext,
@@ -246,7 +256,7 @@ function tick(): void {
 }
 
 export function startBgm(): void {
-  if (running || isMuted()) return;
+  if (running || isMuted() || isAudioHidden()) return;
   const ctx = sharedAudioContext();
   if (!ctx) return;
   try {
@@ -260,6 +270,7 @@ export function startBgm(): void {
     return;
   }
   running = true;
+  hidePaused = false;
   step = 0;
   nextTime = ctx.currentTime + 0.1;
   timer = setInterval(tick, TICK_MS);
@@ -268,6 +279,7 @@ export function startBgm(): void {
 export function stopBgm(): void {
   if (!running) return;
   running = false;
+  hidePaused = false;
   if (timer) {
     clearInterval(timer);
     timer = null;
@@ -321,6 +333,26 @@ onAudioResume(() => {
   } catch {
     /* noop */
   }
+});
+
+/* ほかのアプリ・ホーム画面・画面ロックで 画面から きえたら、先読みの 予約を 止める。
+   曲(current)と 位置(step)は のこして おき、もどってきたら つづきから 鳴らす。
+   音の 出口じたい(<audio>/AudioContext)は sfx.ts が 止める */
+onAudioHidden((h) => {
+  if (h) {
+    if (!timer) return;
+    clearInterval(timer);
+    timer = null;
+    hidePaused = true;
+    return;
+  }
+  if (!hidePaused) return;
+  hidePaused = false;
+  if (!running || isMuted()) return;
+  const ctx = sharedAudioContext();
+  if (!ctx) return;
+  nextTime = ctx.currentTime + 0.1;
+  timer = setInterval(tick, TICK_MS);
 });
 
 // おとの トグルに連動: ミュートで止め、解除で流す

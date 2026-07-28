@@ -39,10 +39,54 @@ export function setMuted(value: boolean): void {
 }
 
 export function resumeAudio(): void {
+  if (hidden) return; // 画面を 見ていない あいだは 鳴らさない
   const ctx = sharedAudioContext();
   if (ctx) audioOut();
   // <audio> ルートの さいせいも タップの たびに 試す(iOS は 一度 止まると 再開が 必要)
   mediaEl?.play().catch(() => undefined);
+}
+
+/* ほかのアプリ・ホーム画面・画面ロックで 画面から きえた あいだ、音を まるごと 止める。
+   iOS では 出口が <audio>(= メディア再生あつかい)なので、なにも しないと
+   アプリを 見ていない あいだも BGM が 鳴りつづける。
+   ・出口の <audio> を pause し、AudioContext も suspend する
+   ・かくれている あいだは 自動 resume を しない(下の sharedAudioContext を みる)
+   ・もどったら つなぎなおして 曲の つづきから 鳴らす */
+let hidden = false;
+
+/** 画面から きえている あいだ true(SFX/BGM は 鳴らさない) */
+export function isAudioHidden(): boolean {
+  return hidden;
+}
+
+type HiddenListener = (hidden: boolean) => void;
+const hiddenListeners: HiddenListener[] = [];
+/** かくれ/もどりを 購読する(bgm.ts が スケジューラの 停止・再開に つかう) */
+export function onAudioHidden(cb: HiddenListener): void {
+  hiddenListeners.push(cb);
+}
+
+export function setAudioHidden(value: boolean): void {
+  if (hidden === value) return;
+  if (value) {
+    hidden = true;
+    // さきに 予約を 止める(順番が 逆だと 先読みぶんが 鳴ってしまう)
+    for (const cb of hiddenListeners) cb(true);
+    try {
+      mediaEl?.pause();
+    } catch {
+      /* noop */
+    }
+    try {
+      audioCtx?.suspend().catch(() => undefined);
+    } catch {
+      /* noop */
+    }
+  } else {
+    hidden = false;
+    resumeAudio();
+    for (const cb of hiddenListeners) cb(false);
+  }
 }
 
 /** iOS(iPad/iPhone)かどうか。iPadOS は Mac を 名乗るので タッチ数でも みる */
@@ -113,7 +157,8 @@ export function sharedAudioContext(): AudioContext | null {
     }
   }
   const state = audioCtx.state as string;
-  if (state === 'suspended' || state === 'interrupted') {
+  // かくれている あいだは 起こさない(OS が 止めた のを こちらが 復活させない)
+  if (!hidden && (state === 'suspended' || state === 'interrupted')) {
     audioCtx
       .resume()
       .then(() => {
@@ -139,6 +184,11 @@ function recreateContext(): void {
   const old = audioCtx;
   audioCtx = null;
   outNode = null;
+  try {
+    mediaEl?.pause(); // すてる まえに 止める(ふるい <audio> が 鳴りっぱなしに ならない ように)
+  } catch {
+    /* noop */
+  }
   mediaEl = null;
   try {
     old?.close();
@@ -149,7 +199,7 @@ function recreateContext(): void {
 }
 
 function ac(): AudioContext | null {
-  if (muted) return null;
+  if (muted || hidden) return null;
   return sharedAudioContext();
 }
 

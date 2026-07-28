@@ -10,7 +10,7 @@ import { ZukanScene } from './scenes/ZukanScene';
 import { InvScene } from './scenes/InvScene';
 import { GAME_H, GAME_W } from './ui/theme';
 import { DPR, installHiDpiText } from './ui/display';
-import { resumeAudio } from './audio/sfx';
+import { resumeAudio, setAudioHidden } from './audio/sfx';
 import { startBgm } from './audio/bgm';
 
 // HiDPI: バッファは DPR 倍で確保し、各シーンのカメラズームで論理480×800を保つ(ui/display.ts)
@@ -58,9 +58,20 @@ const kickAudio = (): void => {
 for (const ev of ['pointerdown', 'touchend', 'click', 'keydown'] as const) {
   document.addEventListener(ev, kickAudio, { passive: true });
 }
+/* アプリを 見ていない あいだは 音を まるごと 止める。
+   iOS は 出口が <audio>(メディア再生あつかい)なので、これを しないと
+   ホームに もどっても 画面を ロックしても BGM が 鳴りつづける。
+   もどってきたら 曲の つづきから 鳴らす(setAudioHidden(false) が つなぎなおす) */
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) kickAudio();
+  if (document.hidden) {
+    setAudioHidden(true);
+  } else {
+    setAudioHidden(false);
+    kickAudio();
+  }
 });
+// タブを 閉じる・ほかの ページへ 行く・PWA を 終わる とき(iOS は unload が 来ない)
+window.addEventListener('pagehide', () => setAudioHidden(true));
 window.addEventListener('focus', kickAudio);
 
 // オフライン対応: 一度開けば、電波が無い場所でもホーム画面から起動できるようにする
