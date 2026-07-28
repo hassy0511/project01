@@ -6,12 +6,21 @@ import Phaser from 'phaser';
 import { setupHiDpi } from '../ui/display';
 import { GAME_DATA, type Region } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';
-import { isRegionOpen, playedFestCount } from '../core/state';
-import { store } from '../game/store';
+import {
+  activePrefCount,
+  harePrefCount,
+  isAllHare,
+  isRegionComp,
+  isRegionOpen,
+  playedFestCount,
+  regionOpenFlagKey,
+} from '../core/state';
+import { store, runtimeStory } from '../game/store';
 import { getRegionAsset } from '../game/mapData';
 import { SFX } from '../audio/sfx';
+import { firework } from '../ui/effects';
 import { COLORS, DEPTH, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
-import { makeGuideRow, showToast } from '../ui/widgets';
+import { makeGuideRow, Modal, showToast } from '../ui/widgets';
 import { addIcon } from '../ui/icons';
 
 const TOP_H = 48;
@@ -39,10 +48,74 @@ export class RegionScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(COLORS.sky);
     this.drawSea();
     this.buildTop();
+    this.drawHareMeter();
     this.drawJapan();
 
     const guide = makeGuideRow(this, UI_TEXT.region.guide, 'wow', 440);
     guide.container.setPosition(GAME_W / 2, GAME_H - 60 - guide.height / 2);
+
+    // あたらしく ひらいた エリアが あれば 1つだけ おしらせ(E2E では とばす)
+    if (!runtimeStory.muted) this.maybeShowRegionOpen();
+  }
+
+  /** にっぽん はれメーター: 47県の 長い たびの すすみを 1本で 見せる */
+  private drawHareMeter(): void {
+    const n = harePrefCount(store.state, GAME_DATA);
+    const total = activePrefCount(GAME_DATA);
+    const c = this.add.container(GAME_W / 2, TOP_H + 22).setDepth(DEPTH.header - 1);
+    const g = this.add.graphics();
+    g.fillStyle(0xffffff, 0.88);
+    g.lineStyle(2, COLORS.panelLine, 1);
+    g.fillRoundedRect(-92, -15, 184, 30, 15);
+    g.strokeRoundedRect(-92, -15, 184, 30, 15);
+    c.add(g);
+    c.add(addIcon(this, -70, 0, 'sun:amber', 22));
+    c.add(
+      this.add
+        .text(10, 0, UI_TEXT.hare.meter(n, total), {
+          fontFamily: FONT,
+          fontSize: '14px',
+          color: TEXT_COLORS.main,
+          fontStyle: 'bold',
+        })
+        .setOrigin(0.5),
+    );
+
+    // ぜんぶ 晴れた あとの そらは おいわいつづき(ときどき はなび)
+    if (isAllHare(store.state, GAME_DATA)) {
+      this.time.addEvent({
+        delay: 2600,
+        loop: true,
+        callback: () => firework(this, 60 + Math.random() * (GAME_W - 120), 90 + Math.random() * 120),
+      });
+    }
+  }
+
+  /** あたらしく ひらいた エリアの おしらせ(1回だけ・1度に 1つ)。
+      「くもの すきまが ひらいた」という 物語の つづきに する */
+  private maybeShowRegionOpen(): void {
+    const s = store.state;
+    const fresh = GAME_DATA.regions.find(
+      (r) =>
+        r.active &&
+        (r.unlockFests ?? 0) > 0 &&
+        this.regionOpen(r) &&
+        !s.flags[regionOpenFlagKey(r.id)],
+    );
+    if (!fresh) return;
+    s.flags[regionOpenFlagKey(fresh.id)] = true;
+    store.save();
+    SFX.fanfare();
+    const modal = new Modal(this, UI_TEXT.region.openTitle, true);
+    modal.add(addIcon(this, 0, 0, fresh.icon, 58), 62);
+    modal.addText(fresh.name, 20);
+    const guide = makeGuideRow(this, UI_TEXT.region.openBody(fresh.name), 'cheer');
+    modal.add(guide.container, guide.height);
+    modal.addButton(UI_TEXT.region.openGo, COLORS.orange, () => {
+      modal.close();
+      this.scene.start('MapScene', { regionId: fresh.id });
+    });
+    modal.show();
   }
 
   private buildTop(): void {
@@ -73,7 +146,10 @@ export class RegionScene extends Phaser.Scene {
 
   private drawSea(): void {
     const bg = this.add.graphics();
-    bg.fillGradientStyle(0xbfe9f7, 0xbfe9f7, 0x8fd0e0, 0x8fd0e0, 1);
+    // ぜんぶ 晴れた あとは そらも うみも ひときわ あかるい(クリアの よいん)
+    const clear = isAllHare(store.state, GAME_DATA);
+    if (clear) bg.fillGradientStyle(0xd8f4ff, 0xd8f4ff, 0x9fe0f0, 0x9fe0f0, 1);
+    else bg.fillGradientStyle(0xbfe9f7, 0xbfe9f7, 0x8fd0e0, 0x8fd0e0, 1);
     bg.fillRect(0, TOP_H, GAME_W, GAME_H - TOP_H);
     for (let i = 0; i < 6; i++) {
       const wave = this.add.graphics();
@@ -125,10 +201,12 @@ export class RegionScene extends Phaser.Scene {
   /* ---------- 実形の日本地図 ---------- */
   private drawJapan(): void {
     const rm = getRegionAsset();
-    const availH = GAME_H - TOP_H - BOTTOM_PAD;
+    // はれメーター(TOP_H の 下 30px)の ぶんだけ 地図を 下げる
+    const meterH = 34;
+    const availH = GAME_H - TOP_H - BOTTOM_PAD - meterH;
     const scale = Math.min((GAME_W - 16) / rm.viewW, availH / rm.viewH);
     const offX = (GAME_W - rm.viewW * scale) / 2;
-    const offY = TOP_H + 10 + (availH - rm.viewH * scale) / 2;
+    const offY = TOP_H + meterH + 10 + (availH - rm.viewH * scale) / 2;
     const root = this.add.container(offX, offY).setScale(scale);
     const badgeId = this.badgeRegionId();
 
@@ -181,6 +259,10 @@ export class RegionScene extends Phaser.Scene {
         });
       } else {
         root.add(addIcon(this, lx, ly - 26 / scale, region.icon, 20 / scale));
+        // 全県🏮の エリアには ちほうバッジ(はかせから もらった しるし)
+        if (isRegionComp(store.state, GAME_DATA, region.id)) {
+          root.add(addIcon(this, lx + 20 / scale, ly - 26 / scale, 'medal:gold', 16 / scale));
+        }
       }
 
       // 名前ラベルも タップできる(海側に出したラベルからも遷移できるように)

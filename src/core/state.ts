@@ -150,6 +150,48 @@ export function playedFestCount(state: SaveState): number {
   return Object.keys(state.festBest).length;
 }
 
+/* ---------- 晴れ(ストーリー)の ものさし ----------
+   「県が 晴れた」= その県の おまつりを 1回 ひらいた(fest に 入った)。
+   地図の 見た目(快晴+🏮)と 同じ 条件を ここに 集約する。
+   シネマを 見たか どうかは べつの フラグ(hareFlagKey)で もつ
+   ── 晴れの 事実 と 演出の 既読 を わけないと、
+   演出を とばした とき 県が 晴れて いない ことに なって しまう */
+
+/** その県の 晴れシネマを 見た しるし(flags の キー) */
+export const hareFlagKey = (prefId: PrefectureId): string => `hare_${prefId}`;
+
+/** エリアの バッジ(全県🏮)を 受けとった しるし */
+export const regionCompFlagKey = (regionId: string): string => `regionComp_${regionId}`;
+
+/** エリア開放の おしらせを 見た しるし */
+export const regionOpenFlagKey = (regionId: string): string => `regionOpen_${regionId}`;
+
+/** 晴れた 県の 数(アクティブ県のうち おまつりを 1回 ひらいた 県) */
+export function harePrefCount(state: SaveState, data: GameData): number {
+  return data.prefectures.filter(
+    (p) => p.active && p.festivalId !== undefined && state.fest.includes(p.festivalId),
+  ).length;
+}
+
+/** アクティブ県の 総数(はれメーターの 分母) */
+export function activePrefCount(data: GameData): number {
+  return data.prefectures.filter((p) => p.active).length;
+}
+
+/** にっぽん ぜんぶ 晴れたか(エンディングの 条件) */
+export function isAllHare(state: SaveState, data: GameData): boolean {
+  return harePrefCount(state, data) >= activePrefCount(data) && activePrefCount(data) > 0;
+}
+
+/** その エリアの 県が ぜんぶ 晴れたか(ちほうバッジの 条件) */
+export function isRegionComp(state: SaveState, data: GameData, regionId: string): boolean {
+  const prefs = data.prefectures.filter((p) => p.region === regionId && p.active);
+  return (
+    prefs.length > 0 &&
+    prefs.every((p) => p.festivalId !== undefined && state.fest.includes(p.festivalId))
+  );
+}
+
 /** 地方に いま入れるか。active が前提。unlockFests(おまつり種類数)を満たすか、
     すでにその地方の県が開拓済み(管理者の全開放を含む)なら入れる */
 export function isRegionOpen(

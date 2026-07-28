@@ -8,14 +8,20 @@ import { UI_TEXT } from '../data/uiText';
 import { pickKaitakuQuiz, recordQuizAsked } from '../core/quiz';
 import { infraStock, plotState, matIdOfKey } from '../core/plots';
 import { findMaterial } from '../data/gameData';
-import { store } from '../game/store';
+import { store, runtimeStory } from '../game/store';
+import {
+  hareFlagKey,
+  isAllHare,
+  isRegionComp,
+  regionCompFlagKey,
+} from '../core/state';
 import { getMapAsset, hasMapAsset } from '../game/mapData';
 import { SFX } from '../audio/sfx';
 import { buildHeader, buildNav, HEADER_H } from '../ui/nav';
 import { runQuizModal } from '../ui/quizRunner';
-import { COLORS, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
+import { COLORS, DEPTH, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { makeGuideRow, Modal, showToast, type MascotMood } from '../ui/widgets';
-import { confetti } from '../ui/effects';
+import { blowAwayCloud, burst, confetti } from '../ui/effects';
 
 /** セーブが こわれていた ときに もどる エリア(はじめの エリア) */
 const FALLBACK_REGION = 'kanto';
@@ -26,6 +32,14 @@ export class MapScene extends Phaser.Scene {
   private guideBox?: Phaser.GameObjects.Container;
   private lastGuideText = '';
   private regionId = FALLBACK_REGION;
+  /** 晴れシネマ(雲の ふきとび)を 再生中は 入力を うけない */
+  private hareCinema = false;
+  /** シネマで つかう、地図の おきばしょ(drawMap で きまる) */
+  private mapOffX = 0;
+  private mapOffY = 0;
+  private mapScale = 1;
+  /** シネマ待ちの 県(晴れたのに シネマを まだ 見ていない)と、その もや */
+  private pendingHare?: { p: Prefecture; lx: number; ly: number; mist?: Phaser.GameObjects.Container };
 
   constructor() {
     super('MapScene');
@@ -42,6 +56,10 @@ export class MapScene extends Phaser.Scene {
 
   create(): void {
     setupHiDpi(this);
+    // Phaser は シーンを 作りなおさない ので、シネマの のこりものを わすれる
+    this.hareCinema = false;
+    this.pendingHare = undefined;
+    this.lastGuideText = '';
     if (store.state.currentRegion !== this.regionId) {
       store.state.currentRegion = this.regionId;
       store.save();
@@ -52,6 +70,13 @@ export class MapScene extends Phaser.Scene {
     buildHeader(this);
     buildNav(this, 'map');
     this.buildJapanButton();
+    // 晴れたのに おいわいが まだの 県が あれば、地図が 見えてから シネマ。
+    // さきに 立てて おくと updateGuide が だまる(シネマ中に ふきだしが かぶらない)
+    if (this.pendingHare) {
+      const refs = this.pendingHare;
+      this.hareCinema = true;
+      this.time.delayedCall(650, () => this.playHareCinema(refs));
+    }
     this.updateGuide();
     this.time.addEvent({ delay: GUIDE_UPDATE_MS, loop: true, callback: () => this.updateGuide() });
 
@@ -148,12 +173,30 @@ export class MapScene extends Phaser.Scene {
     const offX = (GAME_W - map.viewW * scale) / 2;
     const offY = HEADER_H + 24;
     const root = this.add.container(offX, offY).setScale(scale);
+    this.mapOffX = offX;
+    this.mapOffY = offY;
+    this.mapScale = scale;
 
-    for (const p of GAME_DATA.prefectures.filter((x) => x.region === this.regionId)) {
+    /* 晴れたのに シネマを まだ 見ていない 県(ふつうは 0か1)。
+       その県だけ 「もや あり・🏮なし」で 描いて おき、シネマで はらす。
+       E2E(skipGuides)では シネマを とばして ふつうに 描く */
+    const regionPrefs = GAME_DATA.prefectures.filter((x) => x.region === this.regionId);
+    const pendingPref = runtimeStory.muted
+      ? undefined
+      : regionPrefs.find(
+          (x) =>
+            x.active &&
+            x.festivalId !== undefined &&
+            store.state.fest.includes(x.festivalId) &&
+            !store.state.flags[hareFlagKey(x.id)],
+        );
+
+    for (const p of regionPrefs) {
       const poly = map.polys[p.id];
       if (!poly) continue;
       const unlocked = store.state.unlocked.includes(p.id);
-      const done = p.festivalId !== undefined && store.state.fest.includes(p.festivalId);
+      const done =
+        p.festivalId !== undefined && store.state.fest.includes(p.festivalId) && p !== pendingPref;
 
       let fill: number = COLORS.inactivePref;
       if (p.active) {
@@ -224,6 +267,7 @@ export class MapScene extends Phaser.Scene {
           repeat: -1,
           ease: 'Sine.easeInOut',
         });
+        if (p === pendingPref) this.pendingHare = { p, lx, ly, mist };
       }
       if (done) {
         root.add(addIcon(this, lx + 22, ly - 20, 'lantern:crimson', 18 / scale));
@@ -232,7 +276,7 @@ export class MapScene extends Phaser.Scene {
   }
 
   private onPrefTap(p: Prefecture): void {
-    if (Modal.isOpen()) return;
+    if (Modal.isOpen() || this.hareCinema) return;
     if (!p.active) {
       showToast(this, UI_TEXT.map.inactivePref);
       return;
@@ -285,9 +329,126 @@ export class MapScene extends Phaser.Scene {
     modal.show();
   }
 
+  /* ---------- 県はれシネマ ----------
+     はじめて その県の おまつりを ひらいた あと、地図で 1回だけ:
+     もやもや(顔つきの 雲)が あわてて ふきとび、🏮が ともり、
+     住人が とびはねて、ぴっけが ばんざいする。
+     「くもを はらう」という 物語が 画面で ほんとうに おきる 瞬間 ── ここが 主役 */
+
+  /** ラベル座標(viewBox)→ 画面座標 */
+  private toScreen(x: number, y: number): [number, number] {
+    return [this.mapOffX + x * this.mapScale, this.mapOffY + y * this.mapScale];
+  }
+
+  private playHareCinema(refs: { p: Prefecture; lx: number; ly: number; mist?: Phaser.GameObjects.Container }): void {
+    const { p, lx, ly, mist } = refs;
+    // さきに 既読に して 保存(とちゅうで アプリを とじても 二重再生しない)
+    store.state.flags[hareFlagKey(p.id)] = true;
+    store.save();
+
+    // シネマ中の タップは ぜんぶ ここが すいとる
+    const block = this.add
+      .zone(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H)
+      .setInteractive()
+      .setDepth(DEPTH.modal);
+
+    const [sx, sy] = this.toScreen(lx, ly);
+    SFX.hint();
+
+    // もやが あつまって 「もやもや」の すがたを あらわす
+    if (mist?.scene) this.tweens.add({ targets: mist, alpha: 0, duration: 350 });
+    const face = addIcon(this, sx, sy - 10, 'cloud-dark:gray', 62).setDepth(DEPTH.overlay);
+    // ★アイコンは 128px テクスチャを 縮小表示 している ので、絶対値の scale に
+    //   tween しては いけない(巨大化する)。もとの scale を おぼえて そこへ もどす
+    const faceScale = face.scale;
+    face.setScale(0);
+    this.tweens.add({ targets: face, scale: faceScale, duration: 260, ease: 'Back.easeOut' });
+
+    this.time.delayedCall(700, () => {
+      // 「うわ〜!」と ふきとぶ(ちかい 画面はしへ)
+      SFX.pop();
+      blowAwayCloud(this, face, sx < GAME_W / 2 ? -1 : 1, () => {
+        // 晴れた! 🏮と 住人と おいわい
+        SFX.fanfare();
+        confetti(this, 26);
+        burst(this, sx, sy, 12, [0xffd34d, 0xffffff, 0x9ccb6f]);
+        const lan = addIcon(this, ...this.toScreen(lx + 22, ly - 20), 'lantern:crimson', 20).setDepth(DEPTH.overlay);
+        const lanScale = lan.scale;
+        lan.setScale(0);
+        this.tweens.add({ targets: lan, scale: lanScale, duration: 320, ease: 'Back.easeOut' });
+        // 住人が とびはねる(すこししたら そっと きえる)
+        const folks = [
+          addIcon(this, sx - 26, sy + 16, 'person-child:amber', 18),
+          addIcon(this, sx + 26, sy + 16, 'person:teal', 18),
+        ];
+        for (const [i, f] of folks.entries()) {
+          f.setDepth(DEPTH.overlay).setAlpha(0);
+          this.tweens.add({ targets: f, alpha: 1, duration: 200, delay: i * 90 });
+          this.tweens.add({ targets: f, y: f.y - 10, duration: 240, yoyo: true, repeat: 3, delay: i * 90 });
+          this.tweens.add({ targets: f, alpha: 0, duration: 400, delay: 1900, onComplete: () => f.destroy() });
+        }
+        // ぴっけの ばんざい
+        const cheer = makeGuideRow(this, UI_TEXT.hare.line(prefTitle(p)), 'cheer', 440);
+        cheer.container
+          .setPosition(GAME_W / 2, GAME_H - 150 - cheer.height / 2)
+          .setDepth(DEPTH.modal + 1)
+          .setAlpha(0);
+        this.tweens.add({ targets: cheer.container, alpha: 1, y: '-=14', duration: 300 });
+
+        this.time.delayedCall(2300, () => {
+          this.tweens.add({ targets: cheer.container, alpha: 0, duration: 300, onComplete: () => cheer.container.destroy() });
+          block.destroy();
+          this.afterHare();
+        });
+      });
+    });
+  }
+
+  /** シネマの あとの ぶんき: エンディング → つぎの 晴れまち県 → エリアコンプ → ふつうに もどる */
+  private afterHare(): void {
+    const s = store.state;
+    if (isAllHare(s, GAME_DATA) && !s.flags.endingSeen && !runtimeStory.muted) {
+      this.scene.start('StoryScene', { mode: 'ending' });
+      return;
+    }
+    const more = GAME_DATA.prefectures.some(
+      (x) =>
+        x.region === this.regionId &&
+        x.active &&
+        x.festivalId !== undefined &&
+        s.fest.includes(x.festivalId) &&
+        !s.flags[hareFlagKey(x.id)],
+    );
+    if (more) {
+      // まれに 2県いじょう 晴れまち(べつの エリアで あそんで きた とき)。作りなおして つぎを 再生
+      this.scene.restart();
+      return;
+    }
+    this.hareCinema = false;
+    if (isRegionComp(s, GAME_DATA, this.regionId) && !s.flags[regionCompFlagKey(this.regionId)]) {
+      this.showRegionBadge();
+    }
+  }
+
+  /** エリアの 全県が 晴れた: はかせが ちほうバッジを さずける */
+  private showRegionBadge(): void {
+    const region = GAME_DATA.regions.find((r) => r.id === this.regionId);
+    if (!region) return;
+    store.state.flags[regionCompFlagKey(this.regionId)] = true;
+    store.save();
+    SFX.fanfare();
+    confetti(this, 30);
+    const modal = new Modal(this, UI_TEXT.region.compTitle);
+    modal.add(addIcon(this, 0, 0, 'medal:gold', 64), 68);
+    const guide = makeGuideRow(this, UI_TEXT.region.compBody(region.name), 'normal', 420, 'hakase');
+    modal.add(guide.container, guide.height);
+    modal.addButton(UI_TEXT.region.compClose, COLORS.orange, () => modal.close());
+    modal.show();
+  }
+
   /* ---------- ぴっけの案内(状況に応じて) ---------- */
   private updateGuide(): void {
-    if (Modal.isOpen()) return;
+    if (Modal.isOpen() || this.hareCinema) return;
     const s = store.state;
     const now = Date.now();
     let text: string = UI_TEXT.guide.nextKaitaku;

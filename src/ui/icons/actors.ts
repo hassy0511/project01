@@ -580,6 +580,68 @@ export const ACTOR_ICONS: Record<string, IconDraw> = {
     line(g, BEAK_D, 2);
     g.strokePath();
   },
+  /** ばんざいの ぴっけ(はれた! コンプ! の おいわい)。りょうての つばさを 上げて 目を とじて わらう */
+  'chick-cheer': (g) => {
+    const Y = 0xf7d24a;
+    const YD = 0xc79c22;
+    // あたまの けが ぴょこんと はねる(うれしさ)
+    fill(g, Y);
+    for (const [x, y] of [
+      [24, 11],
+      [32, 7],
+      [40, 11],
+    ] as const)
+      g.fillEllipse(x, y, 9, 12);
+    line(g, YD, 2);
+    for (const [x, y] of [
+      [24, 11],
+      [32, 7],
+      [40, 11],
+    ] as const)
+      g.strokeEllipse(x, y, 9, 12);
+    // あし
+    fill(g, BEAK);
+    g.fillRoundedRect(21, 49, 8, 11, 3);
+    g.fillRoundedRect(35, 49, 8, 11, 3);
+    line(g, BEAK_D, 1.8);
+    g.strokeRoundedRect(21, 49, 8, 11, 3);
+    g.strokeRoundedRect(35, 49, 8, 11, 3);
+    // からだ
+    fill(g, Y);
+    g.fillCircle(32, 33, 19);
+    line(g, YD, 2.6);
+    g.strokeCircle(32, 33, 19);
+    // ばんざいの つばさ(ななめ 上へ)
+    fill(g, Y);
+    g.fillEllipse(11, 24, 12, 17);
+    g.fillEllipse(53, 24, 12, 17);
+    line(g, YD, 2.2);
+    g.strokeEllipse(11, 24, 12, 17);
+    g.strokeEllipse(53, 24, 12, 17);
+    // ほお
+    fill(g, CHEEK);
+    g.fillCircle(21, 38, 3.6);
+    g.fillCircle(43, 38, 3.6);
+    // とじた 目(にっこりの 山なり)
+    line(g, EYE, 2.6);
+    g.beginPath();
+    g.arc(25, 30, 3.6, Math.PI * 1.15, Math.PI * 1.85);
+    g.strokePath();
+    g.beginPath();
+    g.arc(39, 30, 3.6, Math.PI * 1.15, Math.PI * 1.85);
+    g.strokePath();
+    // あけた くちばし(うたって いる ように)
+    fill(g, BEAK);
+    g.beginPath();
+    g.moveTo(32, 36);
+    g.lineTo(26, 40);
+    g.lineTo(32, 45);
+    g.lineTo(38, 40);
+    g.closePath();
+    g.fillPath();
+    line(g, BEAK_D, 2);
+    g.strokePath();
+  },
   /** たまごから でる ヒヨコ(あたらしく はじまる しるし) */
   'chick-egg': (g) => {
     const Y = 0xf7d24a;

@@ -3,7 +3,16 @@
 import { GAME_DATA } from '../data/gameData';
 import { runtimeTuning } from '../data/arcadeTuning';
 import { boostAll, halfGrow } from '../core/plots';
-import { adminUnlockAll, defaultState, loadState, saveState, type SaveState } from '../core/state';
+import {
+  adminUnlockAll,
+  defaultState,
+  hareFlagKey,
+  loadState,
+  regionCompFlagKey,
+  regionOpenFlagKey,
+  saveState,
+  type SaveState,
+} from '../core/state';
 
 class Store {
   state: SaveState = defaultState();
@@ -24,6 +33,20 @@ class Store {
 
 export const store = new Store();
 
+/** E2E むけの ストーリー抑止。
+    E2E は おまつりを 何本も 連続で あそぶ ので、そのたび 地図で
+    晴れシネマ(入力を 数秒 とめる)が 走ると ぜんぶの 台本が こわれる。
+    skipGuides で 立てる。
+    ★セーブ(SAVE_KEY)とは べつの キーに おく:
+      - 台本は とちゅうで page.goto(フルリロード)する ので、
+        実行時変数だけ だと そこで きえて シネマが 走りだす(実際に おきた)
+      - セーブに まぜると ほんものの データに テスト用の しるしが まざる
+    テストは さいしょに localStorage.clear() する ので、まいかい まっさらに もどる */
+const STORY_MUTE_KEY = 'meisanquest-mute-story';
+export const runtimeStory = {
+  muted: typeof localStorage !== 'undefined' && localStorage.getItem(STORY_MUTE_KEY) === '1',
+};
+
 declare global {
   interface Window {
     __mqAdmin?: {
@@ -32,6 +55,8 @@ declare global {
       fastMode: () => void;
       unlockAll: () => void;
       skipGuides: () => void;
+      fest: (prefId: string) => void;
+      festAllButOne: () => void;
     };
   }
 }
@@ -57,10 +82,47 @@ export function installAdminApi(onChange: () => void): void {
       store.save();
       onChange();
     },
-    // あそびかたの 案内を 見たことに する(E2E で じゃまに ならない ように)
+    // あそびかたの 案内を 見たことに する(E2E で じゃまに ならない ように)。
+    // 晴れシネマ・エリア演出・エンディングも ここで とめる(runtimeStory)
     skipGuides: () => {
       store.state.seenPrefGuide = true;
+      runtimeStory.muted = true;
+      localStorage.setItem(STORY_MUTE_KEY, '1');
       store.save();
+    },
+    // その県の おまつりを 1回 ひらいた ことに する(晴れシネマの E2E 用)。
+    // シネマの 既読フラグは 立てない ので、つぎに 地図を ひらくと シネマが 走る
+    fest: (prefId: string) => {
+      const p = GAME_DATA.prefectures.find((x) => x.id === prefId);
+      if (!p?.festivalId) return;
+      if (!store.state.unlocked.includes(p.id)) store.state.unlocked.push(p.id);
+      if (!store.state.fest.includes(p.festivalId)) store.state.fest.push(p.festivalId);
+      // ほんものの あそびと 同じ 副作用に そろえる:
+      // エリア解放は festBest の 種類数で 数える ので、ここも つけておく
+      store.state.festBest[p.festivalId] ??= 1;
+      store.save();
+      onChange();
+    },
+    // 46県ぶんを 晴れた ことに して(シネマ既読も 立てる)、
+    // さいごの 1県(いばらき)だけ のこす ── エンディングの E2E 用
+    festAllButOne: () => {
+      const actives = GAME_DATA.prefectures.filter((x) => x.active && x.festivalId);
+      for (const p of actives.slice(1)) {
+        if (!store.state.unlocked.includes(p.id)) store.state.unlocked.push(p.id);
+        if (p.festivalId && !store.state.fest.includes(p.festivalId)) store.state.fest.push(p.festivalId);
+        if (p.festivalId) store.state.festBest[p.festivalId] ??= 1;
+        store.state.flags[hareFlagKey(p.id)] = true;
+      }
+      for (const r of GAME_DATA.regions) {
+        store.state.flags[regionOpenFlagKey(r.id)] = true;
+        store.state.flags[regionCompFlagKey(r.id)] = true;
+      }
+      // さいごの 1県が ある エリアの コンプは まだ
+      const last = actives[0];
+      delete store.state.flags[regionCompFlagKey(last.region)];
+      store.state.flags.introSeen = true;
+      store.save();
+      onChange();
     },
   };
 }

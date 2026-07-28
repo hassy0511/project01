@@ -1,4 +1,6 @@
-/* ものしりカード: 初回入手時に一度だけ表示する */
+/* ものしりカード: 初回入手時に一度だけ表示する。
+   よみ手は ものしりはかせ(ずかんと 知識の 係)。
+   ぴっけ(ぼうけんの あいぼう)とは 役わりを わけて、キャラを 立てる */
 import Phaser from 'phaser';
 import { findEntity, findTrivia, GAME_DATA } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';
@@ -27,7 +29,7 @@ export function showTriviaOnce(scene: Phaser.Scene, ref: string, after: () => vo
   SFX.hint();
 
   const modal = new Modal(scene, UI_TEXT.trivia.modalTitle);
-  const guide = makeGuideRow(scene, UI_TEXT.trivia.found, 'wow');
+  const guide = makeGuideRow(scene, UI_TEXT.trivia.found, 'normal', 420, 'hakase');
   modal.add(guide.container, guide.height);
   modal.addText(UI_TEXT.trivia.head, 14, TEXT_COLORS.accent);
   modal.add(addIcon(scene, 0, 0, entity.icon, CARD_ICON), CARD_ICON + 6);

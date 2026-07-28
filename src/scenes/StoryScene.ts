@@ -1,7 +1,8 @@
-/* 導入ストーリー(紙芝居): はじめての起動時に一度だけ流す(スキップ可)。
-   「もやもやぐもに つつまれた にっぽんを、ものしりはかせに たくされた
-   めいさんずかんと ともに はらしていく」という ぼうけんの動機づけ。
-   くわしい設計は docs/STORY_DRAFT.md(案A)を参照 */
+/* ストーリー紙芝居。2つの つかいかた:
+   - intro: はじめての起動時に一度だけ(スキップ可)── ぼうけんの動機づけ
+   - ending: 47県 ぜんぶ 晴れた とき ── おいわいと、やりこみへの 引きつぎ
+   せっていの 「おもいでを 見る」から replay でも ひらける(フラグを さわらない)。
+   くわしい設計は docs/STORY_DRAFT.md(案A+第2章)を参照 */
 import Phaser from 'phaser';
 import { setupHiDpi } from '../ui/display';
 import { UI_TEXT } from '../data/uiText';
@@ -18,6 +19,12 @@ const SLIDE_BG: [number, number][] = [
   [0x5a5477, 0x8a7a99],
   [0x7ec3e8, 0xcfeffb],
 ];
+/** エンディングは さいしょから あかるい(雲が とぶ → まひる → ゆうやけの おまつり) */
+const ENDING_BG: [number, number][] = [
+  [0x9fd2ee, 0xd8f2fb],
+  [0x7ec3e8, 0xfff2c4],
+  [0xf6b26b, 0xffe0b2],
+];
 
 /** よこに ならべる アイコンの 大きさ と あいだ(px) */
 const ROW_ICON = 38;
@@ -32,9 +39,22 @@ const CLOUD_SIZE = 96;
 export class StoryScene extends Phaser.Scene {
   private idx = 0;
   private slideRoot?: Phaser.GameObjects.Container;
+  private mode: 'intro' | 'ending' = 'intro';
+  /** せっていの 「おもいで」から 見なおして いる とき(フラグを さわらない) */
+  private replay = false;
 
   constructor() {
     super('StoryScene');
+  }
+
+  init(data: { mode?: 'intro' | 'ending'; replay?: boolean }): void {
+    this.mode = data.mode ?? 'intro';
+    this.replay = data.replay ?? false;
+  }
+
+  /** いま 見せている 紙芝居の 本文(モードで きりかわる) */
+  private slides(): readonly string[] {
+    return this.mode === 'ending' ? UI_TEXT.story.endingSlides : UI_TEXT.story.slides;
   }
 
   create(): void {
@@ -61,7 +81,7 @@ export class StoryScene extends Phaser.Scene {
   }
 
   private next(): void {
-    if (this.idx >= UI_TEXT.story.slides.length - 1) return; // 最終スライドは ボタンで進む
+    if (this.idx >= this.slides().length - 1) return; // 最終スライドは ボタンで進む
     this.idx++;
     SFX.pop();
     this.showSlide();
@@ -72,9 +92,10 @@ export class StoryScene extends Phaser.Scene {
     const root = this.add.container(0, 0);
     this.slideRoot = root;
     const i = this.idx;
-    const last = i === UI_TEXT.story.slides.length - 1;
+    const last = i === this.slides().length - 1;
 
-    const [top, bottom] = SLIDE_BG[i] ?? SLIDE_BG[0];
+    const bgSet = this.mode === 'ending' ? ENDING_BG : SLIDE_BG;
+    const [top, bottom] = bgSet[i] ?? bgSet[0];
     const bg = this.add.graphics();
     bg.fillGradientStyle(top, top, bottom, bottom, 1);
     bg.fillRect(0, 0, GAME_W, GAME_H);
@@ -84,7 +105,7 @@ export class StoryScene extends Phaser.Scene {
 
     // 本文パネル
     const text = this.add
-      .text(GAME_W / 2, GAME_H - 240, UI_TEXT.story.slides[i], {
+      .text(GAME_W / 2, GAME_H - 240, this.slides()[i], {
         fontFamily: FONT,
         fontSize: '17px',
         color: TEXT_COLORS.main,
@@ -105,7 +126,7 @@ export class StoryScene extends Phaser.Scene {
         y: GAME_H - 120,
         w: 280,
         h: 56,
-        label: UI_TEXT.story.start,
+        label: this.mode === 'ending' ? UI_TEXT.story.endingStart : UI_TEXT.story.start,
         color: COLORS.orange,
         onClick: () => {
           SFX.fanfare();
@@ -140,6 +161,10 @@ export class StoryScene extends Phaser.Scene {
   private drawArt(root: Phaser.GameObjects.Container, i: number): void {
     const cx = GAME_W / 2;
     const cy = 260;
+    if (this.mode === 'ending') {
+      this.drawEndingArt(root, i, cx, cy);
+      return;
+    }
 
     if (i === 0 || i === 1) {
       // にっぽんの しま + もやもやぐも
@@ -217,9 +242,77 @@ export class StoryScene extends Phaser.Scene {
     root.add(fw);
   }
 
+  /** エンディングの絵: 導入の 逆まわし → おまつりの あかり → ずかんへの 引き */
+  private drawEndingArt(root: Phaser.GameObjects.Container, i: number, cx: number, cy: number): void {
+    if (i === 0) {
+      // にっぽんの しまから 雲が ぜんぶ とんでいく(導入 スライド1の 逆)
+      const island = this.add.graphics();
+      island.fillStyle(0x7ec06a, 1);
+      island.lineStyle(3, 0xffffff, 0.8);
+      island.fillEllipse(cx + 60, cy - 60, 110, 52);
+      island.fillEllipse(cx, cy, 170, 74);
+      island.fillEllipse(cx - 90, cy + 60, 120, 56);
+      island.strokeEllipse(cx, cy, 170, 74);
+      root.add(island);
+      const positions: [number, number, number][] = [
+        [cx - 70, cy - 40, 1],
+        [cx + 60, cy - 66, 0.8],
+        [cx + 10, cy + 20, 1.1],
+      ];
+      positions.forEach(([x, y, sc], k) => {
+        const cloud = addIcon(this, x, y, 'cloud-dark:gray', CLOUD_SIZE * sc).setAlpha(0.85);
+        root.add(cloud);
+        this.tweens.add({
+          targets: cloud,
+          x: x + (x < cx ? -320 : 320),
+          y: y - 180,
+          angle: (x < cx ? -1 : 1) * 400,
+          scale: cloud.scale * 0.3,
+          alpha: 0,
+          duration: 1400,
+          delay: 300 + k * 250,
+          ease: 'Quad.easeIn',
+        });
+      });
+      // 雲が いなくなった あとに きらきら
+      for (let k = 0; k < 3; k++) {
+        const sp = addIcon(this, cx - 60 + k * 60, cy - 20 + (k % 2) * 40, 'sparkle:gold', 24).setAlpha(0);
+        root.add(sp);
+        this.tweens.add({ targets: sp, alpha: 1, duration: 400, delay: 1500 + k * 200, yoyo: true, repeat: -1 });
+      }
+      return;
+    }
+    if (i === 1) {
+      // ぜんこくに おまつりの あかり
+      const rows: IconKey[] = ['lantern:crimson', 'sparkle:gold', 'lantern:gold', 'sparkle:gold', 'lantern:crimson'];
+      const row = this.iconRow(cx, cy - 20, rows);
+      root.add(row);
+      this.tweens.add({ targets: row, y: cy - 28, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+      const pikke = addIcon(this, cx - 50, cy + 90, 'chick-cheer:amber', 64);
+      const prof = addIcon(this, cx + 55, cy + 88, 'owl:brown', 66);
+      root.add(pikke);
+      root.add(prof);
+      this.tweens.add({ targets: pikke, y: cy + 78, duration: 420, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+      this.tweens.add({ targets: prof, angle: { from: -3, to: 3 }, duration: 800, yoyo: true, repeat: -1 });
+      return;
+    }
+    // さいご: ずかんが まだ まっている(やりこみへの 引き)
+    const book = addIcon(this, cx, cy - 10, 'book:blue', 84);
+    root.add(book);
+    this.tweens.add({ targets: book, angle: { from: -2, to: 2 }, duration: 900, yoyo: true, repeat: -1 });
+    const q = addIcon(this, cx + 62, cy - 52, 'question:sky', 34);
+    root.add(q);
+    this.tweens.add({ targets: q, alpha: 0.4, duration: 600, yoyo: true, repeat: -1 });
+    const stars = this.iconRow(cx, cy + 90, ['star:gold', 'star:gold', 'star:gold']);
+    root.add(stars);
+  }
+
   private finish(): void {
-    store.state.flags.introSeen = true;
-    store.save();
+    if (!this.replay) {
+      if (this.mode === 'intro') store.state.flags.introSeen = true;
+      if (this.mode === 'ending') store.state.flags.endingSeen = true;
+      store.save();
+    }
     this.scene.start('RegionScene');
   }
 }

@@ -7,10 +7,12 @@ import { findPref, GAME_DATA, type Material } from '../data/gameData';
 import { festIntro, UI_TEXT } from '../data/uiText';
 import { HARVEST_ICON, HOW_TO } from '../data/howto';
 import { showHowTo, type HowToHandle } from '../ui/howto';
-import { store } from '../game/store';
-import { buildHeader, buildNav, HEADER_H } from '../ui/nav';
+import { store, runtimeStory } from '../game/store';
+import { buildHeader, buildNav, HEADER_H, zukanProgress } from '../ui/nav';
+import { SFX } from '../audio/sfx';
+import { confetti } from '../ui/effects';
 import { COLORS, FONT, GAME_AREA_H, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
-import { Modal, ScrollArea, shrinkToWidth } from '../ui/widgets';
+import { makeGuideRow, Modal, ScrollArea, shrinkToWidth } from '../ui/widgets';
 import { addIcon, type IconKey } from '../ui/icons';
 
 type TabKey = 'mat' | 't2' | 't3' | 't4' | 'how';
@@ -47,6 +49,25 @@ export class ZukanScene extends Phaser.Scene {
     buildNav(this, 'zukan');
     this.buildTabs();
     this.buildGrid();
+    this.maybeCelebrateFull();
+  }
+
+  /** ずかん 100%(真コンプ): はかせが 称号を くれる(1回だけ・ごほうびは ことばだけ) */
+  private maybeCelebrateFull(): void {
+    const s = store.state;
+    if (s.flags.zukanFull || runtimeStory.muted) return;
+    const { got, total } = zukanProgress();
+    if (total === 0 || got < total) return;
+    s.flags.zukanFull = true;
+    store.save();
+    SFX.fanfare();
+    confetti(this, 30);
+    const modal = new Modal(this, UI_TEXT.zukan.fullTitle);
+    modal.add(addIcon(this, 0, 0, 'crown:gold', 58), 62);
+    const guide = makeGuideRow(this, UI_TEXT.zukan.fullBody, 'normal', 420, 'hakase');
+    modal.add(guide.container, guide.height);
+    modal.addButton(UI_TEXT.zukan.fullClose, COLORS.orange, () => modal.close());
+    modal.show();
   }
 
   private tabCount(key: TabKey): [number, number] {

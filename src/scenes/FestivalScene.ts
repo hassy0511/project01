@@ -335,6 +335,9 @@ export class FestivalScene extends Phaser.Scene {
   private finish(): void {
     setHook({ kind: 'done' });
     const r = this.recipe;
+    // はじめて この おまつりを ひらいたか(= この あと 県の くもが はれる か)。
+    // applyFestival が fest に つむ まえに 見て おく
+    const firstTime = !store.state.fest.includes(r.id);
     applyFestival(store.state, r);
     const newRecord = updateFestBest(store.state, r.id, this.gameScore);
     store.save();
@@ -373,7 +376,13 @@ export class FestivalScene extends Phaser.Scene {
         15,
         newRecord ? TEXT_COLORS.good : TEXT_COLORS.sub,
       );
-      const guide = makeGuideRow(this, UI_TEXT.fest.doneGuide(pref ? prefTitle(pref) : ''), 'happy');
+      // 1回目 = 「くもが はれていく」の 引き(おいわい本番は 地図の 晴れシネマ)。
+      // 2回目からは スコアアタックの ことば(やりこみを ものがたりに しない)
+      const guide = makeGuideRow(
+        this,
+        firstTime ? UI_TEXT.fest.doneGuideFirst(pref ? prefTitle(pref) : '') : UI_TEXT.fest.doneGuideAgain,
+        firstTime ? 'cheer' : 'happy',
+      );
       modal.add(guide.container, guide.height);
       modal.addButton(UI_TEXT.fest.goMap, COLORS.orange, () => {
         modal.close();

@@ -294,3 +294,59 @@ export function wobble(scene: Phaser.Scene, target: Phaser.GameObjects.Component
     ease: 'Sine.easeInOut',
   });
 }
+
+/** もやもや(雲)が 「うわ〜!」と ふきとばされる。
+    ストーリーの 敵は こわい やられかたを しない ── くるくる まわりながら
+    ちいさく なって そらへ とんでいく、まぬけで にくめない 退場に する。
+    県はれシネマ・エリア演出で つかう 共通部品。
+    @param dir  とんでいく むき(+1=みぎ上 / -1=ひだり上)
+    @param onDone とびさった あとに よぶ */
+export function blowAwayCloud(
+  scene: Phaser.Scene,
+  target: Phaser.GameObjects.Container | Phaser.GameObjects.Image,
+  dir: 1 | -1 = 1,
+  onDone?: () => void,
+): void {
+  // まず ぶるぶる(気づいて あわてる)
+  scene.tweens.add({
+    targets: target,
+    angle: { from: -9, to: 9 },
+    duration: 90,
+    yoyo: true,
+    repeat: 3,
+    onComplete: () => {
+      // 風すじ(白い ながれ線)を 3本 ながす
+      for (let i = 0; i < 3; i++) {
+        const streak = scene.add.graphics().setDepth(DEPTH.overlay);
+        streak.lineStyle(4 - i, 0xffffff, 0.7);
+        const m = target.getWorldTransformMatrix();
+        const sy = m.ty - 14 + i * 14;
+        streak.lineBetween(m.tx - 40 * dir, sy, m.tx + 10 * dir, sy);
+        scene.tweens.add({
+          targets: streak,
+          x: 130 * dir,
+          alpha: 0,
+          duration: 480,
+          delay: i * 70,
+          ease: 'Quad.easeOut',
+          onComplete: () => streak.destroy(),
+        });
+      }
+      // くるくる まわって そらへ
+      scene.tweens.add({
+        targets: target,
+        x: `+=${240 * dir}`,
+        y: '-=170',
+        angle: 620 * dir,
+        scale: target.scale * 0.25,
+        alpha: 0,
+        duration: 950,
+        ease: 'Quad.easeIn',
+        onComplete: () => {
+          target.destroy();
+          onDone?.();
+        },
+      });
+    },
+  });
+}

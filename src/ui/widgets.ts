@@ -290,14 +290,25 @@ export function showToast(scene: Phaser.Scene, msg: string): void {
   });
 }
 
-export type MascotMood = 'normal' | 'happy' | 'wow';
+export type MascotMood = 'normal' | 'happy' | 'wow' | 'cheer';
 
-/** ぴっけ(たんけんヒヨコ)の かお。wow は たまごから とびだす かたちで おどろきを 出す */
+/** ふきだしの はなし手。
+    ぴっけ = ぼうけんの あいぼう(地図・県・おまつり)、
+    はかせ = ものしり係(ものしりカード・ずかん・バッジの 授与)。
+    役わりを わけると 「だれが なにを してくれる キャラか」が 子供に つたわる */
+export type Speaker = 'pikke' | 'hakase';
+
+/** ぴっけ(たんけんヒヨコ)の かお。wow は たまごから とびだす かたちで おどろきを 出す。
+    cheer は ばんざい(はれた! コンプ! の おいわい) */
 const MOOD_ICON: Record<MascotMood, string> = {
   normal: 'chick:amber',
   happy: 'chick:yellow',
   wow: 'chick-egg:amber',
+  cheer: 'chick-cheer:amber',
 };
+
+/** はかせ(フクロウ)は 表情ちがいの 絵が まだ ない ので 1しゅるい */
+const HAKASE_ICON = 'owl:brown';
 /** ぴっけの 大きさ(吹き出しの 高さ 56 に おさまる ように すこし 大きめ) */
 const MASCOT_SIZE = 46;
 
@@ -307,9 +318,10 @@ export function makeGuideRow(
   text: string,
   mood: MascotMood = 'normal',
   w = 420,
+  speaker: Speaker = 'pikke',
 ): { container: Phaser.GameObjects.Container; height: number } {
   const c = scene.add.container(0, 0);
-  const pikke = addIcon(scene, -w / 2 + 28, 0, MOOD_ICON[mood], MASCOT_SIZE);
+  const pikke = addIcon(scene, -w / 2 + 28, 0, speaker === 'hakase' ? HAKASE_ICON : MOOD_ICON[mood], MASCOT_SIZE);
   const bubbleW = w - 76;
   const t = scene.add
     .text(-w / 2 + 66 + bubbleW / 2, 0, text, {

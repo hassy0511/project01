@@ -109,7 +109,14 @@
 
 ---
 
-# 第2章: ストーリー強化(2026-07-28 起案)
+# 第2章: ストーリー強化(2026-07-28 起案 → 同日 実装済み ✅)
+
+**実装メモ**: 下記ビートはすべて実装した。進行フラグは `core/state.ts` の
+hareFlagKey / regionCompFlagKey / regionOpenFlagKey / endingSeen / zukanFull。
+E2E は `e2e/shots/verify-story-beats.mjs`(シネマ/メーター/バッジ/エリア開放/
+エンディング/おもいで/skipGuides抑止)。E2E 用に skipGuides はストーリー演出を
+まるごと止める(localStorage の別キーで、リロードをまたいで持続)。
+真コンプ(ずかん100%)だけは自動テスト対象外(手動確認)。
 
 ## 課題(ユーザーfeedback)
 
