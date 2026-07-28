@@ -25,12 +25,54 @@ const MAX_LEVEL = 4;
 const LEVEL_UP_MS = 8000;
 const PTS_PERFECT = [0, 8, 12, 16, 22];
 const PTS_OK = [0, 5, 7, 10, 14];
+/* ★ちからの つりあい。
+
+   まえは たてなおしが 「ゆびの うごいた ぶん(dx)」だけ だった。
+   すると こう なって いた:
+     ・手の x は [60, 420] に とじこめて ある ので 片道 360px。
+       たてなおしは 1px あたり CORRECT_K×1.6 = 0.088度 → 片道 31.7度、
+       もどり道は かたむきと 逆むきで 係数0.4 なので -7.9度、
+       往復 720px で さしひき 23.8度 しか かせげない。
+     ・ところが deg=16(OK の ふち)での 自己成長は deg×GRAV = 30.4度/秒。
+       = ゾーンの ふちに いる だけで 往復1回ぶんの ちからを こえる。
+       レベル4・終盤の かぜ(さいだい 20.8度/秒)を くわえると
+       打ち消すだけで 630px/秒 の 連続スワイプが 必要 だった。
+     ・さらに ゆびが とじこめの ふちで 止まると dx=0 = たてなおし 0 に なり、
+       deg は e^(GRAV·t) で ふくらむ。deg=6 から 0.85秒 で よろけ。
+       つまり 「手も足も 出ない」しゅんかんが あった。
+
+   なおしかた: ゆびを かたむいた がわに おいて いる あいだ ずっと たてなおる
+   ように する(ぼうを ささえる 手を かたむきの 下に 入れる きもち)。
+   ふちで ゆびが 止まっても たてなおしが 0 に ならなく なる。
+
+   GRAV や かぜ は さわらない。1分の あそびを 何とおりかの 「子供らしい
+   うごき」で 数値シミュレーションして くらべた 結果:
+
+     やりかた            よろけ / スコア / さいごのレベル(7回の へいきん)
+     ──────────────────────────────────────────
+     直す まえ  はやい子    3.0 / 1470 / 1.3
+                おそい子   15.7 /  548 / 1.1
+                とてもおそい 17.6 /  459 / 1.0   ← レベル4 に とどかない
+     hold を 足す はやい子   0.0 / 1728 / 4.0
+                おそい子    0.3 / 1605 / 3.4
+                とてもおそい  2.7 /  990 / 1.6   ← 上手さの さが のこる
+     GRAV も 下げる とてもおそい 0.0 / 1667 / 4.0 ← だれでも まんてん = やりすぎ
+
+   なので hold だけ 足す。PTS_PERFECT[4]=22 の はしごに 手が とどく ように
+   なり、それでも 上手い/へた の さは のこる。 */
+
 /** 不安定さ: 傾きの自己増幅と 風 */
 const GRAV = 1.9;
 const WIND_FROM = 3;
 const WIND_TO = 8;
 /** 手の移動が竿を立て直す係数(px → deg) */
 const CORRECT_K = 0.055;
+/** ゆびを かたむいた がわに おいて いる あいだの たてなおし(度/秒)。
+    いちばん はしまで よせた ときの 値。
+    ※この 数字は 子供テストで 再調整(docs/ROADMAP.md) */
+const HOLD_K = 40;
+/** これだけ よこに よせたら HOLD_K が いっぱいに なる(px) */
+const HOLD_FULL_PX = 150;
 
 export function renderKantou(api: MinigameApi, prompt: string): void {
   const { scene, area } = api;
@@ -144,6 +186,16 @@ export function renderKantou(api: MinigameApi, prompt: string): void {
     const dt = Math.min(dtMs, 33) / 1000;
     if (Date.now() >= recoverUntil) {
       deg += (deg * GRAV + wind * (1 + level * 0.25)) * dt;
+      // ゆびを かたむいた がわに よせて いる あいだは じわじわ たてなおる。
+      // ★ここが ないと とじこめの ふちで ゆびが 止まった とき
+      //   たてなおしが 0 に なり、なにを しても たおれた
+      const handOff = px - GAME_W / 2;
+      if (deg !== 0 && Math.sign(handOff) === Math.sign(deg)) {
+        const grip = Math.min(1, Math.abs(handOff) / HOLD_FULL_PX);
+        const back = Math.sign(deg) * HOLD_K * grip * dt;
+        // いきすぎて 逆に かたむけない
+        deg = Math.abs(back) >= Math.abs(deg) ? 0 : deg - back;
+      }
     }
     if (Math.abs(deg) >= STUMBLE_DEG) {
       recoverUntil = Date.now() + 700;

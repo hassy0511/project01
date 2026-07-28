@@ -19,6 +19,14 @@
    ここでは ほんものの 2点タッチ(CDP)を 送って、
    「2本 つかっても 1本の ときと 同じに はたらく」ことを たしかめる。
 
+   ★どこまで 見えて いるか(バグを もどした ビルドで ためした 結果):
+     ・ふくおとこ … かならず 見える(バグ版は ぴったり 0.0m)
+     ・いねかり  … かならず 見える(バグ版は ぴったり 0点)
+     ・おうぎみこし … ときどき しか 見えない。
+       バグ版でも 1本目の 位相しだいで まともに 見える ことが ある
+       (実測 386 で 見えた 回 と 164 で 見えなかった 回)。
+       ここは 「まるごと こわれて いない か」の 見はり くらいに 思う こと。
+
    実行: node e2e/shots/verify-two-finger-state.mjs(preview サーバーを 立ててから) */
 import { chromium } from 'playwright';
 import { CHROMIUM_PATH, makeDriver } from '../helpers.mjs';
@@ -141,10 +149,18 @@ if ((await score()) === null) {
   }
   const twoFinger = (await meters()) - m0;
   console.log(`ふくおとこ: 1本指 ${TAPS}回 → +${oneFinger.toFixed(1)}m / 2本指 ${TAPS}回 → +${twoFinger.toFixed(1)}m`);
-  // 2本の ゆびは 2歩 に なる のが すじ。すくなくとも 1本ぶんは すすむ こと
-  if (twoFinger < oneFinger * 0.9) {
+  /* ★はっきり さが 出るのは 「0 か どうか」。
+     バグ版は 2本目を はなす とき かならず スワイプと 見なされ、
+     はしる しょりに たどりつかない ので **ぴったり 0.0m**。
+     直った あとは かならず すすむ。
+     じゃま(obstacle)に ぶつかると 900ms 止まる ので、
+     すすむ きょり そのものは 運で ばらつく(実測 5.0〜12.0m)。
+     なので 「0 では ない」+「1本ぶんの 4わり 以上」で 見る。 */
+  if (twoFinger <= 0) {
+    problems.push('ふくおとこ: 2本指では 1歩も すすまない(スワイプと 見なされて いる)');
+  } else if (twoFinger < oneFinger * 0.4) {
     problems.push(
-      `ふくおとこ: 2本指だと すすまない(1本 +${oneFinger.toFixed(1)}m / 2本 +${twoFinger.toFixed(1)}m)`,
+      `ふくおとこ: 2本指だと ほとんど すすまない(1本 +${oneFinger.toFixed(1)}m / 2本 +${twoFinger.toFixed(1)}m)`,
     );
   }
   await page.screenshot({ path: `${SHOTS}/two-finger-fukuotoko.png` });
@@ -170,11 +186,21 @@ if ((await score()) === null) {
     await page.waitForTimeout(150);
   };
 
+  /* ★コンボを そろえてから はかる。
+     addPoints は コンボ倍率(さいだい ×4)を かける ので、
+     2本目の しらべが 1本目の しらべの コンボを ひきついで しまうと
+     おなじ ふり かずでも 点が 2〜3ばいに なり、しらべが なりたたない
+     (実測で 176 / 274 / 338 と ばらけた)。
+     ArcadeSession.COMBO_TIMEOUT_MS は 2600ms なので それ以上 あける。 */
+  const coolDown = () => page.waitForTimeout(3000);
+
+  await coolDown();
   let s0 = await score();
   await swing(null);
   await swing(null);
   const oneFinger = (await score()) - s0;
 
+  await coolDown();
   s0 = await score();
   await swing([420, 700]); // もう 1本 そえたまま ふる
   await swing([420, 700]);
@@ -261,44 +287,74 @@ if (!reapOk) {
   problems.push(`いねかりに 入れなかった(engine=${await engine()})`);
 } else {
   /* いねの ならび(reapGame の ROW_Y0=180 / ROW_GAP=122、area は 52 下)。
-     3れつめ(まんなか あたり)を なぞる */
-  const ROW_Y = 180 + 2 * 122 + 52;
 
-  /* まず 1本だけで なぞって、なぞれば 点が 入る ことを たしかめる(1れつめ) */
-  const TEST_Y = 180 + 52;
-  let s0 = await score();
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 420, y: TEST_Y, id: 1 }] });
-  for (let x = 400; x >= 40; x -= 24) {
-    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y: TEST_Y, id: 1 }] });
-    await page.waitForTimeout(40);
-  }
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-  await page.waitForTimeout(300);
-  const oneFingerReap = (await score()) - s0;
+     ★1れつ だけ なぞる やりかたは ぶれる:
+       ・カエルに ふれると FROG_STUN_MS のあいだ 何も 切れない
+       ・その れつが もう 刈られて いる ことも ある
+       (実測で 1本なぞりの 点が 3 / 9 / 44 と ばらけた)
+     なので 4れつ ぜんぶを 上から下へ ジグザグに なぞる。
+     それでも 0 の ことが ある ので 3かい まで やりなおす。 */
+  const ROWS_Y = [0, 1, 2, 3].map((r) => 180 + r * 122 + 52);
+
+  /** id の ゆび 1本で 4れつを ジグザグに なぞる。かせいだ 点を かえす */
+  const sweepRows = async (id, startX) => {
+    const before = await score();
+    let x = startX;
+    await cdp.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [{ x, y: ROWS_Y[0], id }],
+    });
+    for (const y of ROWS_Y) {
+      const to = x > 240 ? 40 : 440;
+      const step = to > x ? 26 : -26;
+      for (; step > 0 ? x <= to : x >= to; x += step) {
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y, id }] });
+        await page.waitForTimeout(22);
+      }
+      x = to;
+    }
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await page.waitForTimeout(300);
+    return (await score()) - before;
+  };
+
+  /* まず 1本だけで なぞって、しらべが 成立して いる ことを たしかめる */
+  let oneFingerReap = 0;
+  for (let k = 0; k < 3 && oneFingerReap === 0; k++) oneFingerReap = await sweepRows(1, 440);
   console.log(`いねかり: 1本で なぞる → +${oneFingerReap}`);
   if (oneFingerReap === 0) {
     problems.push('いねかり: 1本でも なぞれて いない(しらべが 成立して いない)');
   }
 
-  /* 2本 おいて、1本目を はなす。そのあと 2本目で なぞって 点が 入るか */
-  s0 = await score();
-  await cdp.send('Input.dispatchTouchEvent', {
-    type: 'touchStart',
-    touchPoints: [{ x: 60, y: ROW_Y, id: 1 }, { x: 420, y: ROW_Y, id: 2 }],
-  });
-  await page.waitForTimeout(80);
-  // 1本目(id=1)を はなす = のこりは 2本目 だけ
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [{ x: 60, y: ROW_Y, id: 1 }] });
-  await page.waitForTimeout(120);
-  const afterRelease = await score();
-  // 2本目(id=2)で よこに なぞる
-  for (let x = 400; x >= 40; x -= 24) {
-    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y: ROW_Y, id: 2 }] });
-    await page.waitForTimeout(40);
+  /* 2本 おいて 1本目を はなし、のこった ゆびで なぞる */
+  let gained = 0;
+  for (let k = 0; k < 3 && gained === 0; k++) {
+    await cdp.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [{ x: 60, y: ROWS_Y[0], id: 1 }, { x: 440, y: ROWS_Y[0], id: 2 }],
+    });
+    await page.waitForTimeout(80);
+    // 1本目(id=1)を はなす = のこりは 2本目 だけ
+    await cdp.send('Input.dispatchTouchEvent', {
+      type: 'touchEnd',
+      touchPoints: [{ x: 60, y: ROWS_Y[0], id: 1 }],
+    });
+    await page.waitForTimeout(120);
+    const before = await score();
+    let x = 440;
+    for (const y of ROWS_Y) {
+      const to = x > 240 ? 40 : 440;
+      const step = to > x ? 26 : -26;
+      for (; step > 0 ? x <= to : x >= to; x += step) {
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y, id: 2 }] });
+        await page.waitForTimeout(22);
+      }
+      x = to;
+    }
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await page.waitForTimeout(300);
+    gained = (await score()) - before;
   }
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-  await page.waitForTimeout(300);
-  const gained = (await score()) - afterRelease;
   console.log(`いねかり: 1本を はなした あと のこった ゆびで なぞる → +${gained}`);
   if (gained === 0) {
     problems.push('いねかり: かたほうを はなすと もう かたほうの なぞりも 死ぬ');

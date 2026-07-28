@@ -10,6 +10,7 @@ import { bigImpact, burst, floatUp, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
+import { closestApproach, judgeByTime, windowsFor } from '../../core/timing';
 import { CREW } from './crowd';
 import type { MinigameApi } from './types';
 
@@ -21,12 +22,17 @@ const GAUGE_W = 360;
 const PULL_PTS = 12;
 const JUST_PTS = 20;
 /** スイートゾーン半幅(ゲージ座標): 序盤→終盤で狭くなる。ジャストはさらに中心 */
-const ZONE_FROM = 64;
-const ZONE_TO = 40;
-const JUST_HALF = 14;
+/* ゾーンの ひろさは もう px で 決めない。
+   じかんの 窓(core/timing)から そのつど 計算して 絵にも 出す。
+   むかしは ZONE_FROM=64 → ZONE_TO=40 / JUST_HALF=14 の px だった が、
+   めもりが はやく なるほど 窓が じかんとして つぶれ、
+   曳っかわせ(いちばん 点が 高い)では ゾーン 59ms・JUST 21ms しか なかった。 */
 /** めもりの往復周期(ms): 序盤→終盤 */
-const SWING_FROM = 1500;
-const SWING_TO = 900;
+/* ★はやさ。むかしは 1500 → 900ms(曳っかわせは ×0.85 = 765ms)で、
+   1はくが 382ms しか なく ゾーンが 59ms・JUST が 21ms に つぶれて いた。
+   ※さいごの 数字は 子供テストで 再調整(docs/ROADMAP.md) */
+const SWING_FROM = 1800;
+const SWING_TO = 1500;
 /** 外した時に めもりが止まる時間 */
 const STALL_MS = 500;
 /** 曳っかわせ: 間隔と持続 */
@@ -143,7 +149,25 @@ export function renderDashi(api: MinigameApi, prompt: string): void {
   let hikkawase = false;
   let hikkawaseTimer: Phaser.Time.TimerEvent | undefined;
 
-  const zoneHalf = (): number => Phaser.Math.Linear(ZONE_FROM, ZONE_TO, session.progress());
+  /** めもりの しゅうき(ms)。曳っかわせ中は はやい */
+  const swingPeriod = (): number =>
+    Phaser.Math.Linear(SWING_FROM, SWING_TO, session.progress()) * (hikkawase ? 0.85 : 1);
+  /** 見せる ゾーンの はんぶん(px)。
+      はんていは じかんで する ので、絵も その じかんの あいだに
+      めもりが うごく はんい を 見せる(絵と はんていが ずれない ように)。
+      むかしは ZONE_FROM/TO の px を そのまま 見せて いた ため、
+      はやく なるほど 「ゾーンに 入って いる のに 通りすぎる」= 絵が うそを ついていた */
+  const zoneHalf = (): number => {
+    const period = swingPeriod();
+    const centerSpeed = ((GAUGE_W / 2 - 16) * Math.PI * 2) / (period / 1000); // px/s
+    return Math.min(GAUGE_W / 2 - 4, (centerSpeed * windowsFor(period / 2).okMs) / 1000);
+  };
+  /** 見せる JUST の はんぶん(px) */
+  const justHalf = (): number => {
+    const period = swingPeriod();
+    const centerSpeed = ((GAUGE_W / 2 - 16) * Math.PI * 2) / (period / 1000);
+    return Math.min(GAUGE_W / 2 - 8, (centerSpeed * windowsFor(period / 2).perfectMs) / 1000);
+  };
 
   const drawGauge = (): void => {
     gauge.clear();
@@ -153,7 +177,8 @@ export function renderDashi(api: MinigameApi, prompt: string): void {
     gauge.fillStyle(hikkawase ? 0xffd34d : 0x9ccb6f, 0.9);
     gauge.fillRoundedRect(GAME_W / 2 - half, GAUGE_Y - 14, half * 2, 28, 12);
     gauge.fillStyle(0x3f7d2c, 0.9);
-    gauge.fillRoundedRect(GAME_W / 2 - JUST_HALF, GAUGE_Y - 14, JUST_HALF * 2, 28, 8);
+    const jh = justHalf();
+    gauge.fillRoundedRect(GAME_W / 2 - jh, GAUGE_Y - 14, jh * 2, 28, 8);
   };
   drawGauge();
 
@@ -168,9 +193,23 @@ export function renderDashi(api: MinigameApi, prompt: string): void {
   const pull = (): void => {
     const now = Date.now();
     if (session.isEnded() || now < stalledUntil) return;
-    const offset = Math.abs(markerC.x - GAME_W / 2);
-    if (offset <= zoneHalf()) {
-      const just = offset <= JUST_HALF;
+    /* ★はんていは 「めもりが いま どこか(px)」ではなく
+       「めもりが 中心に いちばん ちかづく しゅんかんまでの じかん」で する。
+       px で 見ると しんどうが はやく なるほど 窓が じかんとして つぶれ、
+       いちばん 点の 高い 曳っかわせ(しゅうき 765ms)では
+       ゾーンが 59ms・JUST が 21ms しか なかった。
+       くわしい 理由と 数字は core/timing.ts。 */
+    const period = swingPeriod();
+    const grade = judgeByTime(
+      closestApproach(
+        (t) => GAME_W / 2 + Math.sin(phase + (t / period) * Math.PI * 2) * (GAUGE_W / 2 - 16),
+        GAME_W / 2,
+      ).dtMs,
+      // 1しゅうきで 中心を 2かい とおる ので 1はく = しゅうき / 2
+      windowsFor(period / 2),
+    );
+    if (grade !== 'miss') {
+      const just = grade === 'perfect';
       const base = (just ? JUST_PTS : PULL_PTS) * (hikkawase ? 2 : 1);
       SFX.pop();
       if (just) SFX.good();
@@ -220,7 +259,7 @@ export function renderDashi(api: MinigameApi, prompt: string): void {
   const onUpdate = (_t: number, dtMs: number): void => {
     if (session.isEnded()) return;
     if (Date.now() < stalledUntil) return; // 外した「間」: めもりも一瞬止まる
-    const period = Phaser.Math.Linear(SWING_FROM, SWING_TO, session.progress()) * (hikkawase ? 0.85 : 1);
+    const period = swingPeriod();
     phase += (Math.min(dtMs, 33) / period) * Math.PI * 2;
     markerC.x = GAME_W / 2 + Math.sin(phase) * (GAUGE_W / 2 - 16);
     if ((session.progress() * 100) % 1 < 0.02) drawGauge(); // ゾーン幅の更新(ときどきでよい)

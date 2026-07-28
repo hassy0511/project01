@@ -134,11 +134,19 @@ export function renderIshidori(api: MinigameApi, prompt: string): void {
     const wanted = which === 'kane' ? need.kane : need.taiko;
     scene.tweens.add({ targets: c, scale: { from: 0.86, to: 1 }, duration: 140, ease: 'Back.easeOut' });
     if (!wanted) {
-      // まちがった がっき: おとが ずれる
+      // まちがった がっき: おとが ずれる。
+      // ★この あいずは ここで おわり に する。
+      //   まえは need を のこして いた ので、あいずが 出たら
+      //   かね → たいこ と 2つ とも たたけば どの あいずでも
+      //   かならず あたる = 「たたきわける」しごとが 消えて いた。
+      //   ばつは あたえない(点は へらない)。この 1かいの ごほうびだけ のがす。
       SFX.bad();
       missShake(scene);
       session.resetCombo();
       floatUp(scene, c.x, INST_Y + api.areaY - 80, UI_TEXT.fest.ishidoriMiss, '#c04545');
+      cueTimer?.remove();
+      closeCue();
+      gapTimer = scene.time.delayedCall(lerp(GAP_MS_START, GAP_MS_END), nextCue);
       return;
     }
     if (which === 'kane') {

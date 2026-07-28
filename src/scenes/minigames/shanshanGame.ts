@@ -103,10 +103,59 @@ export function renderShanshan(api: MinigameApi, prompt: string): void {
     .text(CX, 210, '', { fontFamily: FONT, fontSize: '30px', color: '#ffe8b0', fontStyle: 'bold' })
     .setOrigin(0.5);
   area.add(cueText);
-  const stateText = scene.add
-    .text(CX, 620, '', { fontFamily: FONT, fontSize: '15px', color: '#ffe8b0' })
-    .setOrigin(0.5);
-  area.add(stateText);
+
+  /* ★あいずを 絵で 見せる。
+
+     まえは 30px の ことば 1行 だけ で、しかも 「ひらく」と 「とじる」は
+     どちらも #ffd34d の 同じ いろ だった(ちがうのは 「そのまま」だけ)。
+     字が 読めない子は 「きんいろ=タップ / みずいろ=タップしない」を
+     手がかり ゼロで 自分で 見つける しかない。
+     ひょっとこ(おなじ 3たく)は 大きな おめんの 絵を 見せて いる のに、
+     しゃんしゃんだけ 絵の あいずが なかった。
+
+     なので 「これに する」かさの すがたを ちいさく 見せる。
+     ひらく = ひらいた かさ / とじる = とじた かさ / そのまま = いまの まま + ○。 */
+  /* おく ばしょ: まん中は 本もの の かさ(y=360 まわり)と 上の あいずの ことば
+     (y=210)で うまって いる ので、みぎ はしに よせる。
+     ひらいた かさの みぎ端は CX+108=348 なので、そこから 右に はなす。 */
+  const CUE_ICON_X = GAME_W - 62;
+  const CUE_ICON_Y = 320;
+  const CUE_SCALE = 0.34;
+  const cueIcon = scene.add.graphics();
+  area.add(cueIcon);
+  /** ちいさい かさを かく(want=true なら ひらいた すがた) */
+  const drawCueKasa = (want: boolean, keep: boolean): void => {
+    const x = CUE_ICON_X;
+    const y = CUE_ICON_Y;
+    cueIcon.clear();
+    // うしろの わく(あいずの いろ。きんいろ=うごかす / みずいろ=そのまま)
+    cueIcon.fillStyle(keep ? 0x9ad0f5 : 0xffd34d, keep ? 0.5 : 0.85);
+    cueIcon.fillRoundedRect(x - 48, y - 44, 96, 92, 14);
+    cueIcon.fillStyle(0xc0392b, 1);
+    if (want) {
+      cueIcon.slice(x, y - 6, 108 * CUE_SCALE, Math.PI, Math.PI * 2, false);
+      cueIcon.fillPath();
+      cueIcon.lineStyle(2, 0xffe8b0, 0.9);
+      for (let i = 0; i <= 4; i++) {
+        const a = Math.PI + (i / 4) * Math.PI;
+        cueIcon.lineBetween(x, y - 6, x + Math.cos(a) * 108 * CUE_SCALE, y - 6 + Math.sin(a) * 108 * CUE_SCALE);
+      }
+    } else {
+      cueIcon.fillRoundedRect(x - 5, y - 38, 10, 36, 5);
+      cueIcon.fillStyle(0xffe8b0, 1);
+      cueIcon.fillRect(x - 5, y - 22, 10, 3);
+    }
+    cueIcon.fillStyle(0x8a6a4a, 1);
+    cueIcon.fillRect(x - 2, y - 6, 4, 32);
+    if (keep) {
+      // 「そのまま」= さわらない しるし(まる)
+      cueIcon.lineStyle(4, 0xffffff, 0.95);
+      cueIcon.strokeCircle(x + 28, y + 30, 11);
+    }
+  };
+  const hideCueKasa = (): void => {
+    cueIcon.clear();
+  };
 
   let cue: Cue = 'keep';
   let answered = false;
@@ -115,8 +164,11 @@ export function renderShanshan(api: MinigameApi, prompt: string): void {
 
   const cueMs = (): number => CUE_MS_START + (CUE_MS_END - CUE_MS_START) * session.progress();
 
+  /* 「いまは ひらいている / とじている」の 文字は やめた。
+     目の まえの かさの 絵(ひらいた わがさ / とじた ぼう)が すでに
+     見せて いる ことの くりかえし で、判断には つかえない。 */
   const showState = (): void => {
-    stateText.setText(open ? UI_TEXT.fest.shanshanOpen : UI_TEXT.fest.shanshanClosed);
+    /* なにも しない。かさの 絵が すでに 見せて いる */
   };
 
   const nextCue = (): void => {
@@ -128,6 +180,8 @@ export function renderShanshan(api: MinigameApi, prompt: string): void {
     answered = false;
     cueText.setText(cue === 'open' ? UI_TEXT.fest.shanshanCueOpen : cue === 'close' ? UI_TEXT.fest.shanshanCueClose : UI_TEXT.fest.shanshanCueKeep);
     cueText.setColor(cue === 'keep' ? '#9ad0f5' : '#ffd34d');
+    // 「これに する」すがたを 絵でも 見せる(そのまま は いまの すがた + ○)
+    drawCueKasa(cue === 'keep' ? open : cue === 'open', cue === 'keep');
     scene.tweens.add({ targets: cueText, scale: { from: 1.3, to: 1 }, duration: 200 });
     SFX.hint();
     for (const [i, dn] of dancers.entries()) {
@@ -148,6 +202,8 @@ export function renderShanshan(api: MinigameApi, prompt: string): void {
           floatUp(scene, CX, KASA_Y + api.areaY - 140, UI_TEXT.fest.shanshanLate, '#c04545');
         }
       }
+      cueText.setText('');
+      hideCueKasa();
       nextCue();
     });
   };
@@ -164,6 +220,7 @@ export function renderShanshan(api: MinigameApi, prompt: string): void {
   const toggle = (): void => {
     if (session.isEnded() || answered) return;
     answered = true;
+    hideCueKasa(); // こたえた ので あいずの 絵は もう いらない
     const wanted: Cue = open ? 'close' : 'open';
     if (cue !== wanted) {
       // 「そのまま」の ときに うごかす / ぎゃくの あいず = コンボ切れ(得点は へらない)

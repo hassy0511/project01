@@ -9,13 +9,17 @@ import { bigImpact, burst, floatUp, impactRing, squashStretch, TX_DOT } from '..
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
+import { closestApproach, judgeByTime, visualOffset, windowsFor } from '../../core/timing';
 import type { MinigameApi } from './types';
 
 const AREA_H = GAME_AREA_H;
 const SWING_Y = 168;
 const BASE_Y = 596; // 台の上面
 const DARUMA_H = 54; // 1段ぶんの高さ
-const PERFECT_PX = 10;
+/** 「いいね」の ときに おきる ばしょの ずれ(px)。
+    はんてい そのものは core/timing の じかんで する ので、
+    これは 「見た目の ぐらぐら の 大きさ」だけを きめる
+    (むかしは これが はんていの しきい値 だった → 窓が 59ms に つぶれて いた) */
 const OK_PX = 36;
 const PTS_OK = 12;
 const PTS_PERFECT = 22;
@@ -24,7 +28,16 @@ const PTS_BIG = 50;
 const BIG_EVERY = 6;
 /** 振り子の周期(ms): 序盤→終盤 */
 const SWING_FROM = 1700;
-const SWING_TO = 950;
+/* ★はやさの 上かぎり。
+   むかしは 950ms(とくだいは ×0.8 = 760ms)まで はやく なって いた。
+   1はく(中心を とおる かんかく)が 380ms しか なく、
+   4〜8歳が 「ねらって おく」には みじかすぎた
+   (どんな はんてい方法でも 「ぴったり」を 34ms より ひろく できない)。
+   むずかしさは はやさ ではなく かいすう(=かんがえる ひまが へる)で 出す。
+   ※さいごの 数字は 子供テストで 再調整(docs/ROADMAP.md) */
+const SWING_TO = 1400;
+/** とくだいだるまは すこし はやい */
+const BIG_SPEED = 0.85;
 const SWING_RANGE = 148;
 /** 積みがここより高く見えたら 台ごと下げる */
 const SHIFT_TRIGGER_Y = 330;
@@ -78,6 +91,12 @@ export function renderDaruma(api: MinigameApi, prompt: string): void {
   let dropping = false;
   let dropCount = 0;
   let phase = 0;
+  /** ふりこの しゅうき(ms)。とくだいは はやい */
+  const swingPeriod = (big: boolean): number =>
+    Phaser.Math.Linear(SWING_FROM, SWING_TO, session.progress()) * (big ? BIG_SPEED : 1);
+  /** タップの ときに きめた 「おきる ばしょの ずれ」と できばえ(land で つかう) */
+  let landOffset = 0;
+  let landGrade: ReturnType<typeof judgeByTime> = 'ok';
   let spawnTimer: Phaser.Time.TimerEvent | undefined;
 
   const topCenterX = (): number => (stack.length ? stack[stack.length - 1].x : GAME_W / 2);
@@ -101,8 +120,9 @@ export function renderDaruma(api: MinigameApi, prompt: string): void {
 
   const land = (d: Phaser.GameObjects.Container, big: boolean): void => {
     const target = topCenterX();
-    const offset = d.x - target;
-    if (Math.abs(offset) > OK_PX) {
+    const offset = landOffset;
+    d.setX(target + offset);
+    if (landGrade === 'miss') {
       // ずれすぎ: ころんと転がって退場(スタックは無事。コンボが切れるだけ)
       session.resetCombo();
       SFX.bad();
@@ -121,7 +141,7 @@ export function renderDaruma(api: MinigameApi, prompt: string): void {
       return;
     }
 
-    const perfect = Math.abs(offset) <= PERFECT_PX;
+    const perfect = landGrade === 'perfect';
     if (perfect) d.setX(target); // ぴったりは吸い付いて完全にそろう
     squashStretch(scene, d);
     // 着地の粉じん
@@ -162,6 +182,27 @@ export function renderDaruma(api: MinigameApi, prompt: string): void {
     const d = current;
     const big = currentBig;
     current = undefined;
+
+    /* ★はんていは 「タップした しゅんかんの px の ずれ」ではなく
+       「いちばん 中心に ちかづく しゅんかんまでの じかん」で する。
+       px で 見ると しんどうが はやく なるほど 窓が じかんとして つぶれ、
+       とくだいだるま(しゅうき 760ms)では 59ms しか なかった
+       ─ 60fps で 3〜4フレーム。4〜8歳には まぐれ しか ない。
+       くわしい 理由と 数字は core/timing.ts。 */
+    const period = swingPeriod(big);
+    const target = topCenterX();
+    const at = closestApproach(
+      (t) => GAME_W / 2 + Math.sin(phase + (t / period) * Math.PI * 2) * SWING_RANGE,
+      target,
+    );
+    // 1しゅうきで 中心を 2かい とおる ので 1はく = しゅうき / 2
+    const w = windowsFor(period / 2);
+    landGrade = judgeByTime(at.dtMs, w);
+    // 見た目は 「じかんの ずれ」に ひれいさせて よこに ずらす。
+    // いつも ど真ん中に おくと 上手い/へた が とうの かたちに 出なく なる
+    const side = d.x >= target ? 1 : -1;
+    landOffset = visualOffset(at.dtMs, side, OK_PX, w.okMs);
+
     const fallY = landingY();
     scene.tweens.add({
       targets: d,
@@ -178,7 +219,7 @@ export function renderDaruma(api: MinigameApi, prompt: string): void {
 
   const onUpdate = (_t: number, dtMs: number): void => {
     if (session.isEnded() || !current) return;
-    const period = Phaser.Math.Linear(SWING_FROM, SWING_TO, session.progress()) * (currentBig ? 0.8 : 1);
+    const period = swingPeriod(currentBig);
     phase += (Math.min(dtMs, 33) / period) * Math.PI * 2;
     current.setX(GAME_W / 2 + Math.sin(phase) * SWING_RANGE);
   };

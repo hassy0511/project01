@@ -77,11 +77,12 @@ export function renderChousa(api: MinigameApi, prompt: string): void {
   for (let i = 0; i < SHOULDERS; i++) {
     const c = scene.add.container(POS[i][0], POS[i][1]);
     c.add(addIcon(scene, 0, 0, 'person:teal', 36));
-    c.add(
-      scene.add
-        .text(0, 42, UI_TEXT.fest.chousaShoulder(i + 1), { fontFamily: FONT, fontSize: '13px', color: '#5a4632' })
-        .setOrigin(0.5),
-    );
+    /* 「かた1」〜「かた4」の ラベルは やめた。
+       この 番号は ゲームの どこでも つかって いない(あいずも しらせも
+       番号を 見て いない)。子供が 見る のは 頭の 上の ちからゲージの
+       いろ(みどり/きいろ/あか)だけ で、番号は 判断に つながらない。
+       字が 読めない子には 意味の ない 文字が 4つ ならぶ だけ で、
+       絵の じゃまに なって いた。 */
     c.setSize(90, 130);
     c.setInteractive({ useHandCursor: true });
     c.on('pointerdown', () => tap(i));

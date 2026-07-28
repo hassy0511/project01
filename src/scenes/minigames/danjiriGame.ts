@@ -11,6 +11,7 @@ import { bigImpact, burst, cameraPulse, floatUp, impactRing, missShake } from '.
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
+import { windowsFor } from '../../core/timing';
 import type { MinigameApi } from './types';
 
 const AREA_H = GAME_AREA_H;
@@ -20,9 +21,8 @@ const GX0 = 46;
 const GX1 = GAME_W - 46;
 const GY = 250;
 /** ゾーンの ひろさ(px。だんだん せまくなる) */
-const ZONE_W_START = 92;
-const ZONE_W_END = 54;
-const PERFECT_W = 26;
+/* ゾーンの ひろさは もう px で 決めない(じかんの 窓から 出す)。
+   むかしは ZONE_W_START 92 → ZONE_W_END 54 / PERFECT_W 26 だった。 */
 const TURN_PTS = 20;
 const PERFECT_PTS = 34;
 /** スピード(0〜1)。まがるたび あがり、しっぱいで さがる */
@@ -98,8 +98,28 @@ export function renderDanjiri(api: MinigameApi, prompt: string): void {
   let speed = 0.2;
   let turns = 0;
 
-  const zoneW = (): number => ZONE_W_START + (ZONE_W_END - ZONE_W_START) * session.progress();
   const cursorSpeed = (): number => 300 + 260 * speed + 120 * session.progress(); // px/s
+
+  /* ★ゾーンの ひろさは px 固定 では なく、じかんの 窓 × カーソルの はやさ。
+
+     まえは ZONE_W_START 92 → ZONE_W_END 54 の px 固定 だった。
+     カーソルの はやさは まがる たびに あがる(SPD_UP)ので、
+     「上手く なるほど 自分で 窓を せまく する」ゲームに なって いた
+     ─ speed=1・終盤では 680px/s で 窓は 54/680 = 79ms、
+       PERFECT は 26/680 = 38ms。
+     しかも 得点2ばいの 「そうこう」に 乗るには 4回連続 成功が 必要 なのに、
+     その 4回目には もう 窓が 79ms しか なく、1回 外すと やりなおし。
+     つまり ごほうびに 手が とどいた しゅんかん 自分で こわす 形。
+
+     じかんから ひろさを 出すと、はやく なっても むずかしさは 同じに なる。
+     はやさは 「かどが つぎつぎ 来る」= いそがしさ として だけ きく。 */
+
+  /** カーソルが めもりを かたはしから かたはしまで わたる じかん(= 1はく) */
+  const beatMs = (): number => ((GX1 - GX0) / cursorSpeed()) * 1000;
+  const zoneW = (): number =>
+    Math.min(GX1 - GX0 - 8, (2 * windowsFor(beatMs()).okMs * cursorSpeed()) / 1000);
+  const perfectW = (): number =>
+    Math.min(GX1 - GX0 - 16, (2 * windowsFor(beatMs()).perfectMs * cursorSpeed()) / 1000);
 
   const newZone = (): void => {
     zoneX = GX0 + 80 + Math.random() * (GX1 - GX0 - 160);
@@ -115,7 +135,8 @@ export function renderDanjiri(api: MinigameApi, prompt: string): void {
     gauge.fillStyle(0x9ccb6f, 0.85);
     gauge.fillRoundedRect(zoneX - w / 2, GY - 16, w, 32, 8);
     gauge.fillStyle(0xffd34d, 0.95);
-    gauge.fillRoundedRect(zoneX - PERFECT_W / 2, GY - 16, PERFECT_W, 32, 6);
+    const pw = perfectW();
+    gauge.fillRoundedRect(zoneX - pw / 2, GY - 16, pw, 32, 6);
     // カーソル
     gauge.fillStyle(0xe05b5b, 1);
     gauge.fillRoundedRect(cursor - 4, GY - 24, 8, 48, 4);
@@ -138,7 +159,7 @@ export function renderDanjiri(api: MinigameApi, prompt: string): void {
       newZone();
       return;
     }
-    const perfect = d <= PERFECT_W / 2;
+    const perfect = d <= perfectW() / 2;
     turns++;
     speed = Math.min(1, speed + SPD_UP);
     const pts = (perfect ? PERFECT_PTS : TURN_PTS) * (dash ? 2 : 1);

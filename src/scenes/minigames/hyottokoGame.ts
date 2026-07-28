@@ -117,11 +117,21 @@ export function renderHyottoko(api: MinigameApi, prompt: string): void {
     const ok = i === want;
     scene.tweens.add({ targets: btns[i], scale: { from: 0.88, to: 1 }, duration: 150, ease: 'Back.easeOut' });
     if (!ok) {
+      // ★この あいずは ここで おわり に する。
+      //   まえは want を のこして いた ので、おめん 3つを 順に おせば
+      //   かならず あたる(あいずは おわりまで 900ms 以上 ある)。
+      //   = 「どの ポーズか 見わける」あそびが まるごと 消えて いた
+      //     (60秒で 約35あいず × 13点 = 総なめだけで 約455点)。
+      //   ばつは あたえない。この 1かいの ごほうびだけ のがす。
       SFX.bad();
       missShake(scene);
       session.resetCombo();
       streak = 0;
       floatUp(scene, BX[i], 380 + api.areaY, UI_TEXT.fest.hyottokoWrong, '#c04545');
+      want = -1;
+      cueTimer?.remove();
+      dancer.setAlpha(0.25);
+      scene.time.delayedCall(300, nextCue);
       return;
     }
     want = -1;

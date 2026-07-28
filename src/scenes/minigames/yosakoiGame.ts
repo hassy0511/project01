@@ -66,10 +66,42 @@ export function renderYosakoi(api: MinigameApi, prompt: string): void {
     .text(CX, RING_Y - 100, '', { fontFamily: FONT, fontSize: '26px', color: '#ffe8b0', fontStyle: 'bold' })
     .setOrigin(0.5);
   area.add(needText);
-  const dots = scene.add
-    .text(CX, RING_Y + 92, '', { fontFamily: FONT, fontSize: '30px', color: '#ffd34d', fontStyle: 'bold' })
-    .setOrigin(0.5);
-  area.add(dots);
+  /* ★「なんかい たたくか」を 絵で 見せる。
+
+     まえは needText の ことば('カチッ カチッ (2かい)' / 'よっちょれ! (3かい)')
+     と いろ(2かい=#ffe8b0 / 3かい=#ff8a3d)だけ だった。
+     いろと かずの むすびつきは どこにも 見せて いない ので、
+     字が 読めない子は いつも 2かい に かける しかなく、
+     3かいの あいず(22%)は ぜんぶ 0点。
+     いちばん おいしい TRIPLE_PTS(26点 = HIT_PTS の 2.4ばい)が
+     読める子だけに ひらいて いた。
+
+     なので めざす かずだけ 「まる」を ならべ、たたく ごとに 1つ ぬる。
+     のこりが 見えるので かずを 読まなくても わかる。 */
+  const MARK_R = 17;
+  const MARK_GAP = 48;
+  const marks = scene.add.graphics();
+  area.add(marks);
+  const drawMarks = (want: number, done: number): void => {
+    marks.clear();
+    if (want <= 0) return;
+    const x0 = CX - ((want - 1) * MARK_GAP) / 2;
+    for (let i = 0; i < want; i++) {
+      const x = x0 + i * MARK_GAP;
+      if (i < done) {
+        marks.fillStyle(0xffd34d, 1);
+        marks.fillCircle(x, RING_Y + 92, MARK_R);
+        marks.lineStyle(4, 0xb28f22, 1);
+      } else {
+        // まだ たたいて いない ぶん。くらい 背景で 見えなく ならない ように
+        // すこし あかるく、ふちも ふとく する
+        marks.fillStyle(0xffffff, 0.34);
+        marks.fillCircle(x, RING_Y + 92, MARK_R);
+        marks.lineStyle(4, 0xffe8b0, 1);
+      }
+      marks.strokeCircle(x, RING_Y + 92, MARK_R);
+    }
+  };
 
   let need = 0; // 0 = あいず まち
   let hits = 0;
@@ -97,7 +129,7 @@ export function renderYosakoi(api: MinigameApi, prompt: string): void {
     hits = 0;
     drawRing(false);
     needText.setText('');
-    dots.setText('');
+    drawMarks(0, 0);
     if (wanted === 0) return;
     if (got === wanted) {
       const triple = wanted === 3;
@@ -142,6 +174,7 @@ export function renderYosakoi(api: MinigameApi, prompt: string): void {
     openUntil = Date.now() + WINDOW_MS;
     drawRing(true);
     needText.setText(need === 3 ? UI_TEXT.fest.yosakoiCue3 : UI_TEXT.fest.yosakoiCue2);
+    drawMarks(need, 0);
     needText.setColor(need === 3 ? '#ff8a3d' : '#ffe8b0');
     scene.tweens.add({ targets: needText, scale: { from: 1.3, to: 1 }, duration: 180 });
     SFX.hint();
@@ -158,7 +191,7 @@ export function renderYosakoi(api: MinigameApi, prompt: string): void {
       return;
     }
     hits++;
-    dots.setText('●'.repeat(Math.min(hits, 5)));
+    drawMarks(need, hits);
     SFX.pop();
     burst(scene, CX + (hits % 2 ? -40 : 40), RING_Y + api.areaY, 3, [0xffd34d, 0xffffff]);
     scene.tweens.add({

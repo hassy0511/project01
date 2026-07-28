@@ -46,18 +46,55 @@ export function renderMine(api: MinigameApi, prompt: string, targetIcon: string)
     },
   });
 
-  // シャベル残数表示
+  /* シャベルの のこり。
+
+     ★このゲームの しごとは まるごと 「シャベルの のこり回数」に かかって
+       いる(0 に なると 盤面が ながれる)。それなのに 見せかたが
+       'シャベル ×12' の 文字 だけ で、絵が 1つも なかった。
+       おなじ 画面には 「まわり8マスに いくつ お宝が あるか」の すうじ も
+       出る ので、いみの ちがう すうじが 2しゅるい ならんで いた。
+       のこりを シャベルの 絵で ならべる と、字を 読まなくても
+       「あと これだけ」が わかる。 */
+  const SHOVEL_ICON = 'pick:gray';
+  const SHOVEL_SIZE = 22;
+  const SHOVEL_GAP = 20;
+  /** 絵で ならべる のは ここまで。それ より 多い ときは 「×N」も そえる */
+  const SHOVEL_ICON_MAX = 10;
+  const shovelRow = scene.add.container(20, GROUND_Y - 44);
+  area.add(shovelRow);
+  const shovelBg = scene.add.graphics();
+  shovelRow.add(shovelBg);
+  /** ★シャベルの 絵だけを おぼえて おく。
+      shovelRow.removeAll(true) で まとめて けすと、
+      おなじ 入れものに 入れて いる かずの 文字まで 「はかい」されて しまい、
+      つぎに setText した しゅんかんに canvas が null で こわれる
+      (ゲームが まるごと 止まって、ゆびマークも 消えなく なる) */
+  const shovelIcons: Phaser.GameObjects.Image[] = [];
   const shovelText = scene.add
-    .text(20, GROUND_Y - 44, '', {
+    .text(0, 0, '', {
       fontFamily: FONT,
       fontSize: '18px',
       color: '#4a3b2a',
       fontStyle: 'bold',
-      backgroundColor: '#ffffffbb',
-      padding: { x: 10, y: 4 },
     })
     .setOrigin(0, 0.5);
-  area.add(shovelText);
+  shovelRow.add(shovelText);
+  const drawShovels = (n: number): void => {
+    for (const o of shovelIcons.splice(0)) o.destroy();
+    const shown = Math.min(n, SHOVEL_ICON_MAX);
+    const extra = n > SHOVEL_ICON_MAX || n === 0;
+    shovelBg.clear();
+    shovelBg.fillStyle(0xffffff, 0.73);
+    shovelBg.fillRoundedRect(-8, -18, Math.max(46, shown * SHOVEL_GAP + 16 + (extra ? 42 : 0)), 36, 12);
+    for (let i = 0; i < shown; i++) {
+      const ic = addIcon(scene, 8 + i * SHOVEL_GAP, 0, SHOVEL_ICON, SHOVEL_SIZE);
+      shovelRow.add(ic);
+      shovelIcons.push(ic);
+    }
+    // 絵で ならべきれない ぶん(と 0 の とき)だけ すうじを そえる
+    shovelText.setText(n === 0 ? '0' : n > SHOVEL_ICON_MAX ? `×${n}` : '');
+    shovelText.setX(n === 0 ? 10 : 8 + shown * SHOVEL_GAP + 4);
+  };
 
   let board = 0;
   let shovels = 0;
@@ -67,8 +104,8 @@ export function renderMine(api: MinigameApi, prompt: string, targetIcon: string)
   const originY = GROUND_Y + 10 + TILE / 2;
 
   const updateShovels = (): void => {
-    shovelText.setText(UI_TEXT.arcade.shovels(shovels));
-    scene.tweens.add({ targets: shovelText, scale: { from: 1.15, to: 1 }, duration: 140 });
+    drawShovels(shovels);
+    scene.tweens.add({ targets: shovelRow, scale: { from: 1.12, to: 1 }, duration: 140 });
   };
 
   const neighborCount = (r: number, c: number): number => {
