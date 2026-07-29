@@ -55,17 +55,71 @@ export function fillBar(
 
 /* ---------- ヒットストップ ---------- */
 
-let hitStopActive = false;
+/** いま 「間」を とっている シーンと、いつまで とるか(実時間) */
+const hitStops = new WeakMap<Phaser.Scene, { until: number }>();
 
-/** でかい一撃の「間」: 一瞬だけ世界を止める(市販アクションの常套手段)。多重呼び出しは無視 */
+/** でかい一撃の「間」: 一瞬だけ世界を止める(市販アクションの常套手段)。
+
+    ★ ここは ゲームを 二度と うごかなく して いた ところ。なおした 経緯を のこす。
+
+    むかしは `scene.scene.pause()` で シーンごと 止め、70ms 後の setTimeout で
+    `if (scene.scene.isPaused()) scene.scene.resume()` して いた。ところが
+      ・Phaser の pause は その場では きかず、キューに つまれて 「つぎの フレーム」で きく
+      ・いっぽう isPaused() は 「いまの 状態」を かえす
+    ので、つぎの フレームが 70ms より 遅れる(= 重い しゅんかん)と
+      pause を たのむ → タイマーが 先に 走る → isPaused() が まだ false →
+      resume を 出さない → その あとで pause が きく
+    と なり、シーンが 止まったまま に なる。しかも 止まった シーンは update も
+    まわらない ので、じぶんで 立ち直る 手が ない。
+    この「間」は でかい一撃(bigImpact)の ときだけ 走る ので、
+      ・キャベツを かごの ど真ん中に 入れた とき
+      ・落ちものの 金の実を とった とき
+    に ゲームが 固まる、という かたちで 出て いた(実機で 子供が 遭遇)。
+
+    いまは シーンを 止めない。トゥイーンと 時計の はやさを 0 に する だけ。
+    これなら update は まわりつづける ので、もどす 手を 2つ もてる:
+      1) setTimeout(実時間)
+      2) まわりつづける UPDATE での 実時間チェック(1 が とんでも かならず もどる)
+    さらに シーンを かたづける とき(SHUTDOWN)にも もどす。
+    Phaser は シーンの 実体を 使いまわす ので、はやさ 0 の まま 出ていくと
+    つぎに 入った ときに 固まる ── その 芽も つぶして おく。 */
 export function hitStop(scene: Phaser.Scene, ms = 70): void {
-  if (hitStopActive || !scene.scene.isActive()) return;
-  hitStopActive = true;
-  scene.scene.pause();
-  setTimeout(() => {
-    hitStopActive = false;
-    if (scene.scene.isPaused()) scene.scene.resume();
-  }, ms);
+  if (!scene.scene.isActive()) return;
+  const already = hitStops.get(scene);
+  if (already) {
+    // かさなって よばれたら 「間」を のばすだけ(止めなおさない)
+    already.until = Math.max(already.until, Date.now() + ms);
+    return;
+  }
+  const prevTweens = scene.tweens.timeScale;
+  const prevTime = scene.time.timeScale;
+  const state = { until: Date.now() + ms };
+  hitStops.set(scene, state);
+
+  function restore(): void {
+    if (!hitStops.has(scene)) return;
+    hitStops.delete(scene);
+    scene.tweens.timeScale = prevTweens;
+    scene.time.timeScale = prevTime;
+    scene.events.off(Phaser.Scenes.Events.UPDATE, watch);
+    scene.events.off(Phaser.Scenes.Events.SHUTDOWN, restore);
+  }
+  function watch(): void {
+    // 「?」の あそびかたを ひらくと UPDATE の ききみみが いちど はずされ、
+    // とじる ときに つけ直される(arcade.ts)。もう おわった 「間」の 見はりが
+    // その とき よみがえる ことが ある ので、じぶんで はずれる ように しておく
+    if (!hitStops.has(scene)) {
+      scene.events.off(Phaser.Scenes.Events.UPDATE, watch);
+      return;
+    }
+    if (Date.now() >= state.until) restore();
+  }
+
+  scene.tweens.timeScale = 0;
+  scene.time.timeScale = 0;
+  scene.events.on(Phaser.Scenes.Events.UPDATE, watch);
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, restore);
+  setTimeout(watch, ms + 8);
 }
 
 /** タップの手応え: ぐにゃっと潰れてから弾ける */

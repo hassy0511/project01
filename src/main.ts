@@ -11,6 +11,7 @@ import { InvScene } from './scenes/InvScene';
 import { GAME_H, GAME_W } from './ui/theme';
 import { DPR, installHiDpiText } from './ui/display';
 import { resumeAudio, setAudioHidden } from './audio/sfx';
+import { installWatchdog } from './game/watchdog';
 import { startBgm } from './audio/bgm';
 
 // HiDPI: バッファは DPR 倍で確保し、各シーンのカメラズームで論理480×800を保つ(ui/display.ts)
@@ -46,6 +47,9 @@ declare global {
   }
 }
 window.__game = game;
+
+// 固まりからの 立ち直り(止まったままの シーンを 起こす / 死んだ ループを 読みこみ直す)
+installWatchdog(game);
 
 /* iOS Safari の AudioContext 制約への 対策。
    - pointerdown だけでは「ユーザー操作」と みなされない ことが あるので touchend/click も 見る

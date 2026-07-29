@@ -2,6 +2,7 @@
    ロジックは core/ の純関数に委譲し、ここでは保持と保存だけを担う */
 import { GAME_DATA } from '../data/gameData';
 import { runtimeTuning } from '../data/arcadeTuning';
+import { hitStop } from '../ui/effects';
 import { boostAll, halfGrow } from '../core/plots';
 import {
   adminUnlockAll,
@@ -57,6 +58,7 @@ declare global {
       skipGuides: () => void;
       fest: (prefId: string) => void;
       festAllButOne: () => void;
+      hitStopTest: () => { paused: boolean; tweenScale: number } | null;
     };
   }
 }
@@ -123,6 +125,15 @@ export function installAdminApi(onChange: () => void): void {
       store.state.flags.introSeen = true;
       store.save();
       onChange();
+    },
+    // 「でかい一撃の 間」(hitStop)を その場で 出す。
+    // ど真ん中・金の実は 運しだい なので、固まりの 回帰テストは ここから 叩く。
+    // かえす: そのとき シーンが 止まって いないか / トゥイーンの はやさ
+    hitStopTest: () => {
+      const scene = window.__game?.scene.getScenes(true)[0];
+      if (!scene) return null;
+      hitStop(scene, 70);
+      return { paused: scene.scene.isPaused(), tweenScale: scene.tweens.timeScale };
     },
   };
 }
