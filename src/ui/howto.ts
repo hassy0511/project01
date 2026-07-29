@@ -279,21 +279,50 @@ export function showHowTo(scene: Phaser.Scene, key: string, areaY: number, opts:
     timers.push(t);
   };
 
+  /** いま ゆびが 画面に ついて いるか(なぞり・長おしの さいちゅう) */
+  const isTouching = (): boolean => scene.input.manager.pointers.some((p) => p.isDown);
+
   /** 「まよって いる」を はかる ための まちうけ。さわる たびに かけなおす */
   let idleTimer: Phaser.Time.TimerEvent | undefined;
+  /** さいごに まちうけを かけなおした 時こく(なぞり中に かけ直しすぎない ため) */
+  let lastArm = 0;
   const armIdle = (): void => {
     idleTimer?.remove();
+    lastArm = Date.now();
     idleTimer = scene.time.delayedCall(IDLE_MS, () => {
-      if (!stopped) loop();
+      if (stopped) return;
+      // ★ ゆびを つけたまま(なぞり・長おし)の あいだは 「まよって いる」では ない。
+      //   ここを 見て いなかった ので、かごを ドラッグしつづける うめ(catch)などで
+      //   あそんで いる さいちゅうに ゆびマークが 出つづけて じゃまに なって いた
+      if (isTouching()) {
+        armIdle();
+        return;
+      }
+      loop();
     });
   };
 
-  /* さわられたら すぐ ひっこむ。そのあと 5秒 何も しなければ また 出る */
+  /* さわられたら すぐ ひっこむ。そのあと 5秒 何も しなければ また 出る。
+     ★ 「さわった」は おろした しゅんかん だけでは ない。
+       なぞって いる あいだ(pointermove)と はなした とき も 操作の うち。
+       pointerdown だけを 見て いた ため、ドラッグ中は 5秒ごとに 出て きて いた */
   const onTouch = (): void => {
     if (showing) hide();
     armIdle();
   };
+  const onDrag = (p: Phaser.Input.Pointer): void => {
+    if (!p.isDown) return;
+    if (showing) {
+      onTouch();
+      return;
+    }
+    // なぞって いる あいだ タイマーを 毎フレーム かけ直さない(200ms に 1回で じゅうぶん)
+    if (Date.now() - lastArm < 200) return;
+    armIdle();
+  };
   scene.input.on(Phaser.Input.Events.POINTER_DOWN, onTouch);
+  scene.input.on(Phaser.Input.Events.POINTER_MOVE, onDrag);
+  scene.input.on(Phaser.Input.Events.POINTER_UP, onTouch);
 
   const handle: HowToHandle = {
     stop: () => {
@@ -302,6 +331,8 @@ export function showHowTo(scene: Phaser.Scene, key: string, areaY: number, opts:
       hide();
       idleTimer?.remove();
       scene.input.off(Phaser.Input.Events.POINTER_DOWN, onTouch);
+      scene.input.off(Phaser.Input.Events.POINTER_MOVE, onDrag);
+      scene.input.off(Phaser.Input.Events.POINTER_UP, onTouch);
       layer.destroy();
     },
     replay: () => {

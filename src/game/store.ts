@@ -53,7 +53,7 @@ declare global {
     __mqAdmin?: {
       boostAll: () => void;
       halfGrow: () => void;
-      fastMode: () => void;
+      fastMode: (scale?: number) => void;
       unlockAll: () => void;
       skipGuides: () => void;
       fest: (prefId: string) => void;
@@ -76,8 +76,10 @@ export function installAdminApi(onChange: () => void): void {
       store.save();
       onChange();
     },
-    fastMode: () => {
-      runtimeTuning.timeScale = 8;
+    // E2E の 時間短縮。scale を わたせば もとの はやさ(1)に もどせる
+    // (ゆびマークの 5びょう など、実時間の しくみを ためす とき に つかう)
+    fastMode: (scale = 8) => {
+      runtimeTuning.timeScale = scale;
     },
     unlockAll: () => {
       adminUnlockAll(store.state, GAME_DATA);

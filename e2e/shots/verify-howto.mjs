@@ -118,6 +118,9 @@ await d.waitText('もどる');
 await d.clickText('もどる');
 await d.dismissTrivia();
 await page.waitForTimeout(600);
+// ここから さきは 実時間の しくみ(5びょうの まちうけ)を ためす ので
+// ゲームの 時間を もとに もどす(fastMode の ままだと ゲームが さきに おわる)
+await page.evaluate(() => window.__mqAdmin.fastMode(1));
 await d.scrollAndClick('なえを うえる');
 await page.evaluate(() => window.__mqAdmin.boostAll());
 await page.waitForTimeout(1400);
@@ -127,6 +130,33 @@ const drag = await waitFinger();
 if (!drag.length) problems.push('なぞる ゲーム(catch)で ゆびマークが 出ない');
 else console.log(`なぞる: ${JSON.stringify(drag)}`);
 await page.screenshot({ path: `${SHOTS}/howto-catch.png` });
+
+/* --- 5b. なぞって いる あいだは 出つづけない ---
+   うめ(catch)は かごを ドラッグしつづける ゲーム。
+   「さわった」を pointerdown だけで はかって いた ころは、
+   ゆびを つけたまま うごかす あいだ ずっと 「何も していない」あつかいに なり、
+   5秒ごとに ゆびマークが 出て きて じゃまだった(実機で 指摘)。 */
+await page.mouse.move(200, 700);
+await page.mouse.down();
+let duringDrag = 0;
+let stillPlaying = 0;
+for (let i = 0; i < 40; i++) {
+  // 8びょうかけて ゆっくり 左右に なぞる(ゆびは つけたまま)
+  await page.mouse.move(140 + ((i % 10) * 200) / 10, 700);
+  await page.waitForTimeout(200);
+  if ((await page.evaluate(() => window.__mq?.kind)) !== 'arcade') break; // ゲームが おわった
+  stillPlaying++;
+  if ((await finger()).length) duringDrag++;
+}
+await page.mouse.up();
+if (stillPlaying < 35) problems.push(`テストの 前提: なぞる まえに ゲームが おわった(${stillPlaying}/40)`);
+else if (duringDrag) problems.push(`なぞって いる さいちゅうに ゆびマークが 出た(${duringDrag}かい)`);
+else console.log(`なぞって いる あいだは 出ない ✓(${stillPlaying * 0.2}びょう)`);
+
+/* --- 5c. ゆびを はなして 何も しなければ、また 出る(まよって いる 合図は のこす) --- */
+const afterDrag = await waitFinger(9000);
+if (!afterDrag.length) problems.push('なぞりを やめて 5秒 まっても ゆびマークが 出なおさない');
+else console.log('やめて 5秒で 出なおす ✓');
 
 /* --- 6. 「?」を おすと 説明が 出て、読んでいる あいだ 時計が 止まる --- */
 const secLeft = () => page.evaluate(() => window.__mq?.secLeft ?? null);
