@@ -1,5 +1,5 @@
 /* =====================================================
-   めいさんクエスト(仮) マスタデータ
+   はれはれクエスト マスタデータ
    reference/data.js (v0.4) の TypeScript 移植。
    ここを書き換える/追記するだけでコンテンツが増える。
    将来は Google Sheets → このJSON形式に書き出す運用を想定。
@@ -248,7 +248,7 @@ export interface GameData {
 }
 
 export const GAME_DATA: GameData = {
-  meta: { version: '0.4.0', title: 'めいさんクエスト', subtitle: 'にっぽん かいたく!' },
+  meta: { version: '0.4.0', title: 'はれはれクエスト', subtitle: 'にっぽん めいさん たんけん' },
 
   /* ---------- 地方マスタ(にほんぜんこく画面) ----------
      実形シルエットは public/assets/regions-gen.json(scripts/gen-region-map.mjs で生成)。

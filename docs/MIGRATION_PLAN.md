@@ -8,7 +8,7 @@ Claude Code はこの計画に沿ってマイルストーン単位で進める�
 1. `npm create vite@latest . -- --template vanilla-ts` → `npm i phaser` → `npm i -D vitest`
 2. package.json scripts: dev / build / test(vitest run)/ typecheck(tsc --noEmit)
 3. vite.config.ts: `base: '/<リポジトリ名>/'`(GitHub Pages のプロジェクトページ対応)
-4. 最小の Phaser シーン(背景色+「めいさんクエスト」テキスト)を表示
+4. 最小の Phaser シーン(背景色+「はれはれクエスト」テキスト)を表示
 5. .github/workflows/deploy.yml(同梱済み)で main push → Pages 公開を疎通確認
    ※ GitHub 側設定: Settings → Pages → Source = GitHub Actions(人間が実施)
 

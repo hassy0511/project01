@@ -1,6 +1,6 @@
 /* ゲーム内テキスト集約(ひらがな中心・分かち書き)。シーン内にベタ書きしない */
 
-export const TITLE_TEXT = 'めいさんクエスト';
+export const TITLE_TEXT = 'はれはれクエスト';
 
 export const UI_TEXT = {
   subtitle: 'にっぽん かいたく!',
@@ -677,7 +677,7 @@ export const UI_TEXT = {
   settings: {
     title: 'せってい',
     version: (v: string) =>
-      `めいさんクエスト(かり) v${v}\nデータは この たんまつの なかにだけ ほぞんされます。\nちずデータ: svg-maps (© Victor Cazanave, CC BY 4.0)`,
+      `はれはれクエスト v${v}\nデータは この たんまつの なかにだけ ほぞんされます。\nちずデータ: svg-maps (© Victor Cazanave, CC BY 4.0)`,
     /** ストーリーの 再生(導入と エンディング)。クリアの 記念を いつでも 見かえせる */
     omoideBtn: 'おもいでを みる',
     parentMenuBtn: 'おうちのひと メニュー',
@@ -706,7 +706,7 @@ export const UI_TEXT = {
     privacyBtn: 'プライバシーポリシー',
     privacyTitle: 'プライバシーポリシー',
     privacyBody:
-      'めいさんクエスト(仮)は、お子様向けの日本地理学習ゲームです。\n\n' +
+      'はれはれクエストは、お子様向けの日本地理学習ゲームです。\n\n' +
       '・個人情報の収集は行いません\n' +
       '・セーブデータは端末内にのみ保存され、外部に送信されません\n' +
       '・広告表示、アプリ内課金、プッシュ通知はありません\n' +
