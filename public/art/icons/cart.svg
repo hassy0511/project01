@@ -1,0 +1,12 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- だんじりが つかう いろは brown / cream / crimson / dark / gold / red の 6つ。
+       やね・はしら・かざりを cream(#F6E7C4)・brown(#9A6B42)・gold(#E8C14A)で
+       直に 書いて いたので、その いろの ときに 本体と 同じに なって いた(6色中3色)。
+       どれとも かさならない tan(#D8B483 / #A8865A)と amber(#F2B544)に する -->
+  <path d="M9 25h46v25H9Z" fill="#MAIN" stroke="#DARK" stroke-width="2.8" stroke-linejoin="round"/>
+  <path d="m7 25 7-9h36l7 9Z" fill="#D8B483" stroke="#DARK" stroke-width="2.8" stroke-linejoin="round"/>
+  <path d="M17 16V9h30v7M25 31h14v13H25Z" fill="#A8865A" stroke="#DARK" stroke-width="2.8" stroke-linejoin="round"/>
+  <circle cx="18" cy="53" r="6" fill="#DARK" stroke="#DARK" stroke-width="2.8"/>
+  <circle cx="46" cy="53" r="6" fill="#DARK" stroke="#DARK" stroke-width="2.8"/>
+  <circle cx="32" cy="8" r="3.5" fill="#F2B544" stroke="#DARK" stroke-width="2.8"/>
+</svg>

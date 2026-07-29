@@ -1,0 +1,11 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <path d="M11 35h42v19c-5 7-37 7-42 0Z" fill="#MAIN" stroke="#DARK" stroke-width="2.8" stroke-linejoin="round"/>
+  <ellipse cx="32" cy="35" rx="21" ry="8" fill="#DARK" stroke="#DARK" stroke-width="2.8"/>
+  <!-- 水めん。#76C4E8 は sky の 本体色 そのままなので、well:sky で わくと
+       同じ 色に なって 水が 消える(ふちどりも ない)。いどが つかう いろは
+       gray と sky の 2つだけ なので、半分が こわれる。
+       どちらとも かさならない blue(#4F86C6)に する -->
+  <ellipse cx="32" cy="35" rx="15" ry="4" fill="#4F86C6"/>
+  <path d="M12 35V10h7v25ZM45 35V10h7v25ZM11 9h42v7H11Z" fill="#9A6B42" stroke="#6D492B" stroke-width="2.4" stroke-linejoin="round"/>
+  <path d="M32 12v18" fill="none" stroke="#DARK" stroke-width="2.8" stroke-linecap="round"/>
+</svg>
