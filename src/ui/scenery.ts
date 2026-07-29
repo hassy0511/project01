@@ -1,7 +1,14 @@
 /* ミニゲーム用の描画背景(ベクター)。無地背景を廃止して
-   空・丘・地下断面・海などをグラデーション+図形で描く */
+   空・丘・地下断面・海などをグラデーション+図形で描く。
+
+   手描きの 背景SVG(public/art/bg/)が とどいたら、そちらに 差しかわる。
+   その ときに 「どれが 背景か」が わかる ように、ここで 描いた ものには
+   すべて SCENERY_NAME の 名まえを つける(ui/bgArt.ts が これを かくす)。 */
 import Phaser from 'phaser';
 import { GAME_W } from './theme';
+
+/** コード描画の 背景に つける 名まえ。手描きの 絵が 来たら これを かくす */
+export const SCENERY_NAME = 'scenery';
 
 /** 空+奥の丘+雲(地上系ゲーム共通)。h は背景の高さ */
 export function drawMeadow(scene: Phaser.Scene, area: Phaser.GameObjects.Container, h: number): void {
@@ -20,10 +27,10 @@ export function drawMeadow(scene: Phaser.Scene, area: Phaser.GameObjects.Contain
   for (let x = 10; x < GAME_W; x += 26) {
     g.fillTriangle(x, h - 46, x + 6, h - 60, x + 12, h - 46);
   }
-  area.add(g);
+  area.add(g.setName(SCENERY_NAME));
   // 太陽と雲(ゆっくり流れる)
   const sun = scene.add.circle(GAME_W - 52, 104, 22, 0xffd34d).setAlpha(0.9);
-  area.add(sun);
+  area.add(sun.setName(SCENERY_NAME));
   for (const [cx, cy, s] of [
     [70, 50, 1],
     [230, 84, 0.7],
@@ -35,7 +42,7 @@ export function drawMeadow(scene: Phaser.Scene, area: Phaser.GameObjects.Contain
     cg.fillEllipse(-22, 6, 44, 22);
     cg.fillEllipse(24, 6, 48, 24);
     cloud.add(cg);
-    area.add(cloud);
+    area.add(cloud.setName(SCENERY_NAME));
     scene.tweens.add({
       targets: cloud,
       x: cx + 40,
@@ -73,7 +80,7 @@ export function drawUnderground(
   for (let i = 0; i < 26; i++) {
     g.fillCircle(Math.random() * GAME_W, groundY + 10 + Math.random() * (h - groundY - 20), 2 + Math.random() * 3);
   }
-  area.add(g);
+  area.add(g.setName(SCENERY_NAME));
 }
 
 /** 海と空(フィッシング用) */
@@ -83,7 +90,7 @@ export function drawSea(scene: Phaser.Scene, area: Phaser.GameObjects.Container,
   g.fillRect(0, 0, GAME_W, seaTopY);
   g.fillGradientStyle(0x6fc4e0, 0x6fc4e0, 0x2f7ea6, 0x2f7ea6, 1);
   g.fillRect(0, seaTopY, GAME_W, h - seaTopY);
-  area.add(g);
+  area.add(g.setName(SCENERY_NAME));
   // 波(白線がゆらゆら)
   for (let i = 0; i < 3; i++) {
     const wave = scene.add.graphics();
@@ -96,7 +103,7 @@ export function drawSea(scene: Phaser.Scene, area: Phaser.GameObjects.Container,
       else wave.lineTo(x, wy);
     }
     wave.strokePath();
-    area.add(wave);
+    area.add(wave.setName(SCENERY_NAME));
     scene.tweens.add({
       targets: wave,
       x: { from: -12, to: 12 },
@@ -107,7 +114,7 @@ export function drawSea(scene: Phaser.Scene, area: Phaser.GameObjects.Container,
     });
   }
   const sun = scene.add.circle(GAME_W - 48, 108, 20, 0xffd34d).setAlpha(0.9);
-  area.add(sun);
+  area.add(sun.setName(SCENERY_NAME));
 }
 
 /** ベクター描画のかご(絵文字より立体感のある収穫かご)。中心原点 */

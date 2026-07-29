@@ -17,6 +17,7 @@ import { showTriviaOnce } from '../ui/trivia';
 import { COLORS, DEPTH, FONT, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { makeStarRow, Modal, swallowPointer } from '../ui/widgets';
 import { confetti, screenFlash } from '../ui/effects';
+import { applyBgArt, bgNameOf } from '../ui/bgArt';
 import { addHelpButton, showHowTo, type HowToHandle } from '../ui/howto';
 import { addIcon } from '../ui/icons';
 import { renderCatch } from './minigames/catchGame';
@@ -193,6 +194,10 @@ export class SessionScene extends Phaser.Scene {
     } else {
       renderFish(api, prompt);
     }
+
+    // 手描きの 背景が あれば 差しかえる(public/art/bg/bg-<エンジン名>.svg)。
+    // なければ 上の ミニゲームが 描いた コード背景の まま
+    applyBgArt(this, this.area, bgNameOf(engine));
 
     // あそびかたの ゆびマーク(データに ある ゲームだけ)。字が 読めなくても わかるように
     this.howto?.stop();

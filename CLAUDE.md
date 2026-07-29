@@ -42,7 +42,9 @@ src/
 │   └─ icons/    # ベクターアイコン。public/art/icons/*.svg があればそちらを優先
 └─ audio/       # サウンド
 public/assets/  # 画像・音・地図パスJSON
-public/art/     # 手描きSVG(置くだけで差しかわる。iconsheet.html?svg=compare で見くらべ)
+public/art/     # 手描きSVG(置くだけで差しかわる)
+#   icons/ はバンドルに埋め込み、bg/ は実行時に取得(src/ui/bgArt.ts)
+#   一覧の見くらべ: node e2e/shots/art-sheet.mjs
 docs/           # 仕様書・ロードマップ・移植計画
 reference/      # v0.4 HTML試作版(参照用。編集禁止)
 ```

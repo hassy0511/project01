@@ -15,6 +15,7 @@ import { showTriviaOnce } from '../ui/trivia';
 import { COLORS, DEPTH, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { makeGuideRow, makeIconRow, Modal, swallowPointer } from '../ui/widgets';
 import { confetti, firework, screenFlash } from '../ui/effects';
+import { applyBgArt, bgNameOf } from '../ui/bgArt';
 import { addHelpButton, showHowTo, type HowToHandle } from '../ui/howto';
 import { iconTexture } from '../ui/icons';
 import { renderFestival, type StallItem } from './minigames/festivalGame';
@@ -278,6 +279,9 @@ export class FestivalScene extends Phaser.Scene {
       default:
         renderFestival(api, UI_TEXT.fest.prompt, this.buildMenu());
     }
+
+    // 手描きの 背景が あれば 差しかえる(public/art/bg/bg-<おまつり名>.svg)
+    applyBgArt(this, this.area, bgNameOf(kind));
 
     // あそびかたの ゆびマークと、忘れた ときの 「?」
     this.howto?.stop();
