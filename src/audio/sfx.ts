@@ -184,6 +184,10 @@ function recreateContext(): void {
   const old = audioCtx;
   audioCtx = null;
   outNode = null;
+  // 音の 部品も ふるい AudioContext の もの。のこすと つなげた しゅんかんに
+  // 例外に なり、SFX が まるごと 鳴らなく なる(try で のみこまれて 気づけない)
+  spaceIn = null;
+  noiseBuf = null;
   try {
     mediaEl?.pause(); // すてる まえに 止める(ふるい <audio> が 鳴りっぱなしに ならない ように)
   } catch {
@@ -206,60 +210,188 @@ function ac(): AudioContext | null {
 /** SFX の 音量そうごう(小さすぎて 聞こえない と 言われたので 上げた) */
 const SFX_GAIN = 2.2;
 
-function tone(freq: number, dur: number, type: OscillatorType, vol: number, when = 0, slide?: number): void {
+/* =====================================================
+   おとの 作り(層を かさねる)
+
+   むかしは 1つの おとに 波を 1本だけ つかって いた。それだと
+   どうしても 「ピコピコ」した 電子音に なる。ほんものの おとは
+   いくつかの 成分が かさなって できて いる ので、ここでは 3つの 層に する:
+
+     1. アタック … はじめの ごく短い ざつおん(「シャッ」「コッ」)。
+        これが ある だけで 「もの が ぶつかった」感じに なる
+     2. ボディ  … 音の 高さを 決める 波。ほんの すこし ずらした 2本を
+        かさねて 厚みを 出し、ローパスで 角を とる
+     3. ひろがり … ごく短い やまびこ(0.085びょう)。同じ 部屋に いる 感じ
+
+   音声ファイルは つかわない(容量が ふえず、オフラインでも 鳴る)。
+   ===================================================== */
+
+/** ざつおんの たね。アタックに つかう。1回 作って つかいまわす */
+let noiseBuf: AudioBuffer | null = null;
+function noise(ctx: AudioContext): AudioBuffer {
+  if (!noiseBuf || noiseBuf.sampleRate !== ctx.sampleRate) {
+    noiseBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.3), ctx.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  return noiseBuf;
+}
+
+/** ひろがり(短い やまびこ)の 入口。ぜんぶの 音が すこしだけ ここへ 送る */
+let spaceIn: GainNode | null = null;
+function space(ctx: AudioContext, out: AudioNode): GainNode | null {
+  if (spaceIn) return spaceIn;
+  try {
+    const input = ctx.createGain();
+    const delay = ctx.createDelay(0.5);
+    delay.delayTime.setValueAtTime(0.085, ctx.currentTime);
+    const damp = ctx.createBiquadFilter(); // やまびこは 高い音から 消える
+    damp.type = 'lowpass';
+    damp.frequency.setValueAtTime(2600, ctx.currentTime);
+    const fb = ctx.createGain();
+    fb.gain.setValueAtTime(0.22, ctx.currentTime);
+    input.connect(delay);
+    delay.connect(damp);
+    damp.connect(fb);
+    fb.connect(delay); // 1〜2回 かえって 消える くらい
+    damp.connect(out);
+    spaceIn = input;
+  } catch {
+    return null;
+  }
+  return spaceIn;
+}
+
+interface NoteOpts {
+  /** 波の かたち */
+  type?: OscillatorType;
+  /** おわりの 高さ(ここまで すべる) */
+  slide?: number;
+  /** 何びょう後に 鳴らすか */
+  when?: number;
+  /** ローパスの 切れる 高さ。ひくいほど やわらかい */
+  cutoff?: number;
+  /** 2本目を どれだけ ずらすか(セント)。厚みが 出る */
+  detune?: number;
+  /** ひろがりへ 送る わりあい(0〜1) */
+  space?: number;
+  /** はじめの ざつおん(アタック)の つよさ。0で なし */
+  click?: number;
+  /** アタックの 高さ(Hz)。かたい ものほど 高く */
+  clickHz?: number;
+}
+
+/** 1つの おとを 鳴らす(3つの 層を つくる) */
+function note(freq: number, dur: number, vol: number, opts: NoteOpts = {}): void {
   const ctx = ac();
   if (!ctx) return;
   const out = audioOut();
   if (!out) return;
+  const { type = 'triangle', slide, when = 0, cutoff, detune = 6, space: spaceAmt = 0.12, click = 0, clickHz = 2400 } = opts;
   try {
     const t0 = ctx.currentTime + when;
-    const o = ctx.createOscillator();
+    const peak = Math.min(1, vol * SFX_GAIN);
+    const send = space(ctx, out);
+
+    // ── 1. アタック(ざつおんの ごく短い ひとつぶ)
+    if (click > 0) {
+      const src = ctx.createBufferSource();
+      src.buffer = noise(ctx);
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.setValueAtTime(clickHz, t0);
+      bp.Q.setValueAtTime(1.2, t0);
+      const cg = ctx.createGain();
+      cg.gain.setValueAtTime(peak * click, t0);
+      cg.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.035);
+      src.connect(bp);
+      bp.connect(cg);
+      cg.connect(out);
+      src.start(t0);
+      src.stop(t0 + 0.06);
+    }
+
+    // ── 2. ボディ(すこし ずらした 2本 + ローパス)
     const g = ctx.createGain();
-    o.type = type;
-    o.frequency.setValueAtTime(freq, t0);
-    if (slide) o.frequency.exponentialRampToValueAtTime(slide, t0 + dur);
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    const co = cutoff ?? Math.max(900, freq * 4);
+    lp.frequency.setValueAtTime(co * 1.6, t0); // はじめは あかるく
+    lp.frequency.exponentialRampToValueAtTime(Math.max(200, co * 0.7), t0 + dur); // だんだん こもる
     g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(Math.min(1, vol * SFX_GAIN), t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(peak, t0 + 0.012);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    o.connect(g);
-    g.connect(out);
-    o.start(t0);
-    o.stop(t0 + dur + 0.05);
+    g.connect(lp);
+    lp.connect(out);
+    if (send && spaceAmt > 0) {
+      const sg = ctx.createGain();
+      sg.gain.setValueAtTime(spaceAmt, t0);
+      lp.connect(sg);
+      sg.connect(send);
+    }
+    for (const cents of [0, detune]) {
+      if (cents !== 0 && detune === 0) continue;
+      const o = ctx.createOscillator();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, t0);
+      if (slide) o.frequency.exponentialRampToValueAtTime(slide, t0 + dur);
+      o.detune.setValueAtTime(cents, t0);
+      o.connect(g);
+      o.start(t0);
+      o.stop(t0 + dur + 0.05);
+      if (detune === 0) break;
+    }
   } catch {
     /* noop */
   }
 }
 
 export const SFX = {
+  /** とった・はじけた。いちばん よく 鳴る ので みじかく 軽く */
   pop(): void {
-    tone(500 + Math.random() * 400, 0.09, 'triangle', 0.16, 0, 180);
+    const f = 520 + Math.random() * 380;
+    note(f, 0.1, 0.15, { type: 'triangle', slide: 190, click: 0.5, clickHz: 3000, cutoff: 2600, space: 0.1 });
   },
+  /** せいかい・うまくいった。2つの 音が 上がる */
   good(): void {
-    tone(784, 0.09, 'sine', 0.13);
-    tone(1175, 0.15, 'sine', 0.13, 0.08);
+    note(784, 0.1, 0.12, { type: 'sine', cutoff: 2200, click: 0.25, clickHz: 3600, space: 0.16 });
+    note(1175, 0.17, 0.12, { type: 'sine', when: 0.08, cutoff: 3000, space: 0.22 });
   },
+  /** しっぱい。とがらせない。ひくい 「ぼふっ」 */
   bad(): void {
-    tone(210, 0.2, 'triangle', 0.1, 0, 150);
+    note(210, 0.22, 0.1, { type: 'triangle', slide: 140, cutoff: 700, detune: 12, click: 0.35, clickHz: 700, space: 0.08 });
   },
+  /** うえた・おいた。やわらかい 「ぽふ」 */
   plant(): void {
-    tone(320, 0.12, 'sine', 0.14, 0, 200);
-    tone(520, 0.12, 'sine', 0.12, 0.11);
+    note(320, 0.13, 0.13, { type: 'sine', slide: 210, cutoff: 900, click: 0.4, clickHz: 900, space: 0.1 });
+    note(520, 0.13, 0.1, { type: 'sine', when: 0.1, cutoff: 1600, space: 0.14 });
   },
+  /** ひろった。ちいさく きらっと */
   collect(): void {
-    tone(1047, 0.07, 'square', 0.08);
-    tone(1568, 0.12, 'square', 0.08, 0.06);
+    note(1047, 0.08, 0.07, { type: 'triangle', cutoff: 5000, detune: 0, click: 0.3, clickHz: 5200, space: 0.2 });
+    note(1568, 0.14, 0.07, { type: 'sine', when: 0.06, cutoff: 6000, detune: 0, space: 0.26 });
   },
+  /** できた!の ファンファーレ。4音 のぼる */
   fanfare(): void {
-    [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.16, 'triangle', 0.15, i * 0.09));
+    [523, 659, 784, 1047].forEach((f, i) =>
+      note(f, 0.18, 0.14, { type: 'triangle', when: i * 0.09, cutoff: 2600, click: i === 0 ? 0.3 : 0.15, clickHz: 3200, space: 0.24 }),
+    );
   },
+  /** ★が 1つ つく たび。ベルっぽく */
   star(i: number): void {
-    tone(880 + i * 240, 0.13, 'sine', 0.16);
+    const f = 880 + i * 240;
+    note(f, 0.14, 0.15, { type: 'sine', cutoff: f * 5, detune: 0, click: 0.3, clickHz: f * 3, space: 0.3 });
+    note(f * 2.01, 0.1, 0.05, { type: 'sine', detune: 0, cutoff: f * 8, space: 0.3 }); // ばいおん(かねの ひびき)
   },
+  /** おまつりの はじまり。6音 かけあがる */
   fest(): void {
-    [523, 659, 784, 880, 1047, 1319].forEach((f, i) => tone(f, 0.18, 'triangle', 0.14, i * 0.11));
+    [523, 659, 784, 880, 1047, 1319].forEach((f, i) =>
+      note(f, 0.2, 0.13, { type: 'triangle', when: i * 0.11, cutoff: 2800, click: 0.2, clickHz: 3000, space: 0.26 }),
+    );
   },
+  /** ヒント・気づき。ひかえめに 2音 */
   hint(): void {
-    tone(988, 0.09, 'sine', 0.1);
-    tone(1319, 0.09, 'sine', 0.08, 0.09);
+    note(988, 0.1, 0.09, { type: 'sine', cutoff: 3000, detune: 0, space: 0.2 });
+    note(1319, 0.11, 0.07, { type: 'sine', when: 0.09, cutoff: 4000, detune: 0, space: 0.24 });
   },
 };

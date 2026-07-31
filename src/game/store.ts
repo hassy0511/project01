@@ -3,6 +3,8 @@
 import { GAME_DATA } from '../data/gameData';
 import { runtimeTuning } from '../data/arcadeTuning';
 import { hitStop } from '../ui/effects';
+import { SFX } from '../audio/sfx';
+import { startBgm, stopBgm } from '../audio/bgm';
 import { boostAll, halfGrow } from '../core/plots';
 import {
   adminUnlockAll,
@@ -59,6 +61,8 @@ declare global {
       fest: (prefId: string) => void;
       festAllButOne: () => void;
       hitStopTest: () => { paused: boolean; tweenScale: number } | null;
+      sfx: (name: string) => void;
+      bgm: (on: boolean) => void;
     };
   }
 }
@@ -127,6 +131,16 @@ export function installAdminApi(onChange: () => void): void {
       store.state.flags.introSeen = true;
       store.save();
       onChange();
+    },
+    // 効果音を 1つ 鳴らす(音の 回帰テスト用。人の 耳の かわりに 波形を 測る)
+    sfx: (name: string) => {
+      const f = (SFX as unknown as Record<string, (n?: number) => void>)[name];
+      if (typeof f === 'function') f(1);
+    },
+    // BGM の 入り切り(効果音だけを 測る とき に つかう)
+    bgm: (on: boolean) => {
+      if (on) startBgm();
+      else stopBgm();
     },
     // 「でかい一撃の 間」(hitStop)を その場で 出す。
     // ど真ん中・金の実は 運しだい なので、固まりの 回帰テストは ここから 叩く。
