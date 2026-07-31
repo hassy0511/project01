@@ -40,7 +40,8 @@ const demoFinger = () =>
       const walk = (l) => {
         for (const o of l) {
           if (o.list) walk(o.list);
-          if ((o.texture?.key ?? '').startsWith('icon:hand-point') && o.alpha > 0.2) {
+          // 手描きSVGが 入ると テクスチャ名が icon: → svgicon: に かわる
+          if (/^(svg)?icon:hand-point/.test(o.texture?.key ?? '') && o.alpha > 0.2) {
             const m = o.getWorldTransformMatrix();
             out.push({ x: Math.round(m.tx), y: Math.round(m.ty), scale: Number(m.scaleX.toFixed(2)) });
           }

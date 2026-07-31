@@ -1,0 +1,13 @@
+<!-- おにが つかう いろは brown / crimson(かみの 色)。かおを crimson で 書いて いたので
+     oni:crimson で かみと かおが 同じ 色に なって いた。かさならない red に する -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <path d="m18 16 4-11 7 10m6 0 7-10 4 11" fill="#E8C14A" stroke="#DARK" stroke-width="2.8" stroke-linejoin="round"/>
+  <path d="M10 30c0-12 10-20 22-20s22 8 22 20v10c0 12-10 19-22 19S10 52 10 40z"
+        fill="#E0584F" stroke="#DARK" stroke-width="2.9"/>
+  <path d="M11 25c2-12 11-18 21-18s19 6 21 18l-8-4-5 5-8-5-8 5-5-5z"
+        fill="#MAIN" stroke="#DARK" stroke-width="2.7" stroke-linejoin="round"/>
+  <circle cx="24" cy="34" r="2" fill="#DARK"/>
+  <circle cx="40" cy="34" r="2" fill="#DARK"/>
+  <path d="M25 48c4-3 10-3 14 0" fill="none" stroke="#DARK" stroke-width="2.8" stroke-linecap="round"/>
+  <path d="m17 33-8 5m38-5 8 5" fill="none" stroke="#DARK" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

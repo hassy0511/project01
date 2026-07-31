@@ -17,7 +17,7 @@
 
    実行: node e2e/verify-bg-art.mjs(preview サーバーは 自分で 立てる) */
 import { spawn } from 'node:child_process';
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { chromium } from 'playwright';
 import { CHROMIUM_PATH, makeDriver } from './helpers.mjs';
 
@@ -25,6 +25,8 @@ const PORT = 4275;
 const BASE_URL = `http://localhost:${PORT}/project01/`;
 const SHOTS = new URL('./shots', import.meta.url).pathname;
 const BG_DIR = new URL('../dist/art/bg/', import.meta.url).pathname;
+/** 納品ずみの 背景の 置き場(テストで 消した ものを もどす もと) */
+const SRC_BG = new URL('../public/art/bg/', import.meta.url).pathname;
 /** ためし用の 背景(ももいろの 空+大きな まる)。ひと目で 差しかわりが わかる 絵 */
 const FIXTURE = `<svg viewBox="0 0 480 748" xmlns="http://www.w3.org/2000/svg">
   <rect width="480" height="748" fill="#F28BA0"/>
@@ -35,11 +37,17 @@ const FIXTURE = `<svg viewBox="0 0 480 748" xmlns="http://www.w3.org/2000/svg">
 /* ---- 見本を 置いてから サーバーを 立てる ---- */
 mkdirSync(BG_DIR, { recursive: true });
 writeFileSync(`${BG_DIR}bg-flick.svg`, FIXTURE);
-rmSync(`${BG_DIR}bg-catch.svg`, { force: true }); // うめは 「絵が ない」がわ
+/* うめ(catch)は 「絵が ない」がわ を 見る ため、いちど どける。
+   背景は 59まい ぜんぶ 納品ずみ なので、じっさいに 絵が ない ゲームは もう ない。
+   dist の ぶんだけ 消して ためし、おわったら 書きもどす(public は さわらない) */
+rmSync(`${BG_DIR}bg-catch.svg`, { force: true });
 const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { stdio: 'pipe' });
 const cleanup = () => {
   server.kill('SIGKILL'); // のこると この プロセスが おわらない
   rmSync(`${BG_DIR}bg-flick.svg`, { force: true });
+  // どけた 本物を もどす(dist を こわしたまま に しない)
+  if (existsSync(`${SRC_BG}bg-catch.svg`)) copyFileSync(`${SRC_BG}bg-catch.svg`, `${BG_DIR}bg-catch.svg`);
+  if (existsSync(`${SRC_BG}bg-flick.svg`)) copyFileSync(`${SRC_BG}bg-flick.svg`, `${BG_DIR}bg-flick.svg`);
 };
 process.on('exit', cleanup);
 for (let i = 0; i < 60; i++) {

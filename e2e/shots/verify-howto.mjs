@@ -25,7 +25,8 @@ const finger = () =>
         for (const o of l) {
           if (o.list) walk(o.list);
           const tex = o.texture?.key ?? '';
-          if (tex.startsWith('icon:hand-point') && o.alpha > 0.2) {
+          // 手描きSVGが 入ると テクスチャ名が icon: → svgicon: に かわる。どちらも ゆびマーク
+          if (/^(svg)?icon:hand-point/.test(tex) && o.alpha > 0.2) {
             const m = o.getWorldTransformMatrix();
             out.push({ x: Math.round(m.tx), y: Math.round(m.ty), alpha: Number(o.alpha.toFixed(2)) });
           }

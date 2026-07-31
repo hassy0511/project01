@@ -1,0 +1,23 @@
+<!-- ゆびさし。あそびかたの ゆびマーク(ui/howto.ts)で 全ミニゲームに 出る、
+     いちばん 目に する アイコン。
+
+     ★ 納品された 絵は 「にぎった こぶしの まんなかから ほそい ゆびが 1本」で、
+       おやゆびが 見えず、中ゆびを 立てた 手ぶりに 見えて いた。
+       子供向けアプリの ほぼ 全画面に 出る 絵なので 描きなおした。
+       ゆびさしに 見せる かなめは 2つ:
+         ・ひとさしゆびを まんなかでは なく すこし みぎに、太めに
+         ・おやゆびを ひだりに はっきり 出す
+       かたちは いままでの コード描画(src/ui/icons/actors.ts の hand-point)に
+       そろえて ある(あちらは 実機で 通って きた 形) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- ひとさしゆび(てのひらの うしろに 置いて、根もとを かくす) -->
+  <rect x="25" y="6" width="13" height="28" rx="6.5" fill="#MAIN" stroke="#DARK" stroke-width="2.6"/>
+  <!-- にぎった てのひら -->
+  <rect x="19" y="26" width="27" height="30" rx="10" fill="#MAIN" stroke="#DARK" stroke-width="2.8"/>
+  <!-- おやゆび。これが ある ことで 「ゆびさし」に 見える -->
+  <rect x="12" y="33" width="13" height="15" rx="6.5" fill="#MAIN" stroke="#DARK" stroke-width="2.6"/>
+  <!-- まがった ゆびの すじ 3本。これが ないと まるい てのひらが 「かお」に、
+       立てた ゆびが 「かみの毛」に 見えて しまう(顔を つけて ためして 分かった)。
+       ほかの て(hand / hand-clap)にも かおは ない ので そろって いる -->
+  <path d="M28 37h15M28 44h15M28 51h15" fill="none" stroke="#DARK" stroke-width="1.8" stroke-linecap="round"/>
+</svg>

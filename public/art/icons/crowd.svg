@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <path d="M5 54c0-10 5-17 14-17s14 7 14 17z" fill="#MAIN" stroke="#DARK" stroke-width="2.7" stroke-linejoin="round"/>
+  <circle cx="19" cy="27" r="10" fill="#FAF6EC" stroke="#DARK" stroke-width="2.7"/>
+  <path d="M31 54c0-10 5-17 14-17s14 7 14 17z" fill="#MAIN" stroke="#DARK" stroke-width="2.7" stroke-linejoin="round"/>
+  <circle cx="45" cy="27" r="10" fill="#FAF6EC" stroke="#DARK" stroke-width="2.7"/>
+  <path d="M17 57c0-12 5-20 15-20s15 8 15 20z" fill="#MAIN" stroke="#DARK" stroke-width="2.9" stroke-linejoin="round"/>
+  <circle cx="32" cy="28" r="11" fill="#FAF6EC" stroke="#DARK" stroke-width="2.9"/>
+  <path d="M10 25c1-8 6-12 12-9l5 5m10 0 5-5c6-3 11 1 12 9M22 25c2-8 8-12 14-8l6 7"
+        fill="none" stroke="#DARK" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="28" cy="29" r="1.3" fill="#DARK"/>
+  <circle cx="36" cy="29" r="1.3" fill="#DARK"/>
+  <path d="M30 34c1.3.8 2.7.8 4 0" fill="none" stroke="#DARK" stroke-width="2" stroke-linecap="round"/>
+</svg>

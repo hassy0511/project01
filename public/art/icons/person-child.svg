@@ -1,0 +1,14 @@
+<!-- つかう いろは amber / pink / sky。うでを pink、あしを sky で 直に 書いて いたので
+     person-child:pink と :sky で うで・あしが きえて いた(線なので ふちどりも ない)。
+     かおと 同じ はだ色(cream)に する = どの いろでも きえない -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <circle cx="32" cy="22" r="16" fill="#F6E7C4" stroke="#DARK" stroke-width="2.8"/>
+  <path d="M17 20c1-10 7-15 15-15s14 5 15 15c-5-1-10-3-15-7-4 4-9 6-15 7z"
+        fill="#MAIN" stroke="#DARK" stroke-width="2.6" stroke-linejoin="round"/>
+  <path d="M22 38c2-4 6-6 10-6s8 2 10 6l3 19H19z" fill="#MAIN" stroke="#DARK" stroke-width="2.8" stroke-linejoin="round"/>
+  <path d="M23 42 13 50m28-8 10 8" fill="none" stroke="#F6E7C4" stroke-width="5" stroke-linecap="round"/>
+  <path d="M27 57v4m10-4v4" fill="none" stroke="#F6E7C4" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="27" cy="23" r="1.4" fill="#DARK"/>
+  <circle cx="37" cy="23" r="1.4" fill="#DARK"/>
+  <path d="M29 28c2 1 4 1 6 0" fill="none" stroke="#DARK" stroke-width="2" stroke-linecap="round"/>
+</svg>
