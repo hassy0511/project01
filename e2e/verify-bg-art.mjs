@@ -37,17 +37,18 @@ const FIXTURE = `<svg viewBox="0 0 480 748" xmlns="http://www.w3.org/2000/svg">
 /* ---- 見本を 置いてから サーバーを 立てる ---- */
 mkdirSync(BG_DIR, { recursive: true });
 writeFileSync(`${BG_DIR}bg-flick.svg`, FIXTURE);
-/* うめ(catch)は 「絵が ない」がわ を 見る ため、いちど どける。
-   背景は 59まい ぜんぶ 納品ずみ なので、じっさいに 絵が ない ゲームは もう ない。
-   dist の ぶんだけ 消して ためし、おわったら 書きもどす(public は さわらない) */
+/* うめ(catch)が 「絵が ない」がわ。納品ずみの 背景は いま ぜんぶ
+   art-hold/ に 置いて あって アプリでは つかって いない(art-hold/README.md)ので、
+   なにも どけなくて よい。念のため 消して おく */
 rmSync(`${BG_DIR}bg-catch.svg`, { force: true });
 const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { stdio: 'pipe' });
 const cleanup = () => {
   server.kill('SIGKILL'); // のこると この プロセスが おわらない
   rmSync(`${BG_DIR}bg-flick.svg`, { force: true });
-  // どけた 本物を もどす(dist を こわしたまま に しない)
-  if (existsSync(`${SRC_BG}bg-catch.svg`)) copyFileSync(`${SRC_BG}bg-catch.svg`, `${BG_DIR}bg-catch.svg`);
-  if (existsSync(`${SRC_BG}bg-flick.svg`)) copyFileSync(`${SRC_BG}bg-flick.svg`, `${BG_DIR}bg-flick.svg`);
+  // 本番で つかう 背景を 置いて いる ときは 書きもどす(dist を こわしたまま に しない)
+  for (const n of ['bg-catch.svg', 'bg-flick.svg']) {
+    if (existsSync(`${SRC_BG}${n}`)) copyFileSync(`${SRC_BG}${n}`, `${BG_DIR}${n}`);
+  }
 };
 process.on('exit', cleanup);
 for (let i = 0; i < 60; i++) {

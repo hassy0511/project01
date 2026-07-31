@@ -4,7 +4,9 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { chromium } from 'playwright';
 import { CHROMIUM_PATH } from '../helpers.mjs';
 const SHOTS = new URL('.', import.meta.url).pathname;
-const BG = new URL('../../public/art/bg/', import.meta.url).pathname;
+/* まだ つかって いない ので art-hold に ある(art-hold/README.md)。
+   つかう ことに なったら public/art/bg/ を 見る ように もどす */
+const BG = new URL('../../art-hold/bg/', import.meta.url).pathname;
 const names = readdirSync(BG).filter((f) => f.endsWith('.svg')).sort();
 const cells = names.map((f) => {
   const svg = readFileSync(`${BG}${f}`, 'utf8').replace('<svg ', '<svg preserveAspectRatio="xMidYMid slice" ');
