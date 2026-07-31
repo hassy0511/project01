@@ -102,6 +102,49 @@ describe('レシピ完成可能性(アクティブ県内)', () => {
     }
   });
 
+  /* 「完成可能」だけでは 足りない。エリアは 順ぐりに ひらく(unlockFests)ので、
+     あとで ひらく エリアでしか とれない そざいを 先の レシピが 要求すると、
+     子どもは 「材料が どこにも 無い」状態で 足止めされる。
+     例: ちゃんぽん(ながさき/きゅうしゅう)の こむぎ は かがわ(しこく)だけ。
+         しこく(15)は きゅうしゅう(18)より 先に ひらく ので これは OK。
+     ここでは その順番を データから 検算する。 */
+  describe('進行順の 到達可能性', () => {
+    /** そのエリアが ひらく までに 必要な おまつり数(未指定=さいしょから) */
+    const regionOrder = new Map(D.regions.map((rg) => [rg.id, rg.unlockFests ?? 0]));
+    const orderOfPref = (prefId: string): number => regionOrder.get(findPref(D, prefId)?.region ?? '') ?? Infinity;
+
+    /** その ingredient が 手に入る ように なる いちばん 早い タイミング */
+    const readyAt = (ing: Ingredient, seen: Set<string>): number => {
+      const m = findMaterial(D, ing.ref);
+      if (m) {
+        const origins = ing.origin ? m.origins.filter((o) => o === ing.origin) : m.origins;
+        const orders = origins.filter((o) => activeIds.has(o)).map(orderOfPref);
+        return orders.length ? Math.min(...orders) : Infinity;
+      }
+      const r = findRecipe(D, ing.ref);
+      if (!r) return Infinity;
+      return recipeReadyAt(r, seen);
+    };
+    /** その レシピが 作れる ように なる いちばん 早い タイミング */
+    const recipeReadyAt = (r: Recipe, seen = new Set<string>()): number => {
+      if (seen.has(r.id)) return Infinity; // 循環参照
+      seen.add(r.id);
+      const own = orderOfPref(r.pref);
+      return r.ingredients.reduce((acc, ing) => Math.max(acc, readyAt(ing, new Set(seen))), own);
+    };
+
+    it('材料は そのレシピの エリアより 先に ひらく エリアで とれる', () => {
+      for (const r of D.recipes) {
+        if (!activeIds.has(r.pref)) continue;
+        const mine = orderOfPref(r.pref);
+        for (const ing of r.ingredients) {
+          const at = readyAt(ing, new Set());
+          expect(at, `${r.id} ${r.name}: ${ing.ref} が 手に入るのは あとの エリア`).toBeLessThanOrEqual(mine);
+        }
+      }
+    });
+  });
+
   it('★3指定素材が infra(★2固定)でない', () => {
     for (const r of D.recipes) {
       for (const ing of r.ingredients) {
