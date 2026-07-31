@@ -13,6 +13,7 @@ import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const CX = GAME_W / 2;
@@ -30,7 +31,7 @@ export function renderKingyo(api: MinigameApi, prompt: string): void {
   const bg = scene.add.graphics();
   bg.fillGradientStyle(0xfdf3d8, 0xfdf3d8, 0xf5e0b8, 0xf5e0b8, 1);
   bg.fillRect(0, 0, GAME_W, AREA_H);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   // できあがった ちょうちんが つるされる バー
   const bar = scene.add.graphics();
   bar.lineStyle(6, 0x8a6a4a, 1);

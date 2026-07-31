@@ -12,6 +12,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const CRACK_PTS = 5;
@@ -45,7 +46,7 @@ export function renderKani(api: MinigameApi, prompt: string): void {
   bg.fillTriangle(-10, 120, GAME_W / 2, 40, GAME_W + 10, 120); // テント
   bg.fillStyle(0xf5f7fa, 1);
   bg.fillRoundedRect(20, 150, GAME_W - 40, 330, 20); // まないた
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
 
   /* もりつけの おさら。
      まえは 「0/6」「0/8 おおざら!」という 数字だけで、

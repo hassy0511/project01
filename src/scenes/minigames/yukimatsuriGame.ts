@@ -11,6 +11,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const GRID = 5;
@@ -45,7 +46,7 @@ export function renderYukimatsuri(api: MinigameApi, prompt: string): void {
   bg.fillRect(0, 0, GAME_W, AREA_H);
   bg.fillStyle(0xf4f7fb, 1);
   bg.fillRect(0, GRID_Y + GRID * CELL + 20, GAME_W, AREA_H);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   for (let i = 0; i < 12; i++) {
     const f = scene.add.circle(Math.random() * GAME_W, Math.random() * 400, 2, 0xffffff, 0.8);
     area.add(f);

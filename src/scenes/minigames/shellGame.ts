@@ -16,6 +16,7 @@ import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 /** 海面と デッキ(ここまで あげる)の 高さ */
@@ -60,7 +61,7 @@ export function renderShell(api: MinigameApi, target: string, prompt: string): v
   bg.fillEllipse(300, SEA_Y - 4, 120, 34);
   bg.fillStyle(0x4f7a4a, 1);
   bg.fillEllipse(80, SEA_Y - 20, 44, 26);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   // いかだ(デッキ)
   const deck = scene.add.graphics();
   deck.fillStyle(0x8a6a4a, 1);

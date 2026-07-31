@@ -11,6 +11,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const DRUM_Y = 520;
@@ -41,7 +42,7 @@ export function renderSansa(api: MinigameApi, prompt: string): void {
   bg.fillRect(0, 0, GAME_W, AREA_H);
   bg.fillStyle(0xffffff, 0.12);
   for (const x of LANE_X) bg.fillRoundedRect(x - 46, 60, 92, DRUM_Y - 40, 24);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
 
   api.sign(prompt);
   const session = new ArcadeSession(api, {

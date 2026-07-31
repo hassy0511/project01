@@ -37,9 +37,9 @@ const FIXTURE = `<svg viewBox="0 0 480 748" xmlns="http://www.w3.org/2000/svg">
 /* ---- 見本を 置いてから サーバーを 立てる ---- */
 mkdirSync(BG_DIR, { recursive: true });
 writeFileSync(`${BG_DIR}bg-flick.svg`, FIXTURE);
-/* うめ(catch)が 「絵が ない」がわ。納品ずみの 背景は いま ぜんぶ
-   art-hold/ に 置いて あって アプリでは つかって いない(art-hold/README.md)ので、
-   なにも どけなくて よい。念のため 消して おく */
+/* うめ(catch)を 「絵が ない」がわ に する ため、dist から 1まい どける。
+   背景は 59まい ぜんぶ つかって いる ので、じっさいに 絵が ない ゲームは もう ない。
+   おわりに 書きもどす(public は さわらない) */
 rmSync(`${BG_DIR}bg-catch.svg`, { force: true });
 const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { stdio: 'pipe' });
 const cleanup = () => {

@@ -14,6 +14,7 @@ import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import { CROWD } from './crowd';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 /** 川の 上端(ここより下に はなせば ながれる) */
@@ -43,7 +44,7 @@ export function renderTourou(api: MinigameApi, prompt: string): void {
   bg.fillRect(0, RIVER_Y, GAME_W, BANK_Y - RIVER_Y);
   bg.fillStyle(0x3d3a33, 1);
   bg.fillRect(0, BANK_Y, GAME_W, AREA_H - BANK_Y);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   // 水面の きらめき
   for (let i = 0; i < 8; i++) {
     const sh = scene.add.graphics();

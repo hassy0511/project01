@@ -12,6 +12,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const BOAT_Y = 470;
@@ -33,7 +34,7 @@ export function renderMakiwara(api: MinigameApi, prompt: string): void {
   bg.fillRect(0, 0, GAME_W, BOAT_Y + 40);
   bg.fillGradientStyle(0x1d3a52, 0x1d3a52, 0x122636, 0x122636, 1);
   bg.fillRect(0, BOAT_Y + 40, GAME_W, AREA_H - BOAT_Y - 40);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   for (let i = 0; i < 6; i++) {
     const sh = scene.add.graphics();
     sh.fillStyle(0xffd34d, 0.12);

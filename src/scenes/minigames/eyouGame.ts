@@ -14,6 +14,7 @@ import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const FLOOR_Y = 500;
@@ -39,7 +40,7 @@ export function renderEyou(api: MinigameApi, prompt: string): void {
   // どうの はり
   bg.fillStyle(0x241d18, 1);
   bg.fillRect(0, 120, GAME_W, 18);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   // もみあう ひとたち(あたま)
   const crowd: Phaser.GameObjects.Image[] = [];
   for (let i = 0; i < 14; i++) {

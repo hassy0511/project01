@@ -13,6 +13,7 @@ import { DEPTH, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const WHEEL_X = GAME_W / 2;
@@ -56,7 +57,7 @@ export function renderRokuro(api: MinigameApi, prompt: string): void {
   bg.fillRoundedRect(310, 100, 150, 130, 16);
   bg.fillStyle(0x3d3129, 1);
   bg.fillRoundedRect(345, 150, 80, 80, 40);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   const kilnFire = addIcon(scene, 385, 200, 'fire:orange', 30).setAlpha(0.55);
   area.add(kilnFire);
   scene.tweens.add({ targets: kilnFire, scale: iconScale(kilnFire, 1.2), alpha: 0.85, duration: 500, yoyo: true, repeat: -1 });

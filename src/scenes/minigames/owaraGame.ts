@@ -13,6 +13,7 @@ import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const RING_R = 62;
@@ -34,7 +35,7 @@ export function renderOwara(api: MinigameApi, prompt: string): void {
   bg.fillRect(0, 0, GAME_W, AREA_H);
   bg.fillStyle(0x141a2e, 1);
   for (let i = 0; i < 5; i++) bg.fillRect(i * 100 - 6, 380, 88, 200);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   for (let i = 0; i < 7; i++) {
     const lamp = addIcon(scene, 20 + i * 72, 360, 'lantern:crimson', 20).setAlpha(0.9);
     area.add(lamp);

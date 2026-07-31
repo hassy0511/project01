@@ -13,6 +13,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const CX = GAME_W / 2;
@@ -42,7 +43,7 @@ export function renderKokkodesho(api: MinigameApi, prompt: string): void {
     bg.fillStyle(0xffd34d, 0.9);
     bg.fillCircle(24 + i * 72, 80, 8);
   }
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
 
   api.sign(prompt);
   const session = new ArcadeSession(api, {

@@ -12,6 +12,7 @@ import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const HEADS = 8;
@@ -49,7 +50,7 @@ export function renderKagura(api: MinigameApi, prompt: string): void {
   bg.fillRect(0, 560, GAME_W, AREA_H - 560);
   bg.fillStyle(0x5a3a1a, 1);
   for (let i = 0; i < 10; i++) bg.fillRect(i * 50, 560, 40, 6);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   // かぐらの まいて(すさのお)
   const hero = addIcon(scene, GAME_W / 2, 600, 'knife:silver', 40);
   area.add(hero);

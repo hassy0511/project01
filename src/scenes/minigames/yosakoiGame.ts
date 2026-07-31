@@ -13,6 +13,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const CX = GAME_W / 2;
@@ -37,7 +38,7 @@ export function renderYosakoi(api: MinigameApi, prompt: string): void {
     bg.fillStyle(0xffd34d, 0.85);
     bg.fillRect(i * 62 + 14, 90, 34, 10);
   }
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
 
   // おどりて(なるこを もった 4にん)
   const dancers: Phaser.GameObjects.Image[] = [];

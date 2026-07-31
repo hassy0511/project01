@@ -9,7 +9,7 @@ import { SFX } from '../../audio/sfx';
 import { bigImpact, burst, confetti, floatUp, impactRing, missShake } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
 import { GAME_AREA_H, GAME_W } from '../../ui/theme';
-import { drawMeadow } from '../../ui/scenery';
+import { SCENERY_NAME, drawMeadow } from '../../ui/scenery';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
@@ -83,7 +83,7 @@ export function renderPluck(api: MinigameApi, target: string, prompt: string, un
       spots.push({ x, y, stage: 'empty', big: false });
     }
   }
-  area.add(rowsG);
+  area.add(rowsG.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   // ひっぱり中の くき を描くレイヤー
   const stemG = scene.add.graphics();
   area.add(stemG);

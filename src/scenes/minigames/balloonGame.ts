@@ -13,6 +13,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const GROUND_Y = 560;
@@ -56,7 +57,7 @@ export function renderBalloon(api: MinigameApi, prompt: string): void {
   bg.fillRect(0, MID_Y, GAME_W, GROUND_Y - MID_Y); // にしへ = だいだいめ
   bg.fillStyle(0x8fbf6a, 1);
   bg.fillRect(0, GROUND_Y, GAME_W, AREA_H - GROUND_Y); // ちくごがわの かわらの りくちきち
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   for (const [y, t] of [
     [HI_Y / 2, UI_TEXT.fest.balloonWindHi],
     [(HI_Y + MID_Y) / 2, UI_TEXT.fest.balloonWindMid],

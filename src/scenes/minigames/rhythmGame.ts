@@ -11,6 +11,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 /** わかばの通り道と 的(わっか)の位置 */
@@ -56,7 +57,7 @@ export function renderRhythm(api: MinigameApi, target: string, prompt: string): 
     bg.fillStyle(0x4c7a35, 0.4);
     bg.fillRoundedRect(-20, y + 34, GAME_W + 40, 8, 4);
   }
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   // とおくの山(さやまの丘のつもり)
   bg.fillStyle(0x9ccb8f, 0.8);
   bg.fillEllipse(120, 208, 300, 90);

@@ -13,6 +13,7 @@ import { FONT, GAME_AREA_H, GAME_W, TEXT_COLORS } from '../../ui/theme';
 import { addIcon, setIcon } from '../../ui/icons';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 /** やたいに ならぶ しなもの(FestivalScene が recipe.menu から組み立てる) */
 export interface StallItem {
@@ -368,7 +369,7 @@ function drawFestivalNight(scene: Phaser.Scene, area: Phaser.GameObjects.Contain
   g.fillRoundedRect(8, COUNTER_TOP, GAME_W - 16, AREA_H - COUNTER_TOP - 8, 16);
   g.fillStyle(0xc98f4e, 1);
   g.fillRoundedRect(8, COUNTER_TOP, GAME_W - 16, 16, 8);
-  area.add(g);
+  area.add(g.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
 
   // 星
   for (let i = 0; i < 26; i++) {

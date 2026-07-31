@@ -12,6 +12,7 @@ import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const CX = GAME_W / 2;
@@ -37,7 +38,7 @@ export function renderHanagasa(api: MinigameApi, prompt: string): void {
     bg.fillStyle(0xffd34d, 0.6);
     bg.fillEllipse(i * 85 + 40, 70, 9, 13);
   }
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   const dancers: Phaser.GameObjects.Image[] = [];
   for (const [dx, e] of [[-170, 'person-kimono:crimson'], [-85, 'person:teal'], [85, 'person:navy'], [170, 'person-kimono:violet']] as const) {
     const d = addIcon(scene, CX + dx, 580, e, 32);

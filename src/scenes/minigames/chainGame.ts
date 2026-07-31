@@ -6,7 +6,7 @@ import { addIcon, iconScale, setIcon } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, impactRing, missShake } from '../../ui/effects';
 import { GAME_AREA_H, GAME_W } from '../../ui/theme';
-import { drawMeadow } from '../../ui/scenery';
+import { SCENERY_NAME, drawMeadow } from '../../ui/scenery';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
 
@@ -70,7 +70,7 @@ export function renderChain(api: MinigameApi, target: string, prompt: string, ri
       spots.push({ x, y, stage: 'empty' });
     }
   }
-  area.add(rowsG);
+  area.add(rowsG.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
 
   const clearSpot = (s: Spot): void => {
     s.timer?.remove();

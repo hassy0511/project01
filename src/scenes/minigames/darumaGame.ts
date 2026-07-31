@@ -11,6 +11,7 @@ import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { closestApproach, judgeByTime, visualOffset, windowsFor } from '../../core/timing';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const SWING_Y = 168;
@@ -260,7 +261,7 @@ function drawMarket(scene: Phaser.Scene, area: Phaser.GameObjects.Container): vo
   g.fillRoundedRect(60, BASE_Y - DARUMA_H / 2 + 20, GAME_W - 120, 70, 10);
   g.fillStyle(0xc98f4e, 1);
   g.fillRoundedRect(60, BASE_Y - DARUMA_H / 2 + 20, GAME_W - 120, 14, 7);
-  area.add(g);
+  area.add(g.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   // ちらつく雪(新パーティクル基盤の見せどころその1)
   const snow = scene.add.particles(GAME_W / 2, -10, TX_DOT, {
     x: { min: -GAME_W / 2, max: GAME_W / 2 },

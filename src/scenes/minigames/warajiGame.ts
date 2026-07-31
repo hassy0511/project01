@@ -12,6 +12,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const STREET_Y = 430;
@@ -30,7 +31,7 @@ export function renderWaraji(api: MinigameApi, prompt: string): void {
   bgFixed.fillRect(0, 0, GAME_W, STREET_Y);
   bgFixed.fillStyle(0xb89b6a, 1);
   bgFixed.fillRect(0, STREET_Y, GAME_W, AREA_H - STREET_Y);
-  area.add(bgFixed);
+  area.add(bgFixed.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   const tiles: Phaser.GameObjects.Graphics[] = [];
   for (let t = 0; t < 2; t++) {
     const g = scene.add.graphics();

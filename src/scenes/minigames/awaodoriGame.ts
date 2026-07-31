@@ -14,6 +14,7 @@ import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 /** ながれる バーと はんてい */
@@ -50,7 +51,7 @@ export function renderAwaodori(api: MinigameApi, prompt: string): void {
   }
   bg.fillStyle(0x4a3a2a, 1);
   bg.fillRect(0, 520, GAME_W, AREA_H - 520);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
 
   // おどりて(れんぞくで はねる)
   const dancers: Phaser.GameObjects.Image[] = [];

@@ -14,6 +14,7 @@ import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease, PerPointer } from './input';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const RUNNER_X = 120;
@@ -56,7 +57,7 @@ export function renderFukuotoko(api: MinigameApi, prompt: string): void {
   bg.fillRect(0, GROUND_Y, GAME_W, AREA_H - GROUND_Y); // じめん
   bg.fillStyle(0x6b5442, 1);
   for (let i = 0; i < 12; i++) bg.fillRect(i * 42, GROUND_Y, 30, 6);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
 
   api.sign(prompt);
   const session = new ArcadeSession(api, {

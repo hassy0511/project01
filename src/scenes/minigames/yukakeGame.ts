@@ -15,6 +15,7 @@ import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const CX = GAME_W / 2;
@@ -45,7 +46,7 @@ export function renderYukake(api: MinigameApi, prompt: string): void {
   bg.fillRoundedRect(60, 470, GAME_W - 120, 120, 20); // ゆぶね
   bg.fillStyle(0x8ec4d8, 1);
   bg.fillRoundedRect(72, 482, GAME_W - 144, 96, 16);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   area.add(addIcon(scene, CX, 452, 'hotspring:sky', 30));
 
   api.sign(prompt);

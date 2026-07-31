@@ -13,6 +13,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 /** くさむらの ます(山のしゃめん) */
@@ -54,7 +55,7 @@ export function renderYamayaki(api: MinigameApi, prompt: string): void {
   bg.fillEllipse(GAME_W / 2, 620, 620, 520);
   bg.fillStyle(0x3a5a3f, 1);
   bg.fillEllipse(GAME_W / 2, 660, 520, 460);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   // ごじゅうのとう(なら)
   const tou = addIcon(scene, 46, 250, 'castle:cream', 34);
   area.add(tou);

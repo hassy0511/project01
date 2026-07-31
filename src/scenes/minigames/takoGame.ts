@@ -14,6 +14,7 @@ import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import { CROWD } from './crowd';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const GROUND_Y = 600;
@@ -40,7 +41,7 @@ export function renderTako(api: MinigameApi, prompt: string): void {
   bg.fillRect(0, 0, GAME_W, GROUND_Y);
   bg.fillStyle(0xe6d3a3, 1);
   bg.fillRect(0, GROUND_Y, GAME_W, AREA_H - GROUND_Y);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   for (let i = 0; i < 3; i++) {
     const cl = scene.add.graphics();
     cl.fillStyle(0xffffff, 0.75);

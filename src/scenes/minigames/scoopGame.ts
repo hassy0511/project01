@@ -13,6 +13,7 @@ import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const ZARU_Y = 380;
@@ -50,7 +51,7 @@ export function renderScoop(api: MinigameApi, target: string, prompt: string): v
   bg.fillRect(0, 0, GAME_W, 190);
   bg.fillGradientStyle(0x2f7fa8, 0x2f7fa8, 0x1d5b80, 0x1d5b80, 1);
   bg.fillRect(0, 190, GAME_W, AREA_H - 190);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   // 光のすじ
   for (let i = 0; i < 5; i++) {
     const ray = scene.add.graphics();

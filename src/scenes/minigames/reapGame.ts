@@ -13,6 +13,7 @@ import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease, PerPointer } from './input';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const ROWS = 4;
@@ -68,7 +69,7 @@ export function renderReap(api: MinigameApi, targetIcon: string, prompt: string)
     g.fillStyle(0xbfe3d1, 0.5);
     g.fillRoundedRect(16, y + 40, GAME_W - 32, 6, 3);
   }
-  area.add(g);
+  area.add(g.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   api.sign(prompt);
 
   const session = new ArcadeSession(api, {

@@ -13,6 +13,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const LIT_PTS = 12;
@@ -46,7 +47,7 @@ export function renderHimatsuri(api: MinigameApi, prompt: string): void {
   bg.fillTriangle(60, 200, 240, 60, 420, 200); // ふじさん
   bg.fillStyle(0xf0f4ff, 0.9);
   bg.fillTriangle(198, 110, 240, 60, 282, 110);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
 
   api.sign(prompt);
   const session = new ArcadeSession(api, {

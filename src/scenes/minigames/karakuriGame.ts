@@ -14,6 +14,7 @@ import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { CROWD } from './crowd';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const DOLL_Y = 210;
@@ -47,7 +48,7 @@ export function renderKarakuri(api: MinigameApi, prompt: string): void {
   bg.fillTriangle(20, 300, GAME_W / 2, 236, GAME_W - 20, 300); // やたいの やね
   bg.fillStyle(0xd94f4f, 1);
   bg.fillRect(40, 300, GAME_W - 80, 12);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   for (let i = 0; i < 4; i++) {
     area.add(addIcon(scene, 70 + i * 110, 560, CROWD[i], 24));
   }

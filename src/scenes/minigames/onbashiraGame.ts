@@ -11,6 +11,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const START_Y = 150;
@@ -40,7 +41,7 @@ export function renderOnbashira(api: MinigameApi, prompt: string): void {
   bg.fillTriangle(-20, AREA_H, -20, 120, GAME_W + 20, AREA_H); // さか
   bg.fillStyle(0x8a6a4a, 0.55);
   bg.fillTriangle(20, AREA_H, 60, 130, GAME_W - 40, AREA_H); // すべりみち
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   for (let i = 0; i < 6; i++) {
     area.add(addIcon(scene, 24 + i * 12, 150 + i * 82, 'tree:deepgreen', 22));
     area.add(addIcon(scene, GAME_W - 30 - i * 6, 190 + i * 74, 'tree:deepgreen', 20));

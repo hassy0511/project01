@@ -13,6 +13,7 @@ import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { windowsFor } from '../../core/timing';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const ROAD_Y = 430;
@@ -40,7 +41,7 @@ export function renderDanjiri(api: MinigameApi, prompt: string): void {
   bg.fillRect(0, ROAD_Y, GAME_W, 150); // みちすじ
   bg.fillStyle(0xd8d8c4, 1);
   for (let i = 0; i < 8; i++) bg.fillRect(i * 60 + 10, ROAD_Y + 70, 34, 8); // センターライン
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   // かどの もくひょう(直角の かど)
   const corner = scene.add.graphics();
   corner.fillStyle(0x7a6a4a, 1);

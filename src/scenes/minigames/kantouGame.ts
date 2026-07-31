@@ -12,6 +12,7 @@ import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { CROWD } from './crowd';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const HAND_Y = 560;
@@ -83,7 +84,7 @@ export function renderKantou(api: MinigameApi, prompt: string): void {
   bg.fillRect(0, 0, GAME_W, HAND_Y);
   bg.fillStyle(0x8a7a62, 1);
   bg.fillRect(0, HAND_Y, GAME_W, AREA_H - HAND_Y);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   for (let i = 0; i < 8; i++) {
     const p = addIcon(scene, 20 + i * 62, HAND_Y - 8, CROWD[i % CROWD.length], 20);
     area.add(p);

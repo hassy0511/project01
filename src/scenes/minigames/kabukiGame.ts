@@ -12,6 +12,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const STAGE_Y = 430;
@@ -60,7 +61,7 @@ export function renderKabuki(api: MinigameApi, prompt: string): void {
   bg.fillStyle(0x3a2a18, 1);
   bg.fillCircle(90, STAGE_Y + 140, 20);
   bg.fillCircle(GAME_W - 90, STAGE_Y + 140, 20);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
 
   const actor = addIcon(scene, GAME_W / 2, STAGE_Y + 50, 'person-kimono:crimson', 58);
   area.add(actor);

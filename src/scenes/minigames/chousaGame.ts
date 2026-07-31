@@ -11,6 +11,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const CX = GAME_W / 2;
@@ -37,7 +38,7 @@ export function renderChousa(api: MinigameApi, prompt: string): void {
   bg.fillRect(0, 0, GAME_W, AREA_H);
   bg.fillStyle(0xd8c69a, 1);
   bg.fillRect(0, 520, GAME_W, AREA_H - 520);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
 
   api.sign(prompt);
   const session = new ArcadeSession(api, {

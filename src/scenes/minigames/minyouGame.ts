@@ -11,6 +11,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 /** 4つの ふり(ボタン) */
@@ -41,7 +42,7 @@ export function renderMinyou(api: MinigameApi, prompt: string): void {
   bg.fillRect(0, 430, GAME_W, AREA_H - 430);
   bg.fillStyle(0x8a6a4a, 1);
   for (let i = 0; i < 4; i++) bg.fillRect(i * 130 + 10, 300, 110, 130);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
 
   api.sign(prompt);
   const session = new ArcadeSession(api, {

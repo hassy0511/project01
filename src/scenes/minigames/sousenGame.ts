@@ -13,6 +13,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const BOAT_Y = 500;
@@ -62,7 +63,7 @@ export function renderSousen(api: MinigameApi, prompt: string): void {
   // 海
   bg.fillGradientStyle(0x5fb4d4, 0x5fb4d4, 0x3f92b8, 0x3f92b8, 1);
   bg.fillRect(0, 150, GAME_W, AREA_H - 150);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   // 波すじ(ながれる)
   const waves: Phaser.GameObjects.Graphics[] = [];
   for (let i = 0; i < 8; i++) {

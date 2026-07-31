@@ -14,6 +14,7 @@ import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import { CROWD } from './crowd';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const STREET_Y = 470;
@@ -52,7 +53,7 @@ export function renderMikoshi(api: MinigameApi, prompt: string): void {
   bg.fillRect(374, 130, 16, 190);
   bg.fillRect(60, 120, 360, 18);
   bg.fillRect(80, 158, 320, 12);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   // 沿道の見物人(ゆれる)
   for (let i = 0; i < 10; i++) {
     const side = i % 2 === 0 ? 30 + (i / 2) * 22 : GAME_W - 30 - ((i - 1) / 2) * 22;

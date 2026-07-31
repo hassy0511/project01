@@ -14,6 +14,7 @@ import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease, PerPointer } from './input';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const TORCH_X = GAME_W / 2;
@@ -53,7 +54,7 @@ export function renderOugi(api: MinigameApi, prompt: string): void {
   bg.fillRect(GAME_W / 2 - 10, 120, 12, 300);
   bg.fillStyle(0x2f4a6b, 1);
   bg.fillEllipse(GAME_W / 2, 430, 160, 40);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
 
   api.sign(prompt);
   const session = new ArcadeSession(api, {

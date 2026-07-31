@@ -12,6 +12,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const FIELD_TOP = 180;
@@ -51,7 +52,7 @@ export function renderBetcha(api: MinigameApi, prompt: string): void {
     bg.fillStyle(0xc0392b, 1);
     bg.fillRect(i * 82 + 6, FIELD_TOP - 52, 66, 8);
   }
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
 
   api.sign(prompt);
   const session = new ArcadeSession(api, {

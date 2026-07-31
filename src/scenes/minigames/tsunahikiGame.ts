@@ -15,6 +15,7 @@ import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const CY = 340;
@@ -40,7 +41,7 @@ export function renderTsunahiki(api: MinigameApi, prompt: string): void {
   bg.fillStyle(0x9ccb6f, 0.5);
   bg.fillEllipse(60, 200, 120, 70);
   bg.fillEllipse(GAME_W - 50, 190, 130, 80);
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   area.add(addIcon(scene, 40, 150, 'hibiscus:pink', 26));
   area.add(addIcon(scene, GAME_W - 40, 158, 'palm:deepgreen', 34));
 

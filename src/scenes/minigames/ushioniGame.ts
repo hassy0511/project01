@@ -13,6 +13,7 @@ import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 /** からだの ばしょ(ここから くびが のびる) */
@@ -39,7 +40,7 @@ export function renderUshioni(api: MinigameApi, prompt: string): void {
   bg.fillRect(0, 0, GAME_W, AREA_H);
   bg.fillStyle(0x6b5a3a, 1);
   bg.fillRect(0, BODY_Y + 30, GAME_W, AREA_H - BODY_Y - 30); // とおり
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
 
   api.sign(prompt);
   const session = new ArcadeSession(api, {

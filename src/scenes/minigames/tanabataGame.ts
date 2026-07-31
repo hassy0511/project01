@@ -11,6 +11,7 @@ import { GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import { offPointerRelease, onPointerRelease } from './input';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const TRAY_Y = 600;
@@ -45,7 +46,7 @@ export function renderTanabata(api: MinigameApi, prompt: string): void {
       bg.fillEllipse(bx + dir * (22 + (i % 2) * 10), 90 + i * 78, 44, 14);
     }
   }
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
 
   api.sign(prompt);
   const session = new ArcadeSession(api, {

@@ -13,6 +13,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const DOT_PTS = 6;
@@ -54,7 +55,7 @@ export function renderRokugatsudo(api: MinigameApi, prompt: string): void {
     bg.fillStyle(0xffffff, 0.4 + Math.random() * 0.5);
     bg.fillCircle(Math.random() * GAME_W, Math.random() * 200, Math.random() * 1.5 + 0.5);
   }
-  area.add(bg);
+  area.add(bg.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
   // じんじゃの さんどう(できた とうろうを かける ところ)
   const rail = scene.add.graphics();
   rail.lineStyle(6, 0x8a6a4a, 1);

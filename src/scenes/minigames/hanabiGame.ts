@@ -10,6 +10,7 @@ import { UI_TEXT } from '../../data/uiText';
 import { DEPTH, GAME_AREA_H, GAME_W } from '../../ui/theme';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
+import { SCENERY_NAME } from '../../ui/scenery';
 
 const AREA_H = GAME_AREA_H;
 const LAUNCH_Y = 620;
@@ -125,7 +126,7 @@ export function renderHanabi(api: MinigameApi, prompt: string): void {
     ring.strokeCircle(x, ringY, rr);
     ring.lineStyle(1.5, isShaku ? 0xffd34d : 0xffffff, 0.35);
     ring.strokeCircle(x, ringY, rr + 7);
-    area.add(ring);
+    area.add(ring.setName(SCENERY_NAME)); // 手描きの 背景が 来たら かくれる
     scene.tweens.add({ targets: ring, alpha: 0.45, duration: 420, yoyo: true, repeat: -1 });
 
     // はなびだま(光の粒)+尾を引く

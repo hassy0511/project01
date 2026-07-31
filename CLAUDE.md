@@ -44,7 +44,6 @@ src/
 public/assets/  # 画像・音・地図パスJSON
 public/art/     # 手描きSVG(置くだけで差しかわる)
 #   icons/ はバンドルに埋め込み、bg/ は実行時に取得(src/ui/bgArt.ts)
-art-hold/       # 納品ずみだが未採用の絵(いまは背景59枚。理由は art-hold/README.md)
 #   一覧の見くらべ: node e2e/shots/art-sheet.mjs
 docs/           # 仕様書・ロードマップ・移植計画
 reference/      # v0.4 HTML試作版(参照用。編集禁止)
