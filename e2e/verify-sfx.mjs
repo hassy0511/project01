@@ -107,6 +107,39 @@ for (const name of NAMES) {
   if (tail > SILENT) problems.push(`${name}: 鳴りやまない(1.6びょう後も ${tail.toFixed(3)})`);
 }
 
+/* ── BGM がわ。ここも 「良い 曲か」では なく バランスの 事故だけ 見る:
+     ・鳴って いる / でかすぎない
+     ・効果音が BGM に うもれない(ダッキングが きいて いる) */
+/** BGM だけの 大きさ。下は「鳴ってない」、上は「BGM が すごい」 */
+const BGM_MIN = 0.03;
+const BGM_MAX = 0.45;
+/** 効果音は BGM より これだけ 前に 出て いて ほしい */
+const SFX_OVER_BGM = 1.3;
+
+const peakOver = async (ms) => {
+  let p = 0;
+  for (let i = 0; i < Math.ceil(ms / 40); i++) {
+    const v = await page.evaluate(() => window.__peak());
+    if (v !== null) p = Math.max(p, v);
+    await page.waitForTimeout(40);
+  }
+  return p;
+};
+
+await page.evaluate(() => window.__mqAdmin.bgm(true));
+await page.waitForTimeout(1600); // 立ち上がりの フェードイン ぶん まつ
+const bgmPeak = await peakOver(5000); // 1まわり(16小節)より 短いが 山は 拾える
+console.log(`\nBGM だけ      ${bgmPeak.toFixed(3)}`);
+if (bgmPeak < BGM_MIN) problems.push(`BGM: 鳴って いない(${bgmPeak.toFixed(3)} < ${BGM_MIN})`);
+if (bgmPeak > BGM_MAX) problems.push(`BGM: 大きすぎる(${bgmPeak.toFixed(3)} > ${BGM_MAX})`);
+
+await page.evaluate(() => window.__mqAdmin.sfx('fanfare'));
+const mixPeak = await peakOver(900);
+console.log(`BGM+ファンファーレ ${mixPeak.toFixed(3)}`);
+if (mixPeak < bgmPeak * SFX_OVER_BGM) {
+  problems.push(`効果音が BGM に うもれて いる(BGM ${bgmPeak.toFixed(3)} → まぜて ${mixPeak.toFixed(3)})`);
+}
+
 await browser.close();
 if (problems.length) {
   console.error('もんだい:');

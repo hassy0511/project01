@@ -210,6 +210,22 @@ function ac(): AudioContext | null {
 /** SFX の 音量そうごう(小さすぎて 聞こえない と 言われたので 上げた) */
 const SFX_GAIN = 2.2;
 
+/* 効果音が 鳴る あいだ、BGM を すこし 下げる(ダッキング)。
+   BGM を ただ 小さく するのでは なく、「音が 鳴った ときだけ 一歩さがる」に
+   すると、BGM は ちゃんと 聞こえる まま 効果音が 前に 出る。
+   bgm.ts が この ファイルを import して いる ので、逆向きの import を
+   さけて 受け口だけ ここに おく(onMuteChange と 同じ かたち)。 */
+type DuckListener = (amount: number) => void;
+const duckListeners: DuckListener[] = [];
+export function onSfxDuck(cb: DuckListener): void {
+  duckListeners.push(cb);
+}
+/** 音の 大きさ(vol)を 0.3〜1 の さがりぐあいに 直して しらせる */
+function fireDuck(vol: number): void {
+  const amount = Math.max(0.3, Math.min(1, vol / 0.15));
+  for (const cb of duckListeners) cb(amount);
+}
+
 /* =====================================================
    おとの 作り(層を かさねる)
 
@@ -288,6 +304,7 @@ function note(freq: number, dur: number, vol: number, opts: NoteOpts = {}): void
   const out = audioOut();
   if (!out) return;
   const { type = 'triangle', slide, when = 0, cutoff, detune = 6, space: spaceAmt = 0.12, click = 0, clickHz = 2400 } = opts;
+  fireDuck(vol);
   try {
     const t0 = ctx.currentTime + when;
     const peak = Math.min(1, vol * SFX_GAIN);
