@@ -70,6 +70,7 @@ export class MapScene extends Phaser.Scene {
     buildHeader(this);
     buildNav(this, 'map');
     this.buildJapanButton();
+    this.buildRegionBanner();
     // 晴れたのに おいわいが まだの 県が あれば、地図が 見えてから シネマ。
     // さきに 立てて おくと updateGuide が だまる(シネマ中に ふきだしが かぶらない)
     if (this.pendingHare) {
@@ -110,6 +111,36 @@ export class MapScene extends Phaser.Scene {
     c.on('pointerup', () => this.scene.start('RegionScene'));
   }
 
+  /** いま どこの エリアの 地図かを 見せる 帯。
+      エリアの 地図は どれも 「県が ならんだ 島」なので、名前が ないと
+      ちゅうぶ と きんき の 見わけが つかない(実際に まよった)。
+      エリアの 色を そのまま 帯に つかい、にっぽん地図の 色と 目で つながる ように する */
+  private buildRegionBanner(): void {
+    const region = GAME_DATA.regions.find((r) => r.id === this.regionId);
+    if (!region) return;
+    const x = 12 + 118 + 10;
+    const c = this.add.container(x, HEADER_H + 12);
+    const label = this.add
+      .text(40, 16, UI_TEXT.map.nowRegion(region.name), {
+        fontFamily: FONT,
+        fontSize: '15px',
+        color: TEXT_COLORS.main,
+        fontStyle: 'bold',
+      })
+      .setOrigin(0, 0.5);
+    // ふだの はばは 名前に あわせる(「かんとう」で 画面いっぱいに ならない ように)
+    const W = Math.min(40 + label.width + 14, GAME_W - 12 - x);
+    const color = Phaser.Display.Color.HexStringToColor(region.color).color;
+    const g = this.add.graphics();
+    g.fillStyle(color, 1);
+    g.lineStyle(2, COLORS.panelLine, 1);
+    g.fillRoundedRect(0, 0, W, 32, 16);
+    g.strokeRoundedRect(0, 0, W, 32, 16);
+    c.add(g);
+    c.add(addIcon(this, 22, 16, region.icon, 22));
+    c.add(label);
+  }
+
   private drawSea(): void {
     // 海: グラデーション+ゆらめく波線+描画の太陽・雲(絵文字は使わない)
     const bg = this.add.graphics();
@@ -135,8 +166,8 @@ export class MapScene extends Phaser.Scene {
         ease: 'Sine.easeInOut',
       });
     }
-    // 太陽(光条つき)
-    const sun = this.add.container(GAME_W - 54, HEADER_H + 40);
+    // 太陽(光条つき)。上は エリア名の ふだ、まん中は 地図なので 右下の 海に おく
+    const sun = this.add.container(GAME_W - 50, GAME_H - 200);
     const sg = this.add.graphics();
     sg.fillStyle(0xffd34d, 1);
     sg.fillCircle(0, 0, 17);

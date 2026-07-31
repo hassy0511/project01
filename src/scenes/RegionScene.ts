@@ -16,6 +16,7 @@ import {
   regionOpenFlagKey,
 } from '../core/state';
 import { store, runtimeStory } from '../game/store';
+import { layoutLabels, leaderNeeded, type LabelBox } from '../core/labelLayout';
 import { getRegionAsset } from '../game/mapData';
 import { SFX } from '../audio/sfx';
 import { firework } from '../ui/effects';
@@ -27,16 +28,28 @@ const TOP_H = 48;
 /** 下部ガイドぶんの余白 */
 const BOTTOM_PAD = 170;
 
-/** ラベルの逃がし(viewBox座標系)。せまい地方は海の上に出して重なりを防ぐ */
-const LABEL_OFF: Record<string, [number, number]> = {
-  tohoku: [30, 10],
-  kanto: [34, 16],
-  chubu: [-38, 30],
-  kinki: [18, 34],
-  chugoku: [-26, -20],
-  shikoku: [4, 32],
-  kyushu: [-36, 16],
+/** ふだを 置きたい ばしょ(viewBox座標系)。
+    にっぽんは 右上(ほっかいどう)から 左下(きゅうしゅう)へ ななめに ならぶ ので、
+    海が あいて いるのは 「左上」と「右下」。ふだは そこへ 逃がし、
+    どの エリアの ことかは 引き出し線で 示す。こうすると 列島の かたちが かくれない。
+    さいごの 場所は layoutLabels が かさなりを ほどいて 決める */
+const LABEL_WANT: Record<string, [number, number]> = {
+  tohoku: [250, 70],
+  kanto: [370, 310],
+  chubu: [250, 175],
+  kinki: [300, 380],
+  chugoku: [120, 210],
+  shikoku: [215, 425],
+  kyushu: [75, 380],
 };
+
+/** ラベルの 見ため(画面の px)。文字を 白い ふだの 上に のせて 地図から 浮かせる */
+const LABEL_PAD_X = 8;
+const LABEL_PAD_Y = 6;
+const LABEL_ICON = 22;
+const LABEL_MEDAL = 16;
+/** ラベルどうしの すきま */
+const LABEL_GAP = 5;
 
 export class RegionScene extends Phaser.Scene {
   constructor() {
@@ -230,110 +243,193 @@ export class RegionScene extends Phaser.Scene {
       }
     }
 
-    // ラベル・雲・バッジ(地面の上に重ねる)。せまい地方の文字は海側に逃がす
+    // じゅんびちゅうの もやもやぐも(地方の 上に。ラベルとは 別位置)
+    for (const region of GAME_DATA.regions) {
+      const lp = rm.labels[region.id];
+      if (!lp || this.regionOpen(region)) continue;
+      const cloud = this.add.container(lp[0], lp[1] - 6).setAlpha(0.85).setScale(0.9 / scale);
+      const cg = this.add.graphics();
+      cg.fillStyle(0xffffff, 1);
+      cg.fillEllipse(0, 0, 52, 20);
+      cg.fillEllipse(-17, 6, 30, 15);
+      cg.fillEllipse(18, 6, 32, 16);
+      cloud.add(cg);
+      root.add(cloud);
+      this.tweens.add({
+        targets: cloud,
+        x: lp[0] + 8 / scale,
+        duration: 2400 + Math.random() * 1200,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+    }
+
+    this.drawRegionLabels(rm, offX, offY, scale, badgeId);
+  }
+
+  /* ---------- エリアの ふだ(名前+すすみぐあい) ----------
+     まえは 地図と 同じ ものさし(viewBox)の 上に 文字を おいて いた ので、
+     西日本が こみあう ところで 「ちゅうぶ」の 上に きんき の アイコンが のり、
+     どれが どの エリアか わからなく なって いた。
+     いまは
+       ・ふだは 画面の ものさしで つくる(文字の 大きさを scale で わらない)
+       ・白い ふだに のせて 地図から 浮かせる
+       ・かさなったら layoutLabels が おしのける
+       ・はなれた ふだからは 引き出し線を ひいて、どの エリアの ことか 示す */
+  private drawRegionLabels(
+    rm: ReturnType<typeof getRegionAsset>,
+    offX: number,
+    offY: number,
+    scale: number,
+    badgeId: string,
+  ): void {
+    const leaders = this.add.graphics().setDepth(1);
+    const groups: { region: Region; c: Phaser.GameObjects.Container; box: LabelBox }[] = [];
+
     for (const region of GAME_DATA.regions) {
       const lp = rm.labels[region.id];
       if (!lp) continue;
-      const [ox, oy] = LABEL_OFF[region.id] ?? [0, 0];
-      const lx = lp[0] + ox;
-      const ly = lp[1] + oy;
-
       const open = this.regionOpen(region);
-      if (!open) {
-        // じゅんびちゅうの もやもやぐも(地方の上に。ラベルとは別位置)
-        const cloud = this.add.container(lp[0], lp[1] - 6).setAlpha(0.85).setScale(0.9 / scale);
-        const cg = this.add.graphics();
-        cg.fillStyle(0xffffff, 1);
-        cg.fillEllipse(0, 0, 52, 20);
-        cg.fillEllipse(-17, 6, 30, 15);
-        cg.fillEllipse(18, 6, 32, 16);
-        cloud.add(cg);
-        root.add(cloud);
-        this.tweens.add({
-          targets: cloud,
-          x: lp[0] + 8 / scale,
-          duration: 2400 + Math.random() * 1200,
-          yoyo: true,
-          repeat: -1,
-          ease: 'Sine.easeInOut',
-        });
-      } else {
-        root.add(addIcon(this, lx, ly - 26 / scale, region.icon, 20 / scale));
-        // 全県🏮の エリアには ちほうバッジ(はかせから もらった しるし)
-        if (isRegionComp(store.state, GAME_DATA, region.id)) {
-          root.add(addIcon(this, lx + 20 / scale, ly - 26 / scale, 'medal:gold', 16 / scale));
-        }
-      }
+      const [wx, wy] = LABEL_WANT[region.id] ?? lp;
+      // さす ばしょ=エリアの まんなか / 置きたい ばしょ=海の あいて いる ところ
+      const ax = offX + lp[0] * scale;
+      const ay = offY + lp[1] * scale;
+      const wantX = offX + wx * scale;
+      const wantY = offY + wy * scale;
 
-      // 名前ラベルも タップできる(海側に出したラベルからも遷移できるように)
+      const c = this.add.container(0, 0).setDepth(2);
+      // 「ほっかいどう・とうほく」のような 長い 名前は 「・」で 2行に する。
+      // よこに 長い ふだは 地図を かくして しまう。
+      // 文字を 直接 いじらず 折りかえしで やるのは、なまえ そのもの(text)を
+      // 変えない ため(さがす ときに 改行が まざると 見つからなく なる)
       const name = this.add
-        .text(lx, ly, region.name, {
+        .text(0, 0, region.name, {
           fontFamily: FONT,
-          fontSize: `${(region.name.length > 6 ? 10 : open ? 15 : 12) / scale}px`,
+          fontSize: '13px',
           color: open ? TEXT_COLORS.main : TEXT_COLORS.sub,
-          fontStyle: open ? 'bold' : 'normal',
-          stroke: '#ffffff',
-          strokeThickness: 3.5 / scale,
+          fontStyle: 'bold',
+          align: 'left',
+          lineSpacing: 1,
         })
-        .setOrigin(0.5)
-        .setInteractive({ useHandCursor: true });
+        .setOrigin(0, 0.5);
+      if (region.name.includes('・')) {
+        name.setWordWrapCallback((t: string) => {
+          const parts = t.split('・');
+          return parts.map((s, i) => (i < parts.length - 1 ? `${s}・` : s));
+        });
+      }
+      const subText = open
+        ? this.regionProgress(region)
+        : region.active && region.unlockFests
+          ? UI_TEXT.region.almostOpen(region.unlockFests)
+          : '';
+      const sub = subText
+        ? this.add
+            .text(0, 0, subText, {
+              fontFamily: FONT,
+              fontSize: '10px',
+              color: open ? TEXT_COLORS.good : TEXT_COLORS.sub,
+              fontStyle: 'bold',
+            })
+            .setOrigin(0, 0.5)
+        : undefined;
+
+      const comp = open && isRegionComp(store.state, GAME_DATA, region.id);
+      const iconW = open ? LABEL_ICON + 4 : 0;
+      const medalW = comp ? LABEL_MEDAL + 2 : 0;
+      const textW = Math.max(name.width, sub?.width ?? 0);
+      const w = LABEL_PAD_X * 2 + iconW + textW + medalW;
+      const h = LABEL_PAD_Y * 2 + name.height + (sub ? 2 + sub.height : 0);
+
+      // ふだの 中身は 中心ぞろえ(container の まんなかが ふだの まんなか)
+      const left = -w / 2 + LABEL_PAD_X;
+      const top = -h / 2 + LABEL_PAD_Y;
+      const plate = this.add.graphics();
+      plate.fillStyle(0xffffff, 0.94);
+      plate.lineStyle(2, Phaser.Display.Color.HexStringToColor(region.color).color, 1);
+      plate.fillRoundedRect(-w / 2, -h / 2, w, h, 10);
+      plate.strokeRoundedRect(-w / 2, -h / 2, w, h, 10);
+      c.add(plate);
+      if (open) c.add(addIcon(this, left + LABEL_ICON / 2, 0, region.icon, LABEL_ICON));
+      name.setPosition(left + iconW, top + name.height / 2);
+      c.add(name);
+      if (sub) {
+        sub.setPosition(left + iconW, top + name.height + 2 + sub.height / 2);
+        c.add(sub);
+      }
+      if (comp) c.add(addIcon(this, w / 2 - LABEL_PAD_X - LABEL_MEDAL / 2, 0, 'medal:gold', LABEL_MEDAL));
+
+      c.setSize(w, h);
+      c.setInteractive(new Phaser.Geom.Rectangle(-w / 2, -h / 2, w, h), Phaser.Geom.Rectangle.Contains);
+      c.on('pointerup', () => this.onRegionTap(region));
+      // 名前の 文字じたいも 押せる ように して おく。
+      // ふだ(コンテナ)だけだと、ぱっと 押した ときに 反応しない ことが あった
+      // (input.topOnly なので、二重に 走る ことは ない)
+      name.setInteractive({ useHandCursor: true });
       name.on('pointerup', () => this.onRegionTap(region));
-      // 画面の はしで もじが きれないように よこ位置を おさえる
-      const halfW = name.width / 2 + 4 / scale;
-      name.x = Phaser.Math.Clamp(name.x, (8 - offX) / scale + halfW, (GAME_W - 8 - offX) / scale - halfW);
-      root.add(name);
-
-      // アクティブだが未解放: あと何回で はれるかを見せる(めあて表示)
-      if (region.active && !open && region.unlockFests) {
-        const hint = this.add
-          .text(lx, ly + 14 / scale, UI_TEXT.region.almostOpen(region.unlockFests), {
-            fontFamily: FONT,
-            fontSize: `${10 / scale}px`,
-            color: TEXT_COLORS.sub,
-            fontStyle: 'bold',
-            stroke: '#ffffff',
-            strokeThickness: 3 / scale,
-          })
-          .setOrigin(0.5);
-        root.add(hint);
-      }
-
-      if (open) {
-        const sub = this.add
-          .text(lx, ly + 15 / scale, this.regionProgress(region), {
-            fontFamily: FONT,
-            fontSize: `${10 / scale}px`,
-            color: TEXT_COLORS.good,
-            fontStyle: 'bold',
-            stroke: '#ffffff',
-            strokeThickness: 3 / scale,
-          })
-          .setOrigin(0.5);
-        root.add(sub);
-      }
 
       if (open && region.id === badgeId) {
         const badge = this.add
-          .text(lx, ly - 46 / scale, UI_TEXT.region.go, {
+          .text(0, -h / 2 - 12, UI_TEXT.region.go, {
             fontFamily: FONT,
-            fontSize: `${12 / scale}px`,
+            fontSize: '12px',
             color: TEXT_COLORS.white,
             fontStyle: 'bold',
             backgroundColor: '#ff9f40',
             padding: { x: 8, y: 3 },
           })
           .setOrigin(0.5);
-        root.add(badge);
+        c.add(badge);
         this.tweens.add({
           targets: badge,
-          y: badge.y - 6 / scale,
+          y: badge.y - 6,
           duration: 700,
           yoyo: true,
           repeat: -1,
           ease: 'Sine.easeInOut',
         });
       }
+
+      groups.push({ region, c, box: { id: region.id, x: wantX, y: wantY, w, h, ax, ay } });
     }
+
+    // かさなりを ほどく。ふだは 画面の 中(はれメーターの 下〜案内の 上)に とどめる
+    const bounds = {
+      minX: 6,
+      minY: TOP_H + 44,
+      maxX: GAME_W - 6,
+      maxY: GAME_H - BOTTOM_PAD + 46,
+    };
+    const placed = layoutLabels(
+      groups.map((g) => g.box),
+      bounds,
+      LABEL_GAP,
+    );
+
+    placed.forEach((box, i) => {
+      const g = groups[i];
+      g.c.setPosition(box.x, box.y);
+      if (!leaderNeeded(box)) return;
+      // ふだの ふちから エリアの まんなかへ 細い 線。さきっぽに 小さな まる
+      const dx = box.ax - box.x;
+      const dy = box.ay - box.y;
+      const t = Math.min(
+        dx !== 0 ? box.w / 2 / Math.abs(dx) : Infinity,
+        dy !== 0 ? box.h / 2 / Math.abs(dy) : Infinity,
+      );
+      const ex = box.x + dx * t;
+      const ey = box.y + dy * t;
+      const color = Phaser.Display.Color.HexStringToColor(g.region.color).color;
+      leaders.lineStyle(2, 0xffffff, 0.9);
+      leaders.lineBetween(ex, ey, box.ax, box.ay);
+      leaders.lineStyle(1.2, color, 1);
+      leaders.lineBetween(ex, ey, box.ax, box.ay);
+      leaders.fillStyle(0xffffff, 1);
+      leaders.fillCircle(box.ax, box.ay, 4);
+      leaders.fillStyle(color, 1);
+      leaders.fillCircle(box.ax, box.ay, 2.6);
+    });
   }
 
   private regionOpen(region: Region): boolean {

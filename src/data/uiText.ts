@@ -39,8 +39,9 @@ export const UI_TEXT = {
 
   map: {
     inactivePref: 'ここは まだ くもの なか。ぼうけんが すすむと はれるよ!',
-    aria: 'かんとうの ちず',
     japanBtn: 'にっぽん',
+    /** 地図の 上に 出す「いま どこの エリアか」の 帯 */
+    nowRegion: (name: string) => `${name} エリア`,
   },
 
   region: {
