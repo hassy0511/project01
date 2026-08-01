@@ -33,6 +33,7 @@ import {
   type MascotMood,
 } from '../ui/widgets';
 import { nextTask, type NextTask } from '../core/nextTask';
+import { whereFrom } from '../core/whereFrom';
 import { confetti, wobble } from '../ui/effects';
 import { addIcon, type IconKey } from '../ui/icons';
 
@@ -498,7 +499,15 @@ export class PrefScene extends Phaser.Scene {
     const extra =
       (ing.origin ? `(${findPref(GAME_DATA, ing.origin)?.name ?? ''}${UI_TEXT.recipe.originChip('').replace('さん', '')}さん)` : '') +
       (ing.quality ? `(${UI_TEXT.recipe.star3Chip})` : '');
-    return `${e.name}${extra} ${have}/${ing.count}`;
+    return `${e.name}${extra}${this.whereChip(ing, have >= ing.count)} ${have}/${ing.count}`;
+  }
+
+  /** この県では とれない ざいりょうに 「どこへ 行けば いいか」を そえる。
+      どこを 見せるかの きめかたは core/whereFrom.ts(テストつき) */
+  private whereChip(ing: Ingredient, enough: boolean): string {
+    const w = whereFrom(GAME_DATA, this.prefId, ing, enough);
+    if (!w) return '';
+    return UI_TEXT.recipe.whereChip(findPref(GAME_DATA, w.pref)?.name ?? '', w.count);
   }
 
   private buildRecipeCard(r: Recipe, y: number): Phaser.GameObjects.Container {

@@ -164,6 +164,8 @@ export const UI_TEXT = {
     jimotoChip: 'じもと',
     originChip: (name: string) => `${name}さん`,
     star3Chip: 'ほし3',
+    /** この県で とれない ざいりょうの 行き先。とれる 県が いくつも あれば「ほか」 */
+    whereChip: (pref: string, count: number) => (count > 1 ? `〈${pref}ほか〉` : `〈${pref}〉`),
   },
 
   craft: {
