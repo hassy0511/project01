@@ -16,6 +16,8 @@ import {
   regionCompFlagKey,
 } from '../core/state';
 import { getMapAsset, hasMapAsset } from '../game/mapData';
+import { BONBORI_COLOR } from '../core/bonbori';
+import { rankOf } from '../game/bonbori';
 import { SFX } from '../audio/sfx';
 import { buildHeader, buildNav, HEADER_H } from '../ui/nav';
 import { runQuizModal } from '../ui/quizRunner';
@@ -301,7 +303,12 @@ export class MapScene extends Phaser.Scene {
         if (p === pendingPref) this.pendingHare = { p, lx, ly, mist };
       }
       if (done) {
-        root.add(addIcon(this, lx + 22, ly - 20, 'lantern:crimson', 18 / scale));
+        // ぼんぼりの いろは おまつりの さいこうきろく(どう→ぎん→きん)。
+        // くりかえし あそぶ 目あてが 地図の 上で ひとめで わかる
+        const fr = p.festivalId ? GAME_DATA.recipes.find((x) => x.id === p.festivalId) : undefined;
+        const rank = fr ? rankOf(fr) : 'none';
+        const color = rank === 'none' ? 'crimson' : BONBORI_COLOR[rank];
+        root.add(addIcon(this, lx + 22, ly - 20, `lantern:${color}`, 18 / scale));
       }
     }
   }

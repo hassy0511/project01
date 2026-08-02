@@ -6,6 +6,7 @@ import { setupHiDpi } from '../ui/display';
 import { findPref, GAME_DATA, type Material } from '../data/gameData';
 import { festIntro, UI_TEXT } from '../data/uiText';
 import { SEASON_LABEL } from '../core/season';
+import { rankOf } from '../game/bonbori';
 import { HARVEST_ICON, HOW_TO } from '../data/howto';
 import { showHowTo, type HowToHandle } from '../ui/howto';
 import { store, runtimeStory } from '../game/store';
@@ -193,7 +194,10 @@ export class ZukanScene extends Phaser.Scene {
         } else if (tier === 4) {
           const best = store.state.festBest[r.id];
           const bestLine = best ? `\n${UI_TEXT.fest.bestScore(best)}` : '';
-          cells.push(this.cell(r.icon, r.name, prefName + bestLine, true, true));
+          // ぼんぼりの いろも 出す(どの おまつりを もう一度 あそぶか えらぶ 手がかり)
+          const rank = rankOf(r);
+          const rankLine = rank === 'none' ? '' : `\n${UI_TEXT.fest.rank[rank]}`;
+          cells.push(this.cell(r.icon, r.name, prefName + bestLine + rankLine, true, rank === 'gold'));
         } else {
           const jimoto = typeof got === 'object' && got.jimoto ? `\n${UI_TEXT.zukan.jimoto}` : '';
           cells.push(this.cell(r.icon, r.name, prefName + jimoto, true, jimoto !== '' || r.shin === true));

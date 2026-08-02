@@ -17,6 +17,7 @@ import {
 } from '../core/state';
 import { store, runtimeStory } from '../game/store';
 import { layoutLabels, leaderNeeded, type LabelBox } from '../core/labelLayout';
+import { currentGoldCount } from '../game/bonbori';
 import { getRegionAsset } from '../game/mapData';
 import { SFX } from '../audio/sfx';
 import { firework } from '../ui/effects';
@@ -93,6 +94,29 @@ export class RegionScene extends Phaser.Scene {
         })
         .setOrigin(0.5),
     );
+
+    // きんの ぼんぼりの かず(くりかえし あそぶ 目あて)。1つでも きんに なってから 出す
+    const gold = currentGoldCount();
+    if (gold > 0) {
+      const gc = this.add.container(GAME_W / 2, TOP_H + 52).setDepth(DEPTH.header - 1);
+      const gg = this.add.graphics();
+      gg.fillStyle(0xffffff, 0.88);
+      gg.lineStyle(2, COLORS.gold, 1);
+      gg.fillRoundedRect(-84, -13, 168, 26, 13);
+      gg.strokeRoundedRect(-84, -13, 168, 26, 13);
+      gc.add(gg);
+      gc.add(addIcon(this, -62, 0, 'lantern:gold', 18));
+      gc.add(
+        this.add
+          .text(8, 0, UI_TEXT.fest.goldCount(gold, total), {
+            fontFamily: FONT,
+            fontSize: '12px',
+            color: TEXT_COLORS.main,
+            fontStyle: 'bold',
+          })
+          .setOrigin(0.5),
+      );
+    }
 
     // ぜんぶ 晴れた あとの そらは おいわいつづき(ときどき はなび)
     if (isAllHare(store.state, GAME_DATA)) {

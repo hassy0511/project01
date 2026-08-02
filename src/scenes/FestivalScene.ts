@@ -7,6 +7,8 @@ import { setupHiDpi } from '../ui/display';
 import { findEntity, findPref, findRecipe, GAME_DATA, prefTitle, type Recipe } from '../data/gameData';
 import { festIntro, UI_TEXT } from '../data/uiText';
 import { applyFestival, craftable, updateFestBest } from '../core/craft';
+import { ALL_GOLD_FLAG, BONBORI_COLOR, bonboriRank } from '../core/bonbori';
+import { currentAllGold, currentGoldCount, thresholdsOf } from '../game/bonbori';
 import { store } from '../game/store';
 import { setHook } from '../game/testHooks';
 import { SFX } from '../audio/sfx';
@@ -17,7 +19,7 @@ import { makeGuideRow, makeIconRow, Modal, swallowPointer } from '../ui/widgets'
 import { confetti, firework, screenFlash } from '../ui/effects';
 import { applyBgArt, bgNameOf } from '../ui/bgArt';
 import { addHelpButton, showHowTo, type HowToHandle } from '../ui/howto';
-import { iconTexture } from '../ui/icons';
+import { addIcon, iconTexture } from '../ui/icons';
 import { renderFestival, type StallItem } from './minigames/festivalGame';
 import { renderDaruma } from './minigames/darumaGame';
 import { renderHanabi } from './minigames/hanabiGame';
@@ -342,6 +344,8 @@ export class FestivalScene extends Phaser.Scene {
     // はじめて この おまつりを ひらいたか(= この あと 県の くもが はれる か)。
     // applyFestival が fest に つむ まえに 見て おく
     const firstTime = !store.state.fest.includes(r.id);
+    // ぼんぼりが 上がった かは 「きろくを 更新する まえ」の いろと くらべる
+    const prevRank = bonboriRank(store.state.festBest[r.id], thresholdsOf(r));
     applyFestival(store.state, r);
     const newRecord = updateFestBest(store.state, r.id, this.gameScore);
     store.save();
@@ -371,6 +375,9 @@ export class FestivalScene extends Phaser.Scene {
     this.time.delayedCall(1500, () => {
       const pref = findPref(GAME_DATA, this.prefId);
       const best = store.state.festBest[r.id] ?? this.gameScore;
+      const th = thresholdsOf(r);
+      const rank = bonboriRank(best, th);
+      const rose = rank !== 'none' && rank !== prevRank;
       const modal = new Modal(this, UI_TEXT.fest.doneTitle);
       modal.add(makeIconRow(this, FINALE_ROW, 44, 56), 52);
       modal.addText(UI_TEXT.fest.doneBody(r.name), 18);
@@ -380,6 +387,19 @@ export class FestivalScene extends Phaser.Scene {
         15,
         newRecord ? TEXT_COLORS.good : TEXT_COLORS.sub,
       );
+      // ぼんぼりの できばえ(くりかえし あそぶ 目あて)
+      if (rank !== 'none') {
+        const rankName = UI_TEXT.fest.rank[rank];
+        modal.add(addIcon(this, 0, 0, `lantern:${BONBORI_COLOR[rank]}`, 40), 46);
+        modal.addText(
+          rose ? UI_TEXT.fest.rankUp(rankName) : rankName,
+          16,
+          rose ? TEXT_COLORS.accent : TEXT_COLORS.sub,
+        );
+        // つぎの いろまで あと 何点か(きんの 人には 出さない)
+        if (rank === 'copper') modal.addText(UI_TEXT.fest.rankNext(UI_TEXT.fest.rank.silver, th.silver - best), 14, TEXT_COLORS.sub);
+        else if (rank === 'silver') modal.addText(UI_TEXT.fest.rankNext(UI_TEXT.fest.rank.gold, th.gold - best), 14, TEXT_COLORS.sub);
+      }
       // 1回目 = 「くもが はれていく」の 引き(おいわい本番は 地図の 晴れシネマ)。
       // 2回目からは スコアアタックの ことば(やりこみを ものがたりに しない)
       const guide = makeGuideRow(
@@ -390,9 +410,34 @@ export class FestivalScene extends Phaser.Scene {
       modal.add(guide.container, guide.height);
       modal.addButton(UI_TEXT.fest.goMap, COLORS.orange, () => {
         modal.close();
-        showTriviaOnce(this, r.id, () => this.scene.start('MapScene'));
+        showTriviaOnce(this, r.id, () => this.afterFest());
       });
       modal.show();
     });
+  }
+
+  /** トリビアの あと。47県 ぜんぶ きんに なって いたら 1回だけ おいわいを 出す */
+  private afterFest(): void {
+    if (!currentAllGold() || store.state.flags[ALL_GOLD_FLAG]) {
+      this.scene.start('MapScene');
+      return;
+    }
+    store.state.flags[ALL_GOLD_FLAG] = true;
+    store.save();
+    SFX.fanfare();
+    confetti(this);
+    for (let i = 0; i < 6; i++) {
+      this.time.delayedCall(i * 300, () => firework(this, 50 + Math.random() * (GAME_W - 100), 120 + Math.random() * 160));
+    }
+    const modal = new Modal(this, UI_TEXT.fest.allGoldTitle);
+    modal.add(addIcon(this, 0, 0, 'lantern:gold', 58), 62);
+    modal.addText(UI_TEXT.fest.goldCount(currentGoldCount(), currentGoldCount()), 16, TEXT_COLORS.accent);
+    const guide = makeGuideRow(this, UI_TEXT.fest.allGoldBody, 'cheer', 420, 'hakase');
+    modal.add(guide.container, guide.height);
+    modal.addButton(UI_TEXT.fest.allGoldClose, COLORS.orange, () => {
+      modal.close();
+      this.scene.start('MapScene');
+    });
+    modal.show();
   }
 }

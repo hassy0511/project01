@@ -598,6 +598,19 @@ export const UI_TEXT = {
     doneTitle: 'おまつり だいせいこう!',
     doneBody: (name: string) => `${name} かいさい!`,
     bestScore: (n: number) => `さいこうきろく: ${n}`,
+    /** ぼんぼりの できばえ(core/bonbori.ts)。おまつりを くりかえす 目あて */
+    rank: { copper: 'どうの ぼんぼり', silver: 'ぎんの ぼんぼり', gold: 'きんの ぼんぼり' },
+    /** つぎの いろまで あと 何点か(どうと ぎんの ときだけ 出す) */
+    rankNext: (name: string, n: number) => `${name}まで あと ${n}てん!`,
+    /** きんに なった しゅんかん */
+    rankUp: (name: string) => `${name}に なった!`,
+    /** 地図の したの カウンタ */
+    goldCount: (n: number, total: number) => `きんの ぼんぼり ${n}/${total}`,
+    /** 47県 ぜんぶ きんの おいわい */
+    allGoldTitle: 'にっぽんじゅうが きんいろ!',
+    allGoldBody:
+      'ほっほう! 47の おまつり ぜんぶで\nきんの ぼんぼりを ともした のか!\nこれは もう おまつりの めいじん じゃ!',
+    allGoldClose: 'やったー!',
     newRecord: 'きろく こうしん!',
     /** はじめて その県の おまつりを ひらいた とき(=くもが はれる とき)。
         くわしい おいわいは 地図の 晴れシネマが やる ので、ここは 「見に いこう」の 引きだけ */
