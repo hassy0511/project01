@@ -266,6 +266,7 @@ npm run art:check          # きまりの 自動チェック(これが 通るま
 | 4 | 「ひと・いきもの」の 章 ぜんぶ(**顔の 描き方を 5個の 見本に そろえる**) | `codex/art-actors` |
 | 5 | 「しぜん・けしき」「どうぐ」「きごう」の 章 | `codex/art-rest` |
 | 6 | 背景 59個 | `codex/art-bg` |
+| 7 | どうぐ・しんの めいさんの 新かたち **11個**(下の 第7回の 節を 見る) | `codex/art-tools-shin` |
 
 ### 背景の 回(第6回)だけ 変わる ところ
 
@@ -277,3 +278,26 @@ npm run art:check          # きまりの 自動チェック(これが 通るま
 - 「Centered, filling most of the square frame」の 行を
   「Wide empty area in the upper 60% of the image; put detail in the lower 40%
   or near the edges. Low contrast so foreground icons stay visible.」に 差しかえる
+
+### 第7回(どうぐ・しんの めいさん)だけ 変わる ところ
+
+この 11個は まだ `ART_ASSET_LIST.md` に **のって いない** あたらしい かたちです
+(アプリは いま 仮の 絵 ― かま=knife、くまで=fan など ― を つかって います)。
+納品されたら データの アイコン名を こちらで 差しかえます。
+
+| ファイル名 | 何を 描くか | いまの 仮の 絵 |
+|---|---|---|
+| `sickle` | かま(いねかり用)。ゆるく まがった 刃と 木の え | knife |
+| `scissors` | しゅうかくばさみ。まるい にぎりの 園芸ばさみ。とじた 状態 | knife |
+| `rake` | くまで(しおひがり用)。みじかい えに 4〜5本の 曲がった つめ | fan |
+| `shovel` | ゆきべら。木の 雪かき(はばひろの ヘラ+え)。金属に しない | ladle |
+| `rod` | つりざお(たけの へらざお)。ななめの さお+いと+うき。リールなし | stalk |
+| `renkon` | れんこん。輪切りの 面が 見える むきで あなを 8〜9こ | root |
+| `ankou` | あんこう。ひらたい 体・大きな 口・ちょうちん1本。こわく しない | bigfish |
+| `kanpyo` | かんぴょう。ほした 帯を まいた たば | noodle |
+| `kuwai` | くわい。まるい 球から 芽が 1本 ぴんと のびる | tuber |
+| `passionfruit` | パッションフルーツ。半分に 切って つぶつぶが 見える | round |
+| `momiji` | もみじの 葉 1まい(あきの しるし。季節マーク用) | ―(新規) |
+
+- いろは ぜんぶ **c 1色**あつかいで よい(#MAIN 置きかえで 何色にも なる 形に する)
+- 大きさの 目やす: どうぐ5個は 20〜34px、たべもの5個は 28〜34px、momiji は 16〜22px
