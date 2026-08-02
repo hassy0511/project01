@@ -135,6 +135,8 @@ export interface Material {
   origins: PrefectureId[];
   rarity: Rarity;
   gather: Gather;
+  /** どうぐの 材料(たけ・き など)。県ごとの ボリューム下限の 数には 入れない */
+  dougu?: true;
 }
 
 export interface Ingredient {
@@ -146,7 +148,10 @@ export interface Ingredient {
   quality?: number;
 }
 
-export type RecipeType = 'kakou' | 'gattai' | 'kougei' | 'syukaku' | 'matsuri';
+export type RecipeType = 'kakou' | 'gattai' | 'kougei' | 'syukaku' | 'matsuri' | 'dougu';
+
+/** どうぐが きく あそび(収穫アーケード)。fish は timing がわの エンジン */
+export type ToolEngine = HarvestSpec['engine'] | 'fish';
 
 export interface Recipe {
   id: RecipeId;
@@ -166,6 +171,9 @@ export interface Recipe {
   /** tier4のみ: おまつりのゲーム種別(未指定なら yatai)。
       実在の祭りで「実際にやること」を動詞にする方針(docs/ACTION_DESIGN.md) */
   festGame?: FestGameKind;
+  /** type 'dougu' のみ: 作ると save.tools[engine] が level に なる(もちものには 入らない)。
+      効果は core/tools.ts(あそびの じかんが すこし のびる。上限つき) */
+  tool?: { engine: ToolEngine; level: 2 | 3 };
 }
 
 export type FestGameKind =
@@ -815,6 +823,19 @@ export const GAME_DATA: GameData = {
       gather: { type: 'plant', verb: 'なえを うえる', growSec: 480, fieldLabel: 'べにいもばたけ',
         harvest: { engine: 'mine', prompt: 'べにいもは つちの なか。すうじの ヒントで ばしょを すいりして ほろう!' },
         care: { targetIcon: 'boar:brown', label: 'いのししが はたけを あらしてる! タップで おいはらえ!' } } },
+
+    /* --- どうぐの 材料(dougu: 県ボリュームの 数には 入れない) ---
+       てついし(m24)・わた(m97)は ふつうの そざいを つかいまわす。
+       産地を 複数の エリアに 置くのは 「材料は レシピの エリアより 先に
+       ひらく エリアで とれる」テストを みたす ため */
+    { id: 'm125', name: 'たけ', icon: 'bamboo:lime', origins: ['shizuoka', 'kyoto', 'oita'], rarity: 'local', dougu: true,
+      gather: { type: 'plant', verb: 'たけを うえる', growSec: 300, fieldLabel: 'たけばやし',
+        harvest: { engine: 'reap', targetIcon: 'bamboo:lime', prompt: 'よこに なぞって たけを かりとろう! 1れつを ひとふででボーナス!' },
+        care: { targetIcon: 'boar:brown', label: 'いのししが たけばやしを あらしてる! タップで おいはらえ!' } } },
+    { id: 'm126', name: 'き', icon: 'log:brown', origins: ['aomori', 'nagano', 'nara'], rarity: 'local', dougu: true,
+      gather: { type: 'plant', verb: 'なえぎを うえる', growSec: 600, fieldLabel: 'もり',
+        harvest: { engine: 'reap', targetIcon: 'log:brown', prompt: 'よこに なぞって きを きりだそう! 1れつを ひとふででボーナス!' },
+        care: { targetIcon: 'bug:brown', label: 'むしが きを かじってる! タップで おいはらえ!' } } },
   ],
 
   /* ---------- レシピマスタ(Tier2〜4) ---------- */
@@ -1583,6 +1604,44 @@ export const GAME_DATA: GameData = {
       ingredients: [{ ref: 'm123', count: 2 }, { ref: 'm51', count: 1 }] },
     { id: 'r236', name: 'べにいもの タルト', icon: 'cake:violet', tier: 3, type: 'gattai', pref: 'okinawa',
       ingredients: [{ ref: 'm124', count: 2 }, { ref: 'm23', count: 1 }] },
+    /* --- どうぐ(type 'dougu') ---
+       各地の ほんものの 工芸の 県で 作る(docs/DOUGU_SHIN_PLAN.md)。
+       作ると save.tools[engine] = 2 に なり、その あそびの じかんが すこし のびる。
+       もちものには 入らない(なんども 作れない ように 県ページで 出しわけ) */
+    { id: 'rd01', name: 'えちごの かま', icon: 'knife:silver', tier: 2, type: 'dougu', pref: 'niigata',
+      tool: { engine: 'reap', level: 2 },
+      ingredients: [{ ref: 'm24', count: 2 }, { ref: 'm126', count: 1 }] },
+    { id: 'rd02', name: 'みきの つみとりばさみ', icon: 'knife:red', tier: 2, type: 'dougu', pref: 'hyogo',
+      tool: { engine: 'pluck', level: 2 },
+      ingredients: [{ ref: 'm24', count: 2 }] },
+    { id: 'rd03', name: 'べっぷの たけかご', icon: 'basket:tan', tier: 2, type: 'dougu', pref: 'oita',
+      tool: { engine: 'catch', level: 2 },
+      ingredients: [{ ref: 'm125', count: 2 }] },
+    { id: 'rd04', name: 'するがの ちゃつみかご', icon: 'basket:lime', tier: 2, type: 'dougu', pref: 'shizuoka',
+      tool: { engine: 'rhythm', level: 2 },
+      ingredients: [{ ref: 'm125', count: 2 }] },
+    { id: 'rd05', name: 'てっきの つるはし', icon: 'pick:silver', tier: 2, type: 'dougu', pref: 'iwate',
+      tool: { engine: 'mine', level: 2 },
+      ingredients: [{ ref: 'm24', count: 2 }, { ref: 'm126', count: 1 }] },
+    { id: 'rd06', name: 'えっちゅうの すくいあみ', icon: 'net:teal', tier: 2, type: 'dougu', pref: 'toyama',
+      tool: { engine: 'scoop', level: 2 },
+      ingredients: [{ ref: 'm126', count: 1 }, { ref: 'm24', count: 1 }] },
+    { id: 'rd07', name: 'みかわの くまで', icon: 'fan:tan', tier: 2, type: 'dougu', pref: 'aichi',
+      tool: { engine: 'shell', level: 2 },
+      ingredients: [{ ref: 'm126', count: 1 }, { ref: 'm24', count: 1 }] },
+    { id: 'rd08', name: 'あきたの ゆきべら', icon: 'ladle:sky', tier: 2, type: 'dougu', pref: 'akita',
+      tool: { engine: 'sweep', level: 2 },
+      ingredients: [{ ref: 'm126', count: 2 }] },
+    { id: 'rd09', name: 'きょうの しゅうかくかご', icon: 'basket:brown', tier: 2, type: 'dougu', pref: 'kyoto',
+      tool: { engine: 'chain', level: 2 },
+      ingredients: [{ ref: 'm125', count: 2 }] },
+    { id: 'rd10', name: 'かがわの てぶくろ', icon: 'glove:white', tier: 2, type: 'dougu', pref: 'kagawa',
+      tool: { engine: 'flick', level: 2 },
+      ingredients: [{ ref: 'm97', count: 2 }] },
+    { id: 'rd11', name: 'きしゅうの つりざお', icon: 'stalk:tan', tier: 2, type: 'dougu', pref: 'wakayama',
+      tool: { engine: 'fish', level: 2 },
+      ingredients: [{ ref: 'm125', count: 1 }, { ref: 'm24', count: 1 }] },
+
     { id: 'rf47', name: 'なは おおづなひき', icon: 'rope:crimson', tier: 4, type: 'matsuri', pref: 'okinawa',
       implemented: true, festGame: 'tsunahiki',
       ingredients: [{ ref: 'r232', count: 1 }, { ref: 'r236', count: 1 }],
@@ -2008,6 +2067,21 @@ export const GAME_DATA: GameData = {
     { target: 'r235', text: 'もずくの すのものは ぬるぬるして のどごしが いいよ。' },
     { target: 'r236', text: 'べにいもの タルトは むらさきいろが きれいな おきなわの おかしだよ。' },
     { target: 'rf47', text: 'なはの おおづなひきは とても おおきな つなを ひきあう ぎょうじ。まちが ひがしと にしに わかれて しょうぶするよ。' },
+
+    /* --- どうぐと どうぐの 材料 --- */
+    { target: 'm125', text: 'たけは せいちょうが とても はやい しょくぶつ。1にちで 1メートル ちかく のびる ことも あるよ。' },
+    { target: 'm126', text: 'あおもりの ひば、きその ひのき、よしのの すぎ。にっぽんには じまんの もりが たくさん あるよ。' },
+    { target: 'rd01', text: 'にいがたの つばめさんじょうは かなものづくりの まち。ほうちょうや のうぐが せかいでも ゆうめいだよ。' },
+    { target: 'rd02', text: 'ひょうごの みきは 「かなものの まち」。だいくどうぐづくりの ながい れきしが あるよ。' },
+    { target: 'rd03', text: 'おおいたの べっぷたけざいくは くにが みとめた でんとうこうげい。しなやかで じょうぶな かごに なるよ。' },
+    { target: 'rd04', text: 'しずおかの するがたけせんすじざいくは ほそい たけひごで つくる こうげい。ちゃどころの しずおかに ぴったり。', check: '茶摘みかごとの関連裏取り' },
+    { target: 'rd05', text: 'いわての なんぶてっきは てつの こうげいひん。てつびんが とくに ゆうめいだよ。' },
+    { target: 'rd06', text: 'とやまわんの しろえびりょうは あみで すくう りょうほう。「うみの ほうせき」を すくいあげるよ。', check: '漁法・道具の裏取り' },
+    { target: 'rd07', text: 'あいちの みかわわんは しおひがりの めいしょ。くまでで すなを ほって あさりを さがすよ。', check: '名所表現の裏取り' },
+    { target: 'rd08', text: 'ゆきぐにでは ゆきべらや スコップが ふゆの ひっすどうぐ。やねの ゆきおろしにも つかうよ。', check: '秋田固有の道具か裏取り' },
+    { target: 'rd09', text: 'きょうとは たけの めいさんち。たけざいくの かごは かるくて じょうぶだよ。' },
+    { target: 'rd10', text: 'かがわの ひがしかがわしは てぶくろづくりが にほんいち。にっぽんの てぶくろの 9わりが ここで つくられるよ。' },
+    { target: 'rd11', text: 'わかやまの きしゅうへらざおは たけで つくる つりざお。しょくにんさんが たけを えらんで ていねいに つくるよ。' },
   ],
 
   /* ---------- クイズバンク ----------
@@ -2546,6 +2620,15 @@ export const GAME_DATA: GameData = {
     { id: 'qy66', kind: 'bunka', tags: ['rf45', 'r222'], q: 'ひょっとこ なつまつりで つけるのは?', choices: ['おかしな おめん', 'かんむり', 'つの'], answer: 0 },
     { id: 'qy67', kind: 'bunka', tags: ['rf46', 'r227'], q: 'ろくがつどうで じんじゃに かけるのは?', choices: ['絵を かいた とうろう', 'ふうせん', 'こいのぼり'], answer: 0 },
     { id: 'qy68', kind: 'bunka', tags: ['rf47', 'r232'], q: 'なはの おおづなひきで するのは?', choices: ['おおきな つなを ひきあう', 'たいこを たたく', 'はなびを あげる'], answer: 0 },
+
+    /* --- どうぐと どうぐの 材料 --- */
+    { id: 'qd01', kind: 'sozai', tags: ['m125', 'rd03', 'rd04', 'rd09'], q: 'たけの せいちょうの はやさは?', choices: ['1にちで 1メートル ちかく のびる ことも ある', '1ねんで 1センチ', 'ぜんぜん のびない'], answer: 0 },
+    { id: 'qd02', kind: 'sozai', tags: ['m125'], q: 'たけから つくる ものは?', choices: ['かごや ざる', 'ガラスの コップ', 'ぬいぐるみ'], answer: 0 },
+    { id: 'qd03', kind: 'sozai', tags: ['m126', 'rd08'], q: 'きを きった あと、もりの ために する ことは?', choices: ['あたらしい きを うえる', 'なにも しない', 'いしを ならべる'], answer: 0 },
+    { id: 'qd04', kind: 'sozai', tags: ['m126'], q: 'ひのきや すぎは なにに つかう?', choices: ['いえや どうぐを つくる', 'たべる', 'のみものに する'], answer: 0 },
+    { id: 'qd05', kind: 'bunka', tags: ['rd01'], q: 'にいがたの つばめさんじょうが ゆうめいなのは?', choices: ['かなものづくり', 'ガラスざいく', 'おりもの'], answer: 0 },
+    { id: 'qd06', kind: 'bunka', tags: ['rd10'], q: 'かがわの ひがしかがわしで にほんいち つくられて いるのは?', choices: ['てぶくろ', 'くつした', 'ぼうし'], answer: 0 },
+    { id: 'qd07', kind: 'bunka', tags: ['rd11'], q: 'わかやまの きしゅうへらざおは なにで つくる?', choices: ['たけ', 'てつ', 'ガラス'], answer: 0 },
   ],
 };
 

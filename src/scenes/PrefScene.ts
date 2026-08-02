@@ -33,6 +33,7 @@ import {
   type MascotMood,
 } from '../ui/widgets';
 import { nextTask, type NextTask } from '../core/nextTask';
+import { toolLevel } from '../core/tools';
 import { whereFrom } from '../core/whereFrom';
 import { confetti, wobble } from '../ui/effects';
 import { addIcon, type IconKey } from '../ui/icons';
@@ -513,11 +514,12 @@ export class PrefScene extends Phaser.Scene {
   private buildRecipeCard(r: Recipe, y: number): Phaser.GameObjects.Container {
     const s = store.state;
     if (r.tier === 4) return this.buildFestivalCard(r, y);
+    const tierLabel = r.type === 'dougu' ? UI_TEXT.dougu.tier : TIER_LABEL[r.tier];
 
     const owned = s.recipes.includes(r.id);
     if (!owned) {
       const c = this.cardBase(y);
-      this.cardTexts(c, 'question:gray', UI_TEXT.recipe.unknownName, UI_TEXT.recipe.sleeping(TIER_LABEL[r.tier]));
+      this.cardTexts(c, 'question:gray', UI_TEXT.recipe.unknownName, UI_TEXT.recipe.sleeping(tierLabel));
       this.cardButton(c, UI_TEXT.recipe.searchBtn, COLORS.orange, () => this.startRecipeGet(r));
       return c;
     }
@@ -526,7 +528,14 @@ export class PrefScene extends Phaser.Scene {
     const jimoto = crafted?.jimoto ? ` ${UI_TEXT.recipe.jimotoChip}` : '';
     const ings = r.ingredients.map((ing) => this.ingChipText(ing)).join('  ');
     const c = this.cardBase(y);
-    this.cardTexts(c, r.icon, `${r.name}〔${TIER_LABEL[r.tier]}〕${jimoto}`, ings);
+    this.cardTexts(c, r.icon, `${r.name}〔${tierLabel}〕${jimoto}`, ings);
+    // どうぐは 1回 作れば じゅうぶん(もう一度 作ると 材料の むだ)。ボタンを 済みに かえる
+    if (r.tool && toolLevel(s, r.tool.engine) >= r.tool.level) {
+      this.cardButton(c, UI_TEXT.recipe.craftedChip, COLORS.gray, () => {
+        showToast(this, UI_TEXT.dougu.done(r.name));
+      });
+      return c;
+    }
     const ok = craftable(s.inv, r);
     this.cardButton(c, UI_TEXT.recipe.craftBtn, ok ? COLORS.primary : COLORS.gray, () => {
       if (craftable(store.state.inv, r)) this.openCraft(r);
@@ -622,7 +631,8 @@ export class PrefScene extends Phaser.Scene {
       modal.close();
       const done = new Modal(this, UI_TEXT.craft.doneTitle);
       done.add(addIcon(this, 0, 0, r.icon, 54), 60);
-      done.addText(UI_TEXT.craft.done(r.name), 18);
+      // どうぐは 「なにが うれしいか」を そのばで つたえる
+      done.addText(r.tool ? UI_TEXT.dougu.done(r.name) : UI_TEXT.craft.done(r.name), 18);
       if (jimoto) done.addText(UI_TEXT.craft.jimotoBanner, 15, TEXT_COLORS.accent);
       done.addButton(UI_TEXT.recipe.yay, COLORS.primary, () => {
         done.close();

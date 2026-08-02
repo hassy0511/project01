@@ -52,6 +52,11 @@ export interface SaveState {
   /** あそんだ ことが ある ミニゲーム(エンジン名 → true)。
       あそびかたの 説明を 初回だけ 出す/ずかんで 見返せる ものを 決める のに つかう */
   playedGame: Record<string, boolean>;
+  /** どうぐの レベル(エンジン名 → 2 以上)。ない エンジンは Lv1(ふつうの どうぐ)。
+      どうぐは 各地の 工芸の 県で 作る(docs/DOUGU_SHIN_PLAN.md) */
+  tools: Record<string, number>;
+  /** どうぐを つかった 回数(エンジン名 → 回数)。Lv3 レシピの 目ざめ判定に つかう */
+  toolUse: Record<string, number>;
 }
 
 /** localStorage 互換の最小インターフェース(テスト時はメモリ実装を注入) */
@@ -77,6 +82,8 @@ export function defaultState(): SaveState {
     currentRegion: 'kanto',
     seenPrefGuide: false,
     playedGame: {},
+    tools: {},
+    toolUse: {},
   };
 }
 
@@ -218,7 +225,8 @@ export function adminUnlockAll(state: SaveState, data: GameData): void {
     }
   }
   for (const r of data.recipes) {
-    if (r.tier === 4) continue;
+    // どうぐは もちものに 入る 産物では ない(作ると tools が 上がる だけ)
+    if (r.tier === 4 || r.type === 'dougu') continue;
     for (let i = 0; i < 2; i++) state.inv.push({ ref: r.id, origin: r.pref, quality: null });
   }
   state.flags.introSeen = true;

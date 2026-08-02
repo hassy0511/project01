@@ -164,8 +164,26 @@ export const UI_TEXT = {
     jimotoChip: 'じもと',
     originChip: (name: string) => `${name}さん`,
     star3Chip: 'ほし3',
+    craftedChip: 'つくった!',
     /** この県で とれない ざいりょうの 行き先。とれる 県が いくつも あれば「ほか」 */
     whereChip: (pref: string, count: number) => (count > 1 ? `〈${pref}ほか〉` : `〈${pref}〉`),
+  },
+
+  /** どうぐ(各地の 工芸で 作る。docs/DOUGU_SHIN_PLAN.md) */
+  dougu: {
+    /** レシピカードの たぐい札(TIER_LABEL の かわり) */
+    tier: 'どうぐ',
+    /** 作った ときの せつめい */
+    done: (name: string) => `「${name}」を てに いれた!\nこの あそびの じかんが すこし のびるよ!`,
+    /** アーケードHUDの しるし */
+    hudLv: (lv: number) => `どうぐ Lv${lv}`,
+    /** もちものの どうぐ欄 */
+    invHead: 'どうぐ',
+    lvChip: (lv: number) => `Lv${lv}`,
+    /** まだ 作って いない どうぐの 案内(どこで 作れるか) */
+    craftAt: (pref: string) => `${pref}で つくれるよ`,
+    /** ふつうの どうぐ(Lv1)の 名まえ */
+    basicName: 'ふつうの どうぐ',
   },
 
   craft: {
@@ -675,6 +693,9 @@ export const UI_TEXT = {
 
   inv: {
     empty: 'まだ なにも もっていないよ。\nけんに いって そざいを そだてよう!',
+    itemsHead: 'そざいと めいさん',
+    /** まだ 作って いない どうぐの 名まえ */
+    unknownTool: '？？？',
   },
 
   settings: {

@@ -2,11 +2,15 @@
    各ミニゲームは ArcadeSession を作り、addPoints/breakCombo を呼ぶだけでよい */
 import Phaser from 'phaser';
 import { comboMultiplier } from '../../core/stars';
+import { recordToolUse, toolAssist, toolLevel } from '../../core/tools';
+import { GAME_DATA } from '../../data/gameData';
+import { store } from '../../game/store';
 import { scaledDuration, type ArcadeEngine } from '../../data/arcadeTuning';
 import { setHook } from '../../game/testHooks';
 import { UI_TEXT } from '../../data/uiText';
 import { SFX } from '../../audio/sfx';
 import { fillBar, floatUp } from '../../ui/effects';
+import { addIcon } from '../../ui/icons';
 import { FONT, GAME_W, TEXT_COLORS } from '../../ui/theme';
 import type { MinigameApi } from './types';
 
@@ -52,14 +56,18 @@ export class ArcadeSession {
     this.area = api.area;
     this.engine = opts.engine;
     this.onEnd = opts.onEnd;
-    this.durationSec = scaledDuration(opts.engine);
+    // どうぐが あると あそびの じかんが すこし のびる(★しきい値は そのまま)。
+    // つかいこみも ここで きろく(Lv3 レシピの 目ざめ判定に つかう)
+    this.durationSec = scaledDuration(opts.engine, toolAssist(store.state, opts.engine));
+    recordToolUse(GAME_DATA, store.state, opts.engine);
+    store.save();
     this.startedAt = Date.now();
     // いま いる UPDATE の ききみみ = Phaser 内部の もの(と、セッションより
     // 先に つける ゲームの ぶん。catchGame の かご追従など、止めなくても
     // こまらない ものだけ)。freezeGameUpdates で これは はずさない
     this.baseUpdaters = new Set(this.scene.events.listeners(Phaser.Scenes.Events.UPDATE));
     this.buildHud();
-    setHook({ kind: 'arcade', engine: this.engine, score: 0, secLeft: this.durationSec });
+    setHook({ kind: 'arcade', engine: this.engine, score: 0, secLeft: this.durationSec, durationSec: this.durationSec });
 
     // あそびかたを 見ている あいだは 時計を 止める(ui/howto.ts の 「?」が しらせる)
     this.scene.events.on(HELP_OPEN, this.onHelpOpen, this);
@@ -78,7 +86,7 @@ export class ArcadeSession {
         this.drawTimer(left / this.durationSec);
         this.timerLabel.setText(`${Math.ceil(left)}`);
         if (this.combo > 0 && Date.now() - this.lastHitAt > ArcadeSession.COMBO_TIMEOUT_MS) this.resetCombo();
-        setHook({ kind: 'arcade', engine: this.engine, score: this.score, secLeft: left });
+        setHook({ kind: 'arcade', engine: this.engine, score: this.score, secLeft: left, durationSec: this.durationSec });
         if (left <= 0) this.finish();
       },
     });
@@ -189,6 +197,26 @@ export class ArcadeSession {
       })
       .setOrigin(0.5);
     this.area.add(this.timerLabel);
+
+    // どうぐを もって いれば、タイマーの 下に どうぐの しるし
+    // (じかんが のびて いる ことの 見える化。Lv1 は 出さない)
+    const lv = toolLevel(store.state, this.engine);
+    const toolRecipe = GAME_DATA.recipes.find((r) => r.type === 'dougu' && r.tool?.engine === this.engine);
+    if (lv >= 2 && toolRecipe) {
+      this.area.add(addIcon(this.scene, GAME_W - 138, 4 + HUD_H + 12, toolRecipe.icon, 20));
+      this.area.add(
+        this.scene.add
+          .text(GAME_W - 124, 4 + HUD_H + 12, UI_TEXT.dougu.hudLv(lv), {
+            fontFamily: FONT,
+            fontSize: '12px',
+            color: TEXT_COLORS.good,
+            fontStyle: 'bold',
+            stroke: '#ffffff',
+            strokeThickness: 3,
+          })
+          .setOrigin(0, 0.5),
+      );
+    }
   }
 
   private drawTimer(ratio: number): void {

@@ -147,6 +147,8 @@ export const ARCADE_TUNING: Record<ArcadeEngine, ArcadeTuning> = {
 /** 実行時チューニング: E2E テストは timeScale を上げて時間を短縮する(__mqAdmin.fastMode) */
 export const runtimeTuning = { timeScale: 1 };
 
-export function scaledDuration(engine: ArcadeEngine): number {
-  return ARCADE_TUNING[engine].durationSec / runtimeTuning.timeScale;
+/** assist = どうぐで のびる わりあい(core/tools.ts の toolAssist。どうぐの ない あそびは 0)。
+    ★の しきい値は のばさない ので、どうぐが あると 同じ しきい値に とどきやすく なる */
+export function scaledDuration(engine: ArcadeEngine, assist = 0): number {
+  return (ARCADE_TUNING[engine].durationSec * (1 + assist)) / runtimeTuning.timeScale;
 }

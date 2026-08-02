@@ -3,7 +3,7 @@
 
 export type MqHook =
   | { kind: 'quiz'; correctText: string; choices: string[] }
-  | { kind: 'arcade'; engine: string; score: number; secLeft: number }
+  | { kind: 'arcade'; engine: string; score: number; secLeft: number; durationSec?: number }
   | { kind: 'done' };
 
 declare global {

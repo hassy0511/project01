@@ -52,11 +52,16 @@ export function isJimoto(used: InvItem[], recipe: Recipe): boolean {
   return mats.length > 0 && mats.every((it) => it.origin === recipe.pref);
 }
 
-/** クラフト(tier2/3)をセーブ状態に適用: 消費+産物追加+ずかん登録。じもとメダルは一度取れば維持 */
+/** クラフト(tier2/3)をセーブ状態に適用: 消費+産物追加+ずかん登録。じもとメダルは一度取れば維持。
+    どうぐ(type 'dougu')は もちものに 入れず、かわりに tools の レベルが 上がる */
 export function applyCraft(state: SaveState, recipe: Recipe): { used: InvItem[]; jimoto: boolean } {
   const used = pickConsume(state.inv, recipe);
   for (const it of used) state.inv.splice(state.inv.indexOf(it), 1);
-  state.inv.push({ ref: recipe.id, origin: recipe.pref, quality: null });
+  if (recipe.tool) {
+    state.tools[recipe.tool.engine] = Math.max(state.tools[recipe.tool.engine] ?? 1, recipe.tool.level);
+  } else {
+    state.inv.push({ ref: recipe.id, origin: recipe.pref, quality: null });
+  }
   const jimoto = isJimoto(used, recipe);
   const prev = state.zukanProd[recipe.id];
   state.zukanProd[recipe.id] = { jimoto: (prev?.jimoto ?? false) || jimoto };
