@@ -144,11 +144,24 @@ export const ARCADE_TUNING: Record<ArcadeEngine, ArcadeTuning> = {
   tsunahiki: { durationSec: 60, star2: 0, star3: 0 }, // なは おおづなひき(おきなわ)
 };
 
-/** 実行時チューニング: E2E テストは timeScale を上げて時間を短縮する(__mqAdmin.fastMode) */
-export const runtimeTuning = { timeScale: 1 };
+/** しんの めいさんの むずかしさ(docs/DOUGU_SHIN_PLAN.md)。
+    あそび時間を みじかく、★の しきい値を 高く する。
+    どちらも データなので 子供テストで 調整できる */
+export const SHIN_TUNING = {
+  /** あそび時間の 倍率(1より 小さい = みじかい) */
+  durationScale: 0.85,
+  /** ★2/★3 しきい値の 倍率(1より 大きい = むずかしい) */
+  starScale: 1.6,
+};
+
+/** 実行時チューニング: E2E テストは timeScale を上げて時間を短縮する(__mqAdmin.fastMode)。
+    shinHard は SessionScene が しんの めいさんの 収穫の あいだだけ 立てる
+    (アーケードの 各ゲームは そざいを 知らない ので、ここで うけわたす)。 */
+export const runtimeTuning = { timeScale: 1, shinHard: false };
 
 /** assist = どうぐで のびる わりあい(core/tools.ts の toolAssist。どうぐの ない あそびは 0)。
     ★の しきい値は のばさない ので、どうぐが あると 同じ しきい値に とどきやすく なる */
 export function scaledDuration(engine: ArcadeEngine, assist = 0): number {
-  return (ARCADE_TUNING[engine].durationSec * (1 + assist)) / runtimeTuning.timeScale;
+  const hard = runtimeTuning.shinHard ? SHIN_TUNING.durationScale : 1;
+  return (ARCADE_TUNING[engine].durationSec * hard * (1 + assist)) / runtimeTuning.timeScale;
 }

@@ -35,6 +35,12 @@ export function calcStars(score: number, t: StarThresholds): 1 | 2 | 3 {
   return score >= t.star3 ? 3 : score >= t.star2 ? 2 : 1;
 }
 
+/** しきい値を 倍率で むずかしく する(しんの めいさん用)。
+    ★1保証(calcStars の 床)は 変わらない */
+export function scaleThresholds(t: StarThresholds, k: number): StarThresholds {
+  return { star2: Math.round(t.star2 * k), star3: Math.round(t.star3 * k) };
+}
+
 /** ★3なら おまけつきで2個、それ以外は1個 */
 export function harvestYield(stars: number): number {
   return stars === 3 ? STAR3_YIELD : NORMAL_YIELD;

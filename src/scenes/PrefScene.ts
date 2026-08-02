@@ -33,7 +33,9 @@ import {
   type MascotMood,
 } from '../ui/widgets';
 import { nextTask, type NextTask } from '../core/nextTask';
-import { toolLevel } from '../core/tools';
+import { TOOL_LV3_USES, toolLevel } from '../core/tools';
+import { isShinOpen } from '../core/shin';
+import { inSeason, SEASON_LABEL, seasonAt } from '../core/season';
 import { whereFrom } from '../core/whereFrom';
 import { confetti, wobble } from '../ui/effects';
 import { addIcon, type IconKey } from '../ui/icons';
@@ -324,25 +326,67 @@ export class PrefScene extends Phaser.Scene {
       y += t.height + 8;
     };
 
+    const shinOpen = isShinOpen(store.state, GAME_DATA, this.prefId);
+    const prefMats = GAME_DATA.materials.filter((x) => x.origins.includes(this.prefId));
+
     addHeading(UI_TEXT.pref.sozaiHead);
-    for (const m of GAME_DATA.materials.filter((x) => x.origins.includes(this.prefId))) {
+    for (const m of prefMats.filter((x) => !x.shin)) {
       this.scroll.content.add(this.buildSozaiCard(m, y));
       y += CARD_H + CARD_GAP;
     }
+
+    // しんの めいさん: おまつりを ひらいた 県だけ。金いろの 見出しに いまの 季節
+    if (shinOpen && prefMats.some((x) => x.shin)) {
+      y += 6;
+      const t = this.add
+        .text(16, y, UI_TEXT.shin.head(SEASON_LABEL[seasonAt(Date.now())]), {
+          fontFamily: FONT,
+          fontSize: '17px',
+          color: TEXT_COLORS.accent,
+          fontStyle: 'bold',
+        })
+        .setOrigin(0, 0);
+      this.scroll?.content.add(t);
+      y += t.height + 8;
+      for (const m of prefMats.filter((x) => x.shin)) {
+        this.scroll.content.add(this.buildSozaiCard(m, y));
+        y += CARD_H + CARD_GAP;
+      }
+    }
+
     y += 6;
     addHeading(UI_TEXT.pref.recipeHead);
-    for (const r of GAME_DATA.recipes.filter((x) => x.pref === this.prefId).sort((a, b) => a.tier - b.tier)) {
+    const recipes = GAME_DATA.recipes
+      .filter((x) => x.pref === this.prefId)
+      // しんレシピは しんが ひらくまで 出さない。きわみ(Lv3)どうぐは 目ざめるまで
+      .filter((x) => (!x.shin || shinOpen) && this.douguVisible(x))
+      .sort((a, b) => a.tier - b.tier);
+    for (const r of recipes) {
       this.scroll.content.add(this.buildRecipeCard(r, y));
       y += CARD_H + CARD_GAP;
     }
     this.scroll.setContentHeight(y + 12);
   }
 
-  private cardBase(y: number, ready = false): Phaser.GameObjects.Container {
+  /** きわみ(Lv3)の どうぐレシピは、Lv2を もって いない うちは 出さない。
+      もって いれば 「ねむって いる」カードで 出す(buildRecipeCard が 出しわけ) */
+  private douguVisible(r: Recipe): boolean {
+    if (!r.tool || r.tool.level < 3) return true;
+    return toolLevel(store.state, r.tool.engine) >= 2;
+  }
+
+  /** きわみ(Lv3)レシピが 目ざめて いるか(つかいこみ 20回) */
+  private douguAwake(r: Recipe): boolean {
+    if (!r.tool || r.tool.level < 3) return true;
+    return (store.state.toolUse[r.tool.engine] ?? 0) >= TOOL_LV3_USES;
+  }
+
+  private cardBase(y: number, ready = false, gold = false): Phaser.GameObjects.Container {
     const c = this.add.container(GAME_W / 2, y + CARD_H / 2);
     const g = this.add.graphics();
     g.fillStyle(COLORS.panel, 1);
-    g.lineStyle(2, ready ? COLORS.orange : COLORS.panelLine, 1);
+    // 金ふち = しんの めいさん(とくべつ感)。じゅんびOK(オレンジ)より 優先度は ひくい
+    g.lineStyle(gold && !ready ? 3 : 2, ready ? COLORS.orange : gold ? COLORS.gold : COLORS.panelLine, 1);
     g.fillRoundedRect(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H, 14);
     g.strokeRoundedRect(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H, 14);
     c.add(g);
@@ -438,10 +482,23 @@ export class PrefScene extends Phaser.Scene {
       return c;
     }
 
+    /* 季節外れ(しんの 激レア): うえはじめ・あそびはじめを 止めて 案内だけ 出す。
+       そだち中・しゅうかく待ちの 畑には さわらない(枯れ・没収は しない) */
+    const seasonWait =
+      !inSeason(m, now) && (g.type !== 'plant' || plotState(s.plots[plotKey(this.prefId, m.id)], g, now).st === 'empty')
+        ? UI_TEXT.shin.seasonWait(SEASON_LABEL[m.season!])
+        : null;
+    if (seasonWait) {
+      const c = this.cardBase(y, false, true);
+      this.cardTexts(c, m.icon, m.name + badge, seasonWait);
+      this.cardButton(c, g.verb, COLORS.gray, () => showToast(this, seasonWait));
+      return c;
+    }
+
     if (g.type === 'plant') {
       const view = plotState(s.plots[plotKey(this.prefId, m.id)], g, now);
       if (view.st === 'empty') {
-        const c = this.cardBase(y);
+        const c = this.cardBase(y, false, m.shin === true);
         this.cardTexts(c, FIELD_ICON, UI_TEXT.pref.fieldName(m.name, g.fieldLabel) + badge, starsTxt, starsN);
         this.cardButton(c, g.verb, COLORS.primary, () => {
           plantSeed(s, m.id, this.prefId, Date.now());
@@ -484,7 +541,7 @@ export class PrefScene extends Phaser.Scene {
     }
 
     // timing / dig: 待ちなしミニゲーム
-    const c = this.cardBase(y);
+    const c = this.cardBase(y, false, m.shin === true);
     this.cardTexts(c, m.icon, m.name + badge, starsTxt, starsN);
     this.cardButton(c, g.verb, COLORS.primary, () =>
       this.scene.start('SessionScene', { matId: m.id, prefId: this.prefId, mode: 'instant' }),
@@ -516,9 +573,17 @@ export class PrefScene extends Phaser.Scene {
     if (r.tier === 4) return this.buildFestivalCard(r, y);
     const tierLabel = r.type === 'dougu' ? UI_TEXT.dougu.tier : TIER_LABEL[r.tier];
 
+    // きわみ(Lv3)の どうぐ: つかいこみが たりない うちは ねむった まま(さがせない)
+    if (r.tool?.level === 3 && !this.douguAwake(r)) {
+      const c = this.cardBase(y);
+      const remain = Math.max(1, TOOL_LV3_USES - (s.toolUse[r.tool.engine] ?? 0));
+      this.cardTexts(c, 'question:gray', UI_TEXT.recipe.unknownName, UI_TEXT.dougu.lv3Sleeping(remain));
+      return c;
+    }
+
     const owned = s.recipes.includes(r.id);
     if (!owned) {
-      const c = this.cardBase(y);
+      const c = this.cardBase(y, false, r.shin === true);
       this.cardTexts(c, 'question:gray', UI_TEXT.recipe.unknownName, UI_TEXT.recipe.sleeping(tierLabel));
       this.cardButton(c, UI_TEXT.recipe.searchBtn, COLORS.orange, () => this.startRecipeGet(r));
       return c;
@@ -527,7 +592,7 @@ export class PrefScene extends Phaser.Scene {
     const crafted = s.zukanProd[r.id];
     const jimoto = crafted?.jimoto ? ` ${UI_TEXT.recipe.jimotoChip}` : '';
     const ings = r.ingredients.map((ing) => this.ingChipText(ing)).join('  ');
-    const c = this.cardBase(y);
+    const c = this.cardBase(y, false, r.shin === true);
     this.cardTexts(c, r.icon, `${r.name}〔${tierLabel}〕${jimoto}`, ings);
     // どうぐは 1回 作れば じゅうぶん(もう一度 作ると 材料の むだ)。ボタンを 済みに かえる
     if (r.tool && toolLevel(s, r.tool.engine) >= r.tool.level) {

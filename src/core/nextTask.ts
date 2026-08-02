@@ -9,6 +9,8 @@
    ===================================================== */
 import type { GameData, Prefecture } from '../data/gameData';
 import type { SaveState } from './state';
+import { isShinOpen, materialLock } from './shin';
+import { TOOL_LV3_USES } from './tools';
 import { infraStock, plotKey, plotState } from './plots';
 import { craftable } from './craft';
 
@@ -30,20 +32,27 @@ export interface NextTask {
   name?: string;
 }
 
-/** その けんの そざい(産地に 入っている もの) */
-const materialsOf = (data: GameData, pref: Prefecture) =>
-  data.materials.filter((m) => m.origins.includes(pref.id));
+/** その けんの そざい(産地に 入っていて、いま さわれる もの)。
+    しんの めいさん(未開放)や 季節外れを 「やること」に すすめない */
+const materialsOf = (state: SaveState, data: GameData, pref: Prefecture, now: number) =>
+  data.materials.filter((m) => m.origins.includes(pref.id) && materialLock(state, data, m, pref.id, now) === null);
 
-/** その けんの レシピ */
-const recipesOf = (data: GameData, pref: Prefecture) => data.recipes.filter((r) => r.pref === pref.id);
+/** その けんの レシピ(しん未開放と ねむった きわみどうぐは ださない) */
+const recipesOf = (state: SaveState, data: GameData, pref: Prefecture) =>
+  data.recipes.filter(
+    (r) =>
+      r.pref === pref.id &&
+      (!r.shin || isShinOpen(state, data, pref.id)) &&
+      (!(r.tool && r.tool.level >= 3) || (state.toolUse[r.tool.engine] ?? 0) >= TOOL_LV3_USES),
+  );
 
 /**
  * いま やる ことを 1つ かえす。
  * @param now テストしやすいよう 時刻は 外から わたす
  */
 export function nextTask(state: SaveState, pref: Prefecture, data: GameData, now: number): NextTask {
-  const mats = materialsOf(data, pref);
-  const recipes = recipesOf(data, pref);
+  const mats = materialsOf(state, data, pref, now);
+  const recipes = recipesOf(state, data, pref);
 
   /* --- 1. おせわチャンス: 時間で 消えるので いちばん いそぎ --- */
   for (const m of mats) {
@@ -99,6 +108,6 @@ export function nextTask(state: SaveState, pref: Prefecture, data: GameData, now
 
 /** その けんで もう やる ことが ない か(おまつりまで 終わった か) */
 export function prefComplete(state: SaveState, pref: Prefecture, data: GameData): boolean {
-  const fests = recipesOf(data, pref).filter((r) => r.type === 'matsuri');
+  const fests = recipesOf(state, data, pref).filter((r) => r.type === 'matsuri');
   return fests.length > 0 && fests.every((r) => state.fest.includes(r.id));
 }

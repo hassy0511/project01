@@ -5,10 +5,10 @@ import Phaser from 'phaser';
 import { setupHiDpi } from '../ui/display';
 import { findMaterial, findPref, GAME_DATA, type Material } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';
-import { ARCADE_TUNING, type ArcadeEngine } from '../data/arcadeTuning';
+import { ARCADE_TUNING, runtimeTuning, SHIN_TUNING, type ArcadeEngine } from '../data/arcadeTuning';
 import { clearPlot, markCareDone, plotKey } from '../core/plots';
 import { pickSessionQuiz, recordQuizAsked } from '../core/quiz';
-import { calcStars, harvestYield, totalScore } from '../core/stars';
+import { calcStars, harvestYield, scaleThresholds, totalScore } from '../core/stars';
 import { markSanchiCompleteOnce, registerMaterial } from '../core/state';
 import { store } from '../game/store';
 import { setHook } from '../game/testHooks';
@@ -79,6 +79,11 @@ export class SessionScene extends Phaser.Scene {
     this.gameScore = 0;
     this.quizCorrect = false;
     this.star3Locked = false;
+    // しんの むずかしさの 旗は シーンを 出る ときに かならず おろす
+    // (おろし忘れると つぎの おまつりまで みじかく なって しまう)
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      runtimeTuning.shinHard = false;
+    });
     this.phase = 'game';
 
     // ヘッダー
@@ -159,6 +164,10 @@ export class SessionScene extends Phaser.Scene {
   private renderGame(): void {
     this.area?.destroy();
     this.area = this.add.container(0, GAME_AREA_Y);
+    /* しんの めいさんは あそび時間が みじかい(SHIN_TUNING)。
+       各ゲームは そざいを 知らない ので、セッションの あいだだけ 旗を 立てて
+       scaledDuration に つたえる。シーンを 出る ときに かならず おろす */
+    runtimeTuning.shinHard = this.material.shin === true && this.mode !== 'care';
     const api = this.minigameApi();
     const g = this.material.gather;
     const engine = this.engineOf();
@@ -293,7 +302,9 @@ export class SessionScene extends Phaser.Scene {
       careDone = s.plots[plotKey(this.prefId, this.matId)]?.careDone ?? false;
       clearPlot(s, this.matId, this.prefId);
     }
-    const t = ARCADE_TUNING[this.engineOf()];
+    // しんの めいさんは ★の しきい値も 高い(むずかしさは データで 指定)
+    const base = ARCADE_TUNING[this.engineOf()];
+    const t = this.material.shin ? scaleThresholds(base, SHIN_TUNING.starScale) : base;
     const score = totalScore(this.gameScore, t, { quizCorrect: this.quizCorrect, careDone });
     let stars = calcStars(score, t);
     const bossBlocked = this.star3Locked && stars === 3;

@@ -247,9 +247,9 @@ describe('県ごとの ボリューム(全県そろえる)', () => {
   };
 
   it.each(activePrefs.map((p) => [p.name, p.id]))('%s: そざい/レシピの数が 全県そろっている', (_name, prefId) => {
-    // どうぐと どうぐの 材料は 「県の 名産の ボリューム」の 外がわ(上のせぶん)なので 数えない
-    const mats = D.materials.filter((m) => m.origins.includes(prefId) && !m.dougu);
-    const recipes = D.recipes.filter((r) => r.pref === prefId && r.type !== 'dougu');
+    // どうぐ・しんの めいさん は 「県の 名産の ボリューム」の 外がわ(上のせぶん)なので 数えない
+    const mats = D.materials.filter((m) => m.origins.includes(prefId) && !m.dougu && !m.shin);
+    const recipes = D.recipes.filter((r) => r.pref === prefId && r.type !== 'dougu' && !r.shin);
     expect(mats.length, `そざい数(いま: ${mats.map((m) => m.name).join('・')})`).toBe(QUOTA.materials);
     expect(recipes.filter((r) => r.tier === 2).length, 'tier2 レシピ数').toBe(QUOTA.tier2);
     expect(recipes.filter((r) => r.tier === 3).length, 'tier3 レシピ数').toBe(QUOTA.tier3);

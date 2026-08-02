@@ -5,6 +5,7 @@ import Phaser from 'phaser';
 import { setupHiDpi } from '../ui/display';
 import { findPref, GAME_DATA, type Material } from '../data/gameData';
 import { festIntro, UI_TEXT } from '../data/uiText';
+import { SEASON_LABEL } from '../core/season';
 import { HARVEST_ICON, HOW_TO } from '../data/howto';
 import { showHowTo, type HowToHandle } from '../ui/howto';
 import { store, runtimeStory } from '../game/store';
@@ -172,9 +173,11 @@ export class ZukanScene extends Phaser.Scene {
         const gotOrigins = m.origins.filter((o) => rec[o]);
         const best = gotOrigins.reduce((mx, o) => Math.max(mx, rec[o] ?? 0), 0);
         const comp = gotOrigins.length === m.origins.length;
+        // しんの めいさんは 金わく。季節つきは 旬も 見せる(ずかんが 旬の 勉強に なる)
+        const seasonLine = m.season ? `\n${UI_TEXT.shin.seasonChip(SEASON_LABEL[m.season])}` : '';
         const sub =
-          `${UI_TEXT.zukan.sanchi(gotOrigins.length, m.origins.length)}` + (comp ? `\n${UI_TEXT.zukan.comp}` : '');
-        const c = this.cell(m.icon, m.name, sub, true, comp, best);
+          `${UI_TEXT.zukan.sanchi(gotOrigins.length, m.origins.length)}` + (comp ? `\n${UI_TEXT.zukan.comp}` : seasonLine);
+        const c = this.cell(m.icon, m.name, sub, true, comp || m.shin === true, best);
         const zone = this.add.zone(0, 0, CELL_W, CELL_H).setInteractive({ useHandCursor: true });
         zone.on('pointerup', () => this.openMatDetail(m));
         c.add(zone);
@@ -193,7 +196,7 @@ export class ZukanScene extends Phaser.Scene {
           cells.push(this.cell(r.icon, r.name, prefName + bestLine, true, true));
         } else {
           const jimoto = typeof got === 'object' && got.jimoto ? `\n${UI_TEXT.zukan.jimoto}` : '';
-          cells.push(this.cell(r.icon, r.name, prefName + jimoto, true, jimoto !== ''));
+          cells.push(this.cell(r.icon, r.name, prefName + jimoto, true, jimoto !== '' || r.shin === true));
         }
       }
     }

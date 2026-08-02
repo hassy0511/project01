@@ -137,6 +137,12 @@ export interface Material {
   gather: Gather;
   /** どうぐの 材料(たけ・き など)。県ごとの ボリューム下限の 数には 入れない */
   dougu?: true;
+  /** しんの めいさん(第2章)。おまつりを ひらいた 県で 追加で とれる。
+      ゲームは 格段に むずかしく(SHIN_TUNING)、そだつ 時間も 長い。
+      県ボリュームの 数には 入れない(docs/DOUGU_SHIN_PLAN.md) */
+  shin?: true;
+  /** 季節限定(しんの めいさん の 激レアのみ)。季節外れは とれないが 枯れない */
+  season?: 'haru' | 'natsu' | 'aki' | 'fuyu';
 }
 
 export interface Ingredient {
@@ -174,6 +180,8 @@ export interface Recipe {
   /** type 'dougu' のみ: 作ると save.tools[engine] が level に なる(もちものには 入らない)。
       効果は core/tools.ts(あそびの じかんが すこし のびる。上限つき) */
   tool?: { engine: ToolEngine; level: 2 | 3 };
+  /** しんの めいさんの レシピ。おまつりを ひらいた 県で 現れる。県ボリュームの 数には 入れない */
+  shin?: true;
 }
 
 export type FestGameKind =
@@ -836,6 +844,72 @@ export const GAME_DATA: GameData = {
       gather: { type: 'plant', verb: 'なえぎを うえる', growSec: 600, fieldLabel: 'もり',
         harvest: { engine: 'reap', targetIcon: 'log:brown', prompt: 'よこに なぞって きを きりだそう! 1れつを ひとふででボーナス!' },
         care: { targetIcon: 'bug:brown', label: 'むしが きを かじってる! タップで おいはらえ!' } } },
+
+    /* --- しんの めいさん(かんとう試作。shin: 県ボリュームの 数には 入れない) ---
+       おまつりを ひらいた 県で 追加で とれる。そだつ 時間は 30〜60分級、
+       ゲームは 格段に むずかしい(SHIN_TUNING)。季節つきは 激レアのみ。
+       docs/DOUGU_SHIN_PLAN.md */
+    /* いばらき */
+    { id: 'm127', name: 'れんこん', icon: 'root:cream', origins: ['ibaraki'], rarity: 'unique', shin: true,
+      gather: { type: 'plant', verb: 'たねばすを うえる', growSec: 2400, fieldLabel: 'はすだ',
+        harvest: { engine: 'mine', prompt: 'れんこんは どろの なか。すうじの ヒントで ばしょを すいりして ほろう!' },
+        care: { targetIcon: 'duck:white', label: 'かもが はすを ついばんでる! タップで おいはらえ!' } } },
+    { id: 'm128', name: 'あんこう', icon: 'bigfish:navy', origins: ['ibaraki'], rarity: 'unique', shin: true, season: 'fuyu',
+      gather: { type: 'timing', verb: 'りょうに でる',
+        theme: { intro: 'ふゆの うみに あんこうが やってきた!', prompt: 'さかなを タップして つりあげよう! おおきい さかなほど なんかいも タップ! ぬしを つると ほし3つ!', stopBtn: 'あみを ひく!', markerIcon: 'bigfish:navy', success: 'たいりょうだ!', stageIcons: ['boat:white', 'wave:navy', 'bigfish:navy'] } } },
+    /* とちぎ */
+    { id: 'm129', name: 'かんぴょう', icon: 'noodle:tan', origins: ['tochigi'], rarity: 'unique', shin: true,
+      gather: { type: 'plant', verb: 'ゆうがおを うえる', growSec: 2100, fieldLabel: 'ゆうがおばたけ',
+        harvest: { engine: 'reap', targetIcon: 'noodle:tan', prompt: 'よこに なぞって かんぴょうを けずりとろう! 1れつを ひとふででボーナス!' },
+        care: { targetIcon: 'bird:sky', label: 'とりが みを つついてる! タップで おいはらえ!' } } },
+    { id: 'm130', name: 'にら', icon: 'stalk:green', origins: ['tochigi'], rarity: 'unique', shin: true,
+      gather: { type: 'plant', verb: 'たねを まく', growSec: 1800, fieldLabel: 'にらばたけ',
+        harvest: { engine: 'reap', targetIcon: 'stalk:green', prompt: 'よこに なぞって にらを かりとろう! 1れつを ひとふででボーナス!' },
+        care: { targetIcon: 'bug:green', label: 'むしが はを かじってる! タップで おいはらえ!' } } },
+    /* ぐんま */
+    { id: 'm131', name: 'しもにたねぎ', icon: 'stalk:white', origins: ['gunma'], rarity: 'unique', shin: true, season: 'fuyu',
+      gather: { type: 'plant', verb: 'なえを うえる', growSec: 2400, fieldLabel: 'ねぎばたけ',
+        harvest: { engine: 'pluck', targetIcon: 'stalk:white', unripeIcon: 'stalk:lime', prompt: 'ふとった ねぎを おさえて、ゆーっくり ひきぬこう! はやいと おれちゃう' },
+        care: { targetIcon: 'frog:green', label: 'かえるが はたけで あばれてる! タップで おいはらえ!' } } },
+    { id: 'm132', name: 'まいたけ', icon: 'mushroom:brown', origins: ['gunma'], rarity: 'unique', shin: true,
+      gather: { type: 'plant', verb: 'げんぼくを おく', growSec: 2100, fieldLabel: 'きのこの ほだば',
+        harvest: { engine: 'chain', targetIcon: 'mushroom:brown', unripeIcon: 'mushroom:cream', prompt: 'ひらいた まいたけだけ つもう! ちいさいのは まだ はやいよ' },
+        care: { targetIcon: 'snail:brown', label: 'かたつむりが きのこを かじってる! タップで おいはらえ!' } } },
+    /* さいたま */
+    { id: 'm133', name: 'くわい', icon: 'tuber:teal', origins: ['saitama'], rarity: 'unique', shin: true, season: 'fuyu',
+      gather: { type: 'plant', verb: 'たねいもを うえる', growSec: 2400, fieldLabel: 'くわいだ',
+        harvest: { engine: 'mine', prompt: 'くわいは どろの なか。すうじの ヒントで ばしょを すいりして ほろう!' },
+        care: { targetIcon: 'duck:white', label: 'かもが たんぼを あらしてる! タップで おいはらえ!' } } },
+    { id: 'm134', name: 'さといも', icon: 'tuber:gray', origins: ['saitama'], rarity: 'unique', shin: true,
+      gather: { type: 'plant', verb: 'たねいもを うえる', growSec: 1800, fieldLabel: 'さといもばたけ',
+        harvest: { engine: 'mine', prompt: 'さといもは つちの なか。すうじの ヒントで ばしょを すいりして ほろう!' },
+        care: { targetIcon: 'boar:brown', label: 'いのししが はたけを あらしてる! タップで おいはらえ!' } } },
+    /* とうきょう */
+    { id: 'm135', name: 'あしたば', icon: 'leafy:deepgreen', origins: ['tokyo'], rarity: 'unique', shin: true,
+      gather: { type: 'plant', verb: 'たねを まく', growSec: 1800, fieldLabel: 'しまの はたけ',
+        harvest: { engine: 'pluck', targetIcon: 'leafy:deepgreen', unripeIcon: 'leafy:lime', prompt: 'そだった はっぱを おさえて、ゆーっくり つみとろう! はやいと ちぎれちゃう' },
+        care: { targetIcon: 'bug:green', label: 'むしが はを かじってる! タップで おいはらえ!' } } },
+    { id: 'm136', name: 'パッションフルーツ', icon: 'round:violet', origins: ['tokyo'], rarity: 'unique', shin: true, season: 'natsu',
+      gather: { type: 'plant', verb: 'なえを うえる', growSec: 2400, fieldLabel: 'しまの かじゅえん',
+        harvest: { engine: 'catch', targetIcon: 'round:violet', prompt: 'おちてくる みを かごで キャッチ! えだは よけてね' },
+        care: { targetIcon: 'bird:sky', label: 'とりが みを ついばんでる! タップで おいはらえ!' } } },
+    /* ちば */
+    { id: 'm137', name: 'きんめだい', icon: 'fish:red', origins: ['chiba'], rarity: 'unique', shin: true,
+      gather: { type: 'timing', verb: 'りょうに でる',
+        theme: { intro: 'ふかい うみに きんめだいが ひかってる!', prompt: 'さかなを タップして つりあげよう! おおきい さかなほど なんかいも タップ! ぬしを つると ほし3つ!', stopBtn: 'あみを ひく!', markerIcon: 'fish:red', success: 'たいりょうだ!', stageIcons: ['boat:white', 'wave:navy', 'fish:red'] } } },
+    { id: 'm138', name: 'なばな', icon: 'flower:yellow', origins: ['chiba'], rarity: 'unique', shin: true, season: 'haru',
+      gather: { type: 'plant', verb: 'たねを まく', growSec: 1800, fieldLabel: 'なばなばたけ',
+        harvest: { engine: 'pluck', targetIcon: 'flower:yellow', unripeIcon: 'leafy:lime', prompt: 'さいた なばなを おさえて、ゆーっくり つみとろう! はやいと くきが きれちゃう' },
+        care: { targetIcon: 'bee:amber', label: 'はちが はなに あつまってる! タップで はらおう!' } } },
+    /* かながわ */
+    { id: 'm139', name: 'みうらだいこん', icon: 'root:white', origins: ['kanagawa'], rarity: 'unique', shin: true, season: 'fuyu',
+      gather: { type: 'plant', verb: 'たねを まく', growSec: 2400, fieldLabel: 'だいこんばたけ',
+        harvest: { engine: 'pluck', targetIcon: 'root:white', unripeIcon: 'leafy:lime', prompt: 'ふとった だいこんを おさえて、ゆーっくり ひきぬこう! はやいと おれちゃう' },
+        care: { targetIcon: 'bird:sky', label: 'とりが はを つついてる! タップで おいはらえ!' } } },
+    { id: 'm140', name: 'しょうなんゴールド', icon: 'citrus:gold', origins: ['kanagawa'], rarity: 'unique', shin: true, season: 'haru',
+      gather: { type: 'plant', verb: 'なえぎを うえる', growSec: 2100, fieldLabel: 'みかんやま',
+        harvest: { engine: 'catch', targetIcon: 'citrus:gold', prompt: 'おちてくる みを かごで キャッチ! えだは よけてね' },
+        care: { targetIcon: 'bird:sky', label: 'とりが みを ついばんでる! タップで おいはらえ!' } } },
   ],
 
   /* ---------- レシピマスタ(Tier2〜4) ---------- */
@@ -1642,6 +1716,76 @@ export const GAME_DATA: GameData = {
       tool: { engine: 'fish', level: 2 },
       ingredients: [{ ref: 'm125', count: 1 }, { ref: 'm24', count: 1 }] },
 
+    /* --- きわみの どうぐ(Lv3) ---
+       Lv2 の どうぐを 20回 つかいこむと レシピが 目を さます(core/tools.ts の
+       TOOL_LV3_USES)。材料は どうぐの 材料の ★3(うでまえの あかし)。
+       ※設計時は 「しんの めいさん級の 素材」の 予定だったが、どうぐの 県と
+         しんの 県が はなれて いて 不自然なので ★3指定に かえた */
+    { id: 'rd21', name: 'きわみの かま', icon: 'knife:gold', tier: 2, type: 'dougu', pref: 'niigata',
+      tool: { engine: 'reap', level: 3 },
+      ingredients: [{ ref: 'm24', count: 2, quality: 3 }, { ref: 'm126', count: 1, quality: 3 }] },
+    { id: 'rd22', name: 'きわみの つみとりばさみ', icon: 'knife:amber', tier: 2, type: 'dougu', pref: 'hyogo',
+      tool: { engine: 'pluck', level: 3 },
+      ingredients: [{ ref: 'm24', count: 2, quality: 3 }] },
+    { id: 'rd23', name: 'きわみの たけかご', icon: 'basket:gold', tier: 2, type: 'dougu', pref: 'oita',
+      tool: { engine: 'catch', level: 3 },
+      ingredients: [{ ref: 'm125', count: 2, quality: 3 }] },
+    { id: 'rd24', name: 'きわみの ちゃつみかご', icon: 'basket:amber', tier: 2, type: 'dougu', pref: 'shizuoka',
+      tool: { engine: 'rhythm', level: 3 },
+      ingredients: [{ ref: 'm125', count: 2, quality: 3 }] },
+    { id: 'rd25', name: 'きわみの つるはし', icon: 'pick:gold', tier: 2, type: 'dougu', pref: 'iwate',
+      tool: { engine: 'mine', level: 3 },
+      ingredients: [{ ref: 'm24', count: 2, quality: 3 }, { ref: 'm126', count: 1, quality: 3 }] },
+    { id: 'rd26', name: 'きわみの すくいあみ', icon: 'net:gold', tier: 2, type: 'dougu', pref: 'toyama',
+      tool: { engine: 'scoop', level: 3 },
+      ingredients: [{ ref: 'm126', count: 1, quality: 3 }, { ref: 'm24', count: 1, quality: 3 }] },
+    { id: 'rd27', name: 'きわみの くまで', icon: 'fan:gold', tier: 2, type: 'dougu', pref: 'aichi',
+      tool: { engine: 'shell', level: 3 },
+      ingredients: [{ ref: 'm126', count: 1, quality: 3 }, { ref: 'm24', count: 1, quality: 3 }] },
+    { id: 'rd28', name: 'きわみの ゆきべら', icon: 'ladle:gold', tier: 2, type: 'dougu', pref: 'akita',
+      tool: { engine: 'sweep', level: 3 },
+      ingredients: [{ ref: 'm126', count: 2, quality: 3 }] },
+    { id: 'rd29', name: 'きわみの しゅうかくかご', icon: 'basket:crimson', tier: 2, type: 'dougu', pref: 'kyoto',
+      tool: { engine: 'chain', level: 3 },
+      ingredients: [{ ref: 'm125', count: 2, quality: 3 }] },
+    { id: 'rd30', name: 'きわみの てぶくろ', icon: 'glove:gold', tier: 2, type: 'dougu', pref: 'kagawa',
+      tool: { engine: 'flick', level: 3 },
+      ingredients: [{ ref: 'm97', count: 2, quality: 3 }] },
+    { id: 'rd31', name: 'きわみの つりざお', icon: 'stalk:gold', tier: 2, type: 'dougu', pref: 'wakayama',
+      tool: { engine: 'fish', level: 3 },
+      ingredients: [{ ref: 'm125', count: 1, quality: 3 }, { ref: 'm24', count: 1, quality: 3 }] },
+
+    /* --- しんの めいさんの レシピ(かんとう試作。shin) ---
+       材料は かんとうで そろう ものだけ(進行順テストの 約束) */
+    { id: 'rs01', name: 'れんこんの きんぴら', icon: 'bowl:brown', tier: 3, type: 'gattai', pref: 'ibaraki', shin: true,
+      ingredients: [{ ref: 'm127', count: 2 }] },
+    { id: 'rs02', name: 'あんこうなべ', icon: 'pot:orange', tier: 3, type: 'gattai', pref: 'ibaraki', shin: true,
+      ingredients: [{ ref: 'm128', count: 2 }, { ref: 'm01', count: 1 }] },
+    { id: 'rs03', name: 'かんぴょうまき', icon: 'onigiri:navy', tier: 3, type: 'gattai', pref: 'tochigi', shin: true,
+      ingredients: [{ ref: 'm129', count: 2 }, { ref: 'm02', count: 1 }] },
+    { id: 'rs04', name: 'にらの おひたし', icon: 'plate:green', tier: 3, type: 'gattai', pref: 'tochigi', shin: true,
+      ingredients: [{ ref: 'm130', count: 2 }] },
+    { id: 'rs05', name: 'しもにたねぎの やきねぎ', icon: 'plate:lime', tier: 3, type: 'gattai', pref: 'gunma', shin: true,
+      ingredients: [{ ref: 'm131', count: 2 }] },
+    { id: 'rs06', name: 'まいたけごはん', icon: 'bowl:cream', tier: 3, type: 'gattai', pref: 'gunma', shin: true,
+      ingredients: [{ ref: 'm132', count: 2 }, { ref: 'm02', count: 1 }] },
+    { id: 'rs07', name: 'くわいの にもの', icon: 'bowl:sky', tier: 3, type: 'gattai', pref: 'saitama', shin: true,
+      ingredients: [{ ref: 'm133', count: 2 }] },
+    { id: 'rs08', name: 'さといもの にっころがし', icon: 'bowl:gray', tier: 3, type: 'gattai', pref: 'saitama', shin: true,
+      ingredients: [{ ref: 'm134', count: 2 }] },
+    { id: 'rs09', name: 'あしたばの おひたし', icon: 'plate:deepgreen', tier: 3, type: 'gattai', pref: 'tokyo', shin: true,
+      ingredients: [{ ref: 'm135', count: 2 }] },
+    { id: 'rs10', name: 'パッションフルーツジュース', icon: 'bottle:violet', tier: 3, type: 'kakou', pref: 'tokyo', shin: true,
+      ingredients: [{ ref: 'm136', count: 2 }, { ref: 'm01', count: 1 }] },
+    { id: 'rs11', name: 'きんめだいの につけ', icon: 'plate:red', tier: 3, type: 'gattai', pref: 'chiba', shin: true,
+      ingredients: [{ ref: 'm137', count: 2 }] },
+    { id: 'rs12', name: 'なばなの からしあえ', icon: 'bowl:yellow', tier: 3, type: 'gattai', pref: 'chiba', shin: true,
+      ingredients: [{ ref: 'm138', count: 2 }] },
+    { id: 'rs13', name: 'みうらだいこんの ふろふき', icon: 'bowl:white', tier: 3, type: 'gattai', pref: 'kanagawa', shin: true,
+      ingredients: [{ ref: 'm139', count: 2 }] },
+    { id: 'rs14', name: 'しょうなんゴールドの ゼリー', icon: 'pudding:amber', tier: 3, type: 'kakou', pref: 'kanagawa', shin: true,
+      ingredients: [{ ref: 'm140', count: 2 }, { ref: 'm01', count: 1 }] },
+
     { id: 'rf47', name: 'なは おおづなひき', icon: 'rope:crimson', tier: 4, type: 'matsuri', pref: 'okinawa',
       implemented: true, festGame: 'tsunahiki',
       ingredients: [{ ref: 'r232', count: 1 }, { ref: 'r236', count: 1 }],
@@ -2082,6 +2226,47 @@ export const GAME_DATA: GameData = {
     { target: 'rd09', text: 'きょうとは たけの めいさんち。たけざいくの かごは かるくて じょうぶだよ。' },
     { target: 'rd10', text: 'かがわの ひがしかがわしは てぶくろづくりが にほんいち。にっぽんの てぶくろの 9わりが ここで つくられるよ。' },
     { target: 'rd11', text: 'わかやまの きしゅうへらざおは たけで つくる つりざお。しょくにんさんが たけを えらんで ていねいに つくるよ。' },
+    { target: 'rd21', text: 'いい かじやは いい てつを えらぶ。ほし3の てついしで うった かまは きれあじが ちがうよ。' },
+    { target: 'rd22', text: 'よく きれる はさみは ちからを いれなくても すっと きれる。だから やさしく つみとれるんだ。' },
+    { target: 'rd23', text: 'たけかごの あみめが こまかい ほど じょうぶ。いい たけで あんだ かごは ながもち するよ。' },
+    { target: 'rd24', text: 'ちゃつみの めいじんは かごも とくべつ。かるくて おおきい かごで どんどん つめるよ。' },
+    { target: 'rd25', text: 'かたい いわも いい つるはしなら へっちゃら。はがねの さきは かじやの じまんだよ。' },
+    { target: 'rd26', text: 'いい あみは みずを すっと きる。おもさが 半分に かんじる って りょうしさんは いうよ。', check: '言い回しの裏取り' },
+    { target: 'rd27', text: 'くまでの はの ならびが そろって いると、すなの なかの かいを のがさないよ。' },
+    { target: 'rd28', text: 'よく すべる ゆきべらは ゆきおろしの つよい みかた。木の へらは ゆきが つきにくいんだ。', check: '木製雪べらの特性裏取り' },
+    { target: 'rd29', text: 'きょうの たけかごは めが こまかくて うつくしい。しゅうかくの みを きずつけないよ。' },
+    { target: 'rd30', text: 'ぬいめの ていねいな てぶくろは てに ぴったり。こまかい しごとも できるんだ。' },
+    { target: 'rd31', text: 'つりの めいじんの さおは しなりが ちがう。いい たけを ほし3まで そだてた あかしだよ。' },
+
+    /* --- しんの めいさん(かんとう) --- */
+    { target: 'm127', text: 'いばらきけんは れんこんの しゅうかくりょうが にほんいち! どろの なかで そだつから あなが あくんだよ。' },
+    { target: 'm128', text: 'あんこうは ふゆの いばらきの ごちそう。「うみの フォアグラ」と よばれる きもが ゆうめいだよ。', check: '呼称の裏取り' },
+    { target: 'm129', text: 'とちぎけんは かんぴょうづくりが にほんいち! ゆうがおの みを ほそく けずって ほして つくるよ。' },
+    { target: 'm130', text: 'とちぎけんは にらの さんちとして ゆうめい。スタミナ たっぷりの やさいだよ。', check: '統計裏取り' },
+    { target: 'm131', text: 'しもにたねぎは ぐんまの しもにたまちの ねぎ。にると とろっと あまくなる ふゆの あじだよ。' },
+    { target: 'm132', text: 'まいたけは 「みつけると まいおどる ほど うれしい」から この なまえに なった と いわれるよ。', check: '語源の裏取り' },
+    { target: 'm133', text: 'くわいは 「めが でる」えんぎものとして おしょうがつに たべる やさい。さいたまの めいさんだよ。' },
+    { target: 'm134', text: 'さといもは やまいもと ちがって さとで そだてる いも だから 「さといも」と いうんだ。', check: '語源の裏取り' },
+    { target: 'm135', text: 'あしたばは 「きょう つんでも あしたには はえる」と いわれる ほど げんきな とうきょうの しまの やさいだよ。' },
+    { target: 'm136', text: 'パッションフルーツは とうきょうの みなみの しまで そだつ トロピカルフルーツ。なつが しゅんだよ。' },
+    { target: 'm137', text: 'きんめだいは ふかい うみに すむ まっかな さかな。おおきな めが きんいろに ひかるよ。' },
+    { target: 'm138', text: 'ちばけんは なばなの さんちとして ゆうめい。はるの ぼうそうはんとうは なのはなで まっきいろに なるよ。' },
+    { target: 'm139', text: 'みうらだいこんは かながわの みうらはんとうの ふゆの めいぶつ。ずっしり おおきくて あまいんだ。' },
+    { target: 'm140', text: 'しょうなんゴールドは かながわ うまれの きいろい かんきつ。はるに しゅんを むかえる さわやかな あじだよ。', check: '出荷時期の裏取り' },
+    { target: 'rs01', text: 'きんぴらは しゃきしゃきに いためる りょうり。れんこんの あなから むこうが みえるよ。' },
+    { target: 'rs02', text: 'あんこうなべは いばらきの ふゆの ごちそう。さむい ひに からだが あたたまるよ。' },
+    { target: 'rs03', text: 'かんぴょうまきは あまく にた かんぴょうを まいた おすし。おべんとうの ていばんだよ。' },
+    { target: 'rs04', text: 'おひたしは ゆでて だしに ひたす りょうり。にらの かおりが ひきたつよ。' },
+    { target: 'rs05', text: 'しもにたねぎは やくと とろとろに あまくなる。「ねぎの おうさま」とも よばれるよ。', check: '呼称の裏取り' },
+    { target: 'rs06', text: 'まいたけごはんは きのこの うまみが ごはんに しみた あきの あじだよ。' },
+    { target: 'rs07', text: 'くわいの にものは おしょうがつの りょうり。めが でた かたちの まま にるんだ。' },
+    { target: 'rs08', text: 'にっころがしは しるが なくなるまで ころがしながら にる りょうり。ほくほくに なるよ。' },
+    { target: 'rs09', text: 'あしたばの おひたしは しまの ていばんりょうり。ほろにがさが おいしいんだ。' },
+    { target: 'rs10', text: 'パッションフルーツの なかは つぶつぶの ゼリーみたい。ジュースに すると とっても かおるよ。' },
+    { target: 'rs11', text: 'につけは しょうゆと さとうで あまからく にる りょうり。きんめだいの いちばん ゆうめいな たべかただよ。' },
+    { target: 'rs12', text: 'なばなの からしあえは はるの あじ。ほんのり にがくて おとなの あじ かも?' },
+    { target: 'rs13', text: 'ふろふきだいこんは あつあつの だいこんに みそだれを かける りょうり。ゆげまで おいしいよ。' },
+    { target: 'rs14', text: 'しょうなんゴールドの ゼリーは さわやかな かんきつの かおり。ひんやり つるんと たべられるよ。' },
   ],
 
   /* ---------- クイズバンク ----------
@@ -2345,8 +2530,8 @@ export const GAME_DATA: GameData = {
     { id: 'qs10', kind: 'sozai', tags: ['m05', 'r06'], q: 'メロンの なかみは なにいろ?', choices: ['みどりや オレンジ', 'まっさお', 'まっくろ'], answer: 0 },
     { id: 'qs11', kind: 'sozai', tags: ['m06', 'r03'], q: 'うめの みは どうやって たべる?', choices: ['ジュースや うめぼしに して', 'そのまま ぱくり', 'かわだけ たべる'], answer: 0 },
     { id: 'qs12', kind: 'sozai', tags: ['m07', 'r05', 'r15'], q: 'ねんどを かまで やくと どうなる?', choices: ['かたくなる', 'とける', 'ふくらむ'], answer: 0 },
-    { id: 'qs13', kind: 'sozai', tags: ['m07', 'r05', 'r15'], q: 'うつわの かたちを つくる まわる どうぐは?', choices: ['ろくろ', 'ミキサー', 'せんぷうき'], answer: 0 },
-    { id: 'qs14', kind: 'sozai', tags: ['m08', 'r09'], q: 'らっかせいの からは どんな かんじ?', choices: ['でこぼこ', 'つるつる', 'ふわふわ'], answer: 0 },
+    { id: 'qsn13', kind: 'sozai', tags: ['m07', 'r05', 'r15'], q: 'うつわの かたちを つくる まわる どうぐは?', choices: ['ろくろ', 'ミキサー', 'せんぷうき'], answer: 0 },
+    { id: 'qsn14', kind: 'sozai', tags: ['m08', 'r09'], q: 'らっかせいの からは どんな かんじ?', choices: ['でこぼこ', 'つるつる', 'ふわふわ'], answer: 0 },
     { id: 'qs15', kind: 'sozai', tags: ['m08', 'r09'], q: 'らっかせいは はなが さいたあと どこに みが できる?', choices: ['つちの なか', 'えだの さき', 'はっぱの うえ'], answer: 0 },
     { id: 'qs16', kind: 'sozai', tags: ['m09', 'r10', 'r24'], q: 'いわしは どうやって およぐ?', choices: ['おおきな むれで', '1ぴきずつ', 'およがない'], answer: 0 },
     { id: 'qs17', kind: 'sozai', tags: ['m10', 'r11'], q: 'なしの しょっかんは どんな かんじ?', choices: ['シャリシャリ', 'ねばねば', 'ふわふわ'], answer: 0 },
@@ -2629,6 +2814,22 @@ export const GAME_DATA: GameData = {
     { id: 'qd05', kind: 'bunka', tags: ['rd01'], q: 'にいがたの つばめさんじょうが ゆうめいなのは?', choices: ['かなものづくり', 'ガラスざいく', 'おりもの'], answer: 0 },
     { id: 'qd06', kind: 'bunka', tags: ['rd10'], q: 'かがわの ひがしかがわしで にほんいち つくられて いるのは?', choices: ['てぶくろ', 'くつした', 'ぼうし'], answer: 0 },
     { id: 'qd07', kind: 'bunka', tags: ['rd11'], q: 'わかやまの きしゅうへらざおは なにで つくる?', choices: ['たけ', 'てつ', 'ガラス'], answer: 0 },
+
+    /* --- しんの めいさん(かんとう) --- */
+    { id: 'qsh01', kind: 'sozai', tags: ['m127', 'rs01'], q: 'れんこんに あなが あいて いるのは なぜ?', choices: ['どろの なかで いきを するため', 'むしが たべた あと', 'かざりの ため'], answer: 0 },
+    { id: 'qsh02', kind: 'sozai', tags: ['m128', 'rs02'], q: 'あんこうが いちばん おいしい きせつは?', choices: ['ふゆ', 'なつ', 'はる'], answer: 0 },
+    { id: 'qsh03', kind: 'sozai', tags: ['m129', 'rs03'], q: 'かんぴょうは なにから つくる?', choices: ['ゆうがおの み', 'かぼちゃの たね', 'きゅうりの かわ'], answer: 0 },
+    { id: 'qsh04', kind: 'sozai', tags: ['m130', 'rs04'], q: 'にらは どんな やさい?', choices: ['ほそながい はっぱの やさい', 'まるい みの やさい', 'つちの なかの いも'], answer: 0 },
+    { id: 'qsh05', kind: 'sozai', tags: ['m131', 'rs05'], q: 'しもにたねぎは にると どうなる?', choices: ['とろっと あまくなる', 'かたくなる', 'あおくなる'], answer: 0 },
+    { id: 'qsh06', kind: 'sozai', tags: ['m132', 'rs06'], q: 'まいたけは どんな たべもの?', choices: ['きのこ', 'かいそう', 'くだもの'], answer: 0 },
+    { id: 'qsh07', kind: 'sozai', tags: ['m133', 'rs07'], q: 'くわいを おしょうがつに たべるのは なぜ?', choices: ['「めが でる」えんぎものだから', 'あかい いろだから', 'ほしが つくから'], answer: 0 },
+    { id: 'qsh08', kind: 'sozai', tags: ['m134', 'rs08'], q: 'さといもは どこに できる?', choices: ['つちの なか', 'きの うえ', 'うみの なか'], answer: 0 },
+    { id: 'qsh09', kind: 'sozai', tags: ['m135', 'rs09'], q: 'あしたばの なまえの ゆらいは?', choices: ['あしたには あたらしい はが でるから', 'あしの かたちだから', 'あさに さくから'], answer: 0 },
+    { id: 'qsh10', kind: 'sozai', tags: ['m136', 'rs10'], q: 'パッションフルーツの なかみは?', choices: ['つぶつぶの ゼリーみたい', 'ほくほくの いもみたい', 'ふわふわの パンみたい'], answer: 0 },
+    { id: 'qsh11', kind: 'sozai', tags: ['m137', 'rs11'], q: 'きんめだいは どんな さかな?', choices: ['ふかい うみの まっかな さかな', 'かわの ちいさな さかな', 'みどりいろの さかな'], answer: 0 },
+    { id: 'qsh12', kind: 'sozai', tags: ['m138', 'rs12'], q: 'なばなは いつの きせつの やさい?', choices: ['はる', 'ふゆ', 'なつ'], answer: 0 },
+    { id: 'qsh13', kind: 'sozai', tags: ['m139', 'rs13'], q: 'みうらだいこんは どんな だいこん?', choices: ['ずっしり おおきくて あまい', 'ちいさくて からい', 'まっかな いろ'], answer: 0 },
+    { id: 'qsh14', kind: 'sozai', tags: ['m140', 'rs14'], q: 'しょうなんゴールドは どんな くだもの?', choices: ['きいろい かんきつ', 'むらさきの ぶどう', 'あかい りんご'], answer: 0 },
   ],
 };
 

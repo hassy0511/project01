@@ -184,6 +184,20 @@ export const UI_TEXT = {
     craftAt: (pref: string) => `${pref}で つくれるよ`,
     /** ふつうの どうぐ(Lv1)の 名まえ */
     basicName: 'ふつうの どうぐ',
+    /** きわみ(Lv3)レシピが まだ ねむって いる カード */
+    lv3Sleeping: (n: number) => `つかいこむと めを さます…(あと ${n}かい)`,
+  },
+
+  /** しんの めいさん(第2章)と 季節 */
+  shin: {
+    /** 県ページの 見出し。いまの 季節も そえる */
+    head: (season: string) => `しんの めいさん 〜いまは ${season}〜`,
+    /** そざいの 名まえに そえる 札 */
+    chip: 'しん',
+    /** 季節外れの あんない(そだてはじめられない) */
+    seasonWait: (season: string) => `${season}に なったら とれるよ`,
+    /** ずかんの 旬マーク */
+    seasonChip: (season: string) => `しゅん: ${season}`,
   },
 
   craft: {

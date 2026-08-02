@@ -54,11 +54,18 @@ describe('どうぐの ロジック', () => {
 describe('どうぐの データ', () => {
   const tools = D.recipes.filter((r) => r.type === 'dougu');
 
-  it('どうぐは 11種で、エンジンの 重複が ない', () => {
-    expect(tools.length).toBe(11);
-    const engines = tools.map((r) => r.tool?.engine);
-    expect(new Set(engines).size).toBe(tools.length);
+  it('どうぐは 11エンジン × Lv2/Lv3 で、レベルごとに エンジンの 重複が ない', () => {
+    for (const level of [2, 3] as const) {
+      const lv = tools.filter((r) => r.tool?.level === level);
+      expect(lv.length, `Lv${level}`).toBe(11);
+      expect(new Set(lv.map((r) => r.tool?.engine)).size, `Lv${level}`).toBe(lv.length);
+    }
     for (const r of tools) expect(r.tool, `${r.id}: type dougu なのに tool が ない`).toBeDefined();
+    // Lv3 は Lv2 と 同じ 県で 作る(その 工芸の 里で きわめる)
+    for (const r3 of tools.filter((r) => r.tool?.level === 3)) {
+      const r2 = tools.find((r) => r.tool?.level === 2 && r.tool.engine === r3.tool?.engine);
+      expect(r2?.pref, r3.id).toBe(r3.pref);
+    }
   });
 
   it('どうぐは アクティブな 県で 作れる', () => {
@@ -73,8 +80,8 @@ describe('どうぐの データ', () => {
     }
   });
 
-  it('allToolEngines は データと 一致する', () => {
-    expect(allToolEngines(D).length).toBe(tools.length);
+  it('allToolEngines は エンジンの 種類の 数(レベルは べつ)', () => {
+    expect(allToolEngines(D).length).toBe(11);
   });
 
   it('どうぐの 材料そざい(dougu)は 複数の 県で とれる(1県こわれても 詰まない)', () => {
