@@ -7,6 +7,7 @@ import { findPref, GAME_DATA, type Material } from '../data/gameData';
 import { festIntro, UI_TEXT } from '../data/uiText';
 import { SEASON_LABEL } from '../core/season';
 import { rankOf } from '../game/bonbori';
+import { currentTitle, earnedKazari } from '../core/orders';
 import { HARVEST_ICON, HOW_TO } from '../data/howto';
 import { showHowTo, type HowToHandle } from '../ui/howto';
 import { store, runtimeStory } from '../game/store';
@@ -17,12 +18,12 @@ import { COLORS, FONT, GAME_AREA_H, GAME_H, GAME_W, TEXT_COLORS } from '../ui/th
 import { makeGuideRow, Modal, ScrollArea, shrinkToWidth } from '../ui/widgets';
 import { addIcon, type IconKey } from '../ui/icons';
 
-type TabKey = 'mat' | 't2' | 't3' | 't4' | 'how';
+type TabKey = 'mat' | 't2' | 't3' | 't4' | 'kazari' | 'how';
 const TIER_OF: Record<'t2' | 't3' | 't4', number> = { t2: 2, t3: 3, t4: 4 };
 
 const TAB_H = 46;
-/** タブ 5つ ぶんの わりつけ(ふえたら ここだけ 直す) */
-const TAB_W = 86;
+/** タブ 6つ ぶんの わりつけ(ふえたら ここだけ 直す) */
+const TAB_W = 72;
 const TAB_GAP = 6;
 /** 「あそびかた」の 見本わくの 大きさ(ゲーム画面 480x748 を 小さく 見せる) */
 const DEMO_SCALE = 0.34;
@@ -75,6 +76,7 @@ export class ZukanScene extends Phaser.Scene {
   private tabCount(key: TabKey): [number, number] {
     const s = store.state;
     if (key === 'mat') return [Object.keys(s.zukanMat).length, GAME_DATA.materials.length];
+    if (key === 'kazari') return [earnedKazari(s, GAME_DATA).length, GAME_DATA.kazari.length];
     if (key === 'how') {
       const games = this.gameList();
       return [games.filter((g) => s.playedGame[g.key]).length, games.length];
@@ -88,7 +90,7 @@ export class ZukanScene extends Phaser.Scene {
   private buildTabs(): void {
     this.tabBar?.destroy();
     this.tabBar = this.add.container(0, HEADER_H + 6);
-    const keys: TabKey[] = ['mat', 't2', 't3', 't4', 'how'];
+    const keys: TabKey[] = ['mat', 't2', 't3', 't4', 'kazari', 'how'];
     const left = (GAME_W - (keys.length * TAB_W + (keys.length - 1) * TAB_GAP)) / 2;
     keys.forEach((key, i) => {
       const [got, total] = this.tabCount(key);
@@ -162,6 +164,21 @@ export class ZukanScene extends Phaser.Scene {
         zone.on('pointerup', () => this.openHowToDetail(g));
         c.add(zone);
         cells.push(c);
+      }
+    } else if (this.tab === 'kazari') {
+      // 先頭は 称号の セル(ちゅうもんの 通算数で 上がる)
+      const t = currentTitle(store.state, GAME_DATA);
+      const titleSub = t.next ? UI_TEXT.zukan.nextTitle(t.next.name, t.next.remain) : '';
+      cells.push(this.cell('crown:gold', t.name ?? UI_TEXT.zukan.noTitle, titleSub, t.name !== null, t.name !== null));
+      // つづいて 47県の かざり(ちゅうもんに はじめて こたえた 県から うまる)
+      for (const k of GAME_DATA.kazari) {
+        const got = (store.state.orderDone[k.pref] ?? 0) > 0;
+        const prefName = findPref(GAME_DATA, k.pref)?.name ?? '';
+        if (!got) {
+          cells.push(this.cell(UNKNOWN_ICON, UI_TEXT.zukan.unknown, prefName, false));
+        } else {
+          cells.push(this.cell(k.icon, k.name, UI_TEXT.zukan.kazariFrom(prefName), true, true));
+        }
       }
     } else if (this.tab === 'mat') {
       for (const m of GAME_DATA.materials) {

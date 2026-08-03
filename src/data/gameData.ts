@@ -253,6 +253,21 @@ export interface Quiz {
   answer: number;
 }
 
+/** ちゅうもんの おれい(県ごとの かざり)。ずかんの あつめもの */
+export interface Kazari {
+  id: string;
+  name: string;
+  /** かざりの アイコン(かたち:いろ)。既存の かたちを つかいまわす */
+  icon: string;
+  pref: PrefectureId;
+}
+
+/** ちゅうもんの 通算数で もらえる 称号(count の 小さい 順に ならべる) */
+export interface OrderTitle {
+  count: number;
+  name: string;
+}
+
 export interface GameData {
   meta: { version: string; title: string; subtitle: string };
   regions: Region[];
@@ -261,6 +276,10 @@ export interface GameData {
   recipes: Recipe[];
   trivia: Trivia[];
   quizzes: Quiz[];
+  /** ちゅうもんの おれい(47県ぶん) */
+  kazari: Kazari[];
+  /** ちゅうもんの 称号 */
+  orderTitles: OrderTitle[];
 }
 
 export const GAME_DATA: GameData = {
@@ -2830,6 +2849,69 @@ export const GAME_DATA: GameData = {
     { id: 'qsh12', kind: 'sozai', tags: ['m138', 'rs12'], q: 'なばなは いつの きせつの やさい?', choices: ['はる', 'ふゆ', 'なつ'], answer: 0 },
     { id: 'qsh13', kind: 'sozai', tags: ['m139', 'rs13'], q: 'みうらだいこんは どんな だいこん?', choices: ['ずっしり おおきくて あまい', 'ちいさくて からい', 'まっかな いろ'], answer: 0 },
     { id: 'qsh14', kind: 'sozai', tags: ['m140', 'rs14'], q: 'しょうなんゴールドは どんな くだもの?', choices: ['きいろい かんきつ', 'むらさきの ぶどう', 'あかい りんご'], answer: 0 },
+  ],
+
+  /* ---------- ちゅうもんの おれい(県ごとの かざり) ----------
+     晴れた 県で ちゅうもんに こたえると、はじめの 1回で その県の かざりが もらえる。
+     アイコンは 既存の かたちの つかいまわし(あたらしい 絵は いらない)。
+     名まえは その県の おまつり・名物に ちなむ */
+  kazari: [
+    { id: 'k01', name: 'ゆきの けっしょうかざり', icon: 'snowflake:sky', pref: 'hokkaido' },
+    { id: 'k02', name: 'ミニねぶたの あかり', icon: 'lantern:orange', pref: 'aomori' },
+    { id: 'k03', name: 'てつびんの おまもり', icon: 'pot:dark', pref: 'iwate' },
+    { id: 'k04', name: 'たなばたの ふきながし', icon: 'tassel:teal', pref: 'miyagi' },
+    { id: 'k05', name: 'かんとうの ミニちょうちん', icon: 'lantern:amber', pref: 'akita' },
+    { id: 'k06', name: 'はながさの はな', icon: 'flower:red', pref: 'yamagata' },
+    { id: 'k07', name: 'あかべこの おきもの', icon: 'cow:red', pref: 'fukushima' },
+    { id: 'k08', name: 'うめの かんざし', icon: 'sakura:pink', pref: 'ibaraki' },
+    { id: 'k09', name: 'ましこやきの こざら', icon: 'plate:gray', pref: 'tochigi' },
+    { id: 'k10', name: 'ミニだるま', icon: 'round:crimson', pref: 'gunma' },
+    { id: 'k11', name: 'だしの ミニばた', icon: 'flag:crimson', pref: 'saitama' },
+    { id: 'k12', name: 'はなびの おもいでカード', icon: 'star-night:navy', pref: 'chiba' },
+    { id: 'k13', name: 'みこしの すず', icon: 'bell:gold', pref: 'tokyo' },
+    { id: 'k14', name: 'ミニおふね', icon: 'boat:sky', pref: 'kanagawa' },
+    { id: 'k15', name: 'チューリップの おしばな', icon: 'tulip:pink', pref: 'niigata' },
+    { id: 'k16', name: 'あみがさの かざり', icon: 'fan:cream', pref: 'toyama' },
+    { id: 'k17', name: 'きんぱくの こざら', icon: 'plate:gold', pref: 'ishikawa' },
+    { id: 'k18', name: 'かにの おきもの', icon: 'crab:red', pref: 'fukui' },
+    { id: 'k19', name: 'ふじさんの おきもの', icon: 'mountain:sky', pref: 'yamanashi' },
+    { id: 'k20', name: 'おんばしらの きの おまもり', icon: 'log:brown', pref: 'nagano' },
+    { id: 'k21', name: 'からくりの はぐるま', icon: 'gear:gray', pref: 'gifu' },
+    { id: 'k22', name: 'ミニだこ', icon: 'kite:red', pref: 'shizuoka' },
+    { id: 'k23', name: 'まきわらぶねの ちょうちん', icon: 'lantern:gold', pref: 'aichi' },
+    { id: 'k24', name: 'しんじゅの たま', icon: 'pearl:white', pref: 'mie' },
+    { id: 'k25', name: 'かぶきの くまどりの えふだ', icon: 'mask:red', pref: 'shiga' },
+    { id: 'k26', name: 'ミニやまぼこ', icon: 'tower:crimson', pref: 'kyoto' },
+    { id: 'k27', name: 'だんじりの ミニぐるま', icon: 'cart:brown', pref: 'osaka' },
+    { id: 'k28', name: 'ふくの おまもり', icon: 'shrine:crimson', pref: 'hyogo' },
+    { id: 'k29', name: 'こじかの おきもの', icon: 'deer:brown', pref: 'nara' },
+    { id: 'k30', name: 'まいおうぎ', icon: 'fan:red', pref: 'wakayama' },
+    { id: 'k31', name: 'すなの こびん', icon: 'jar:tan', pref: 'tottori' },
+    { id: 'k32', name: 'かぐらの おめん', icon: 'mask:white', pref: 'shimane' },
+    { id: 'k33', name: 'きびだんごの つつみ', icon: 'sweet:tan', pref: 'okayama' },
+    { id: 'k34', name: 'かちまつりの しゃもじ', icon: 'ladle:brown', pref: 'hiroshima' },
+    { id: 'k35', name: 'きんぎょちょうちんの ミニかざり', icon: 'lantern:red', pref: 'yamaguchi' },
+    { id: 'k36', name: 'おどりの てぬぐい', icon: 'towel:sky', pref: 'tokushima' },
+    { id: 'k37', name: 'まるがめうちわ', icon: 'fan:sky', pref: 'kagawa' },
+    { id: 'k38', name: 'うしおにの おまもり', icon: 'horn:crimson', pref: 'ehime' },
+    { id: 'k39', name: 'なるこ', icon: 'naruko:red', pref: 'kochi' },
+    { id: 'k40', name: 'ミニやまかさ', icon: 'banner:gold', pref: 'fukuoka' },
+    { id: 'k41', name: 'ミニバルーン', icon: 'balloon:red', pref: 'saga' },
+    { id: 'k42', name: 'りゅうの ミニかざり', icon: 'dragon:green', pref: 'nagasaki' },
+    { id: 'k43', name: 'かざりうまの ミニうま', icon: 'horse:brown', pref: 'kumamoto' },
+    { id: 'k44', name: 'ゆけむりの おまもり', icon: 'hotspring:orange', pref: 'oita' },
+    { id: 'k45', name: 'ひょっとこの おめん', icon: 'mask:amber', pref: 'miyazaki' },
+    { id: 'k46', name: 'ミニとうろう', icon: 'lantern:violet', pref: 'kagoshima' },
+    { id: 'k47', name: 'ハイビスカスの かみかざり', icon: 'hibiscus:red', pref: 'okinawa' },
+  ],
+
+  /* ---------- ちゅうもんの 称号(通算の とどけた 数) ---------- */
+  orderTitles: [
+    { count: 1, name: 'はいたつ みならい' },
+    { count: 5, name: 'まちの はいたつやさん' },
+    { count: 15, name: 'たびする はいたつやさん' },
+    { count: 30, name: 'にっぽん はいたつめいじん' },
+    { count: 47, name: 'でんせつの おとどけやさん' },
   ],
 };
 

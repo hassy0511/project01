@@ -57,6 +57,10 @@ export interface SaveState {
   tools: Record<string, number>;
   /** どうぐを つかった 回数(エンジン名 → 回数)。Lv3 レシピの 目ざめ判定に つかう */
   toolUse: Record<string, number>;
+  /** いま ひらいて いる ちゅうもん(県ID → 品物と 数)。晴れた 県に 1つずつ */
+  orders: Record<PrefectureId, { ref: string; count: number }>;
+  /** ちゅうもんに こたえた 回数(県ID → 回数)。1回以上で その県の かざりが もらえる */
+  orderDone: Record<PrefectureId, number>;
 }
 
 /** localStorage 互換の最小インターフェース(テスト時はメモリ実装を注入) */
@@ -84,6 +88,8 @@ export function defaultState(): SaveState {
     playedGame: {},
     tools: {},
     toolUse: {},
+    orders: {},
+    orderDone: {},
   };
 }
 

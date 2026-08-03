@@ -35,6 +35,7 @@ import {
 import { nextTask, type NextTask } from '../core/nextTask';
 import { TOOL_LV3_USES, toolLevel } from '../core/tools';
 import { isShinOpen } from '../core/shin';
+import { canFulfill, ensureOrder, fulfillOrder, matchOrderItems, type Order } from '../core/orders';
 import { inSeason, SEASON_LABEL, seasonAt } from '../core/season';
 import { whereFrom } from '../core/whereFrom';
 import { confetti, wobble } from '../ui/effects';
@@ -329,6 +330,16 @@ export class PrefScene extends Phaser.Scene {
     const shinOpen = isShinOpen(store.state, GAME_DATA, this.prefId);
     const prefMats = GAME_DATA.materials.filter((x) => x.origins.includes(this.prefId));
 
+    // ちゅうもん: 晴れた 県では まちの ひとが 「ここでは 手に入らない もの」を たのんで くる。
+    // よその 県へ 行く 動機に なる(core/orders.ts)。スロットが なければ ここで つくる
+    const order = ensureOrder(store.state, GAME_DATA, this.prefId, Math.random);
+    if (order) {
+      store.save();
+      addHeading(UI_TEXT.order.head);
+      this.scroll.content.add(this.buildOrderCard(order, y));
+      y += CARD_H + CARD_GAP + 6;
+    }
+
     addHeading(UI_TEXT.pref.sozaiHead);
     for (const m of prefMats.filter((x) => !x.shin)) {
       this.scroll.content.add(this.buildSozaiCard(m, y));
@@ -366,6 +377,48 @@ export class PrefScene extends Phaser.Scene {
       y += CARD_H + CARD_GAP;
     }
     this.scroll.setContentHeight(y + 12);
+  }
+
+  /* ---------- ちゅうもんカード ---------- */
+  private buildOrderCard(order: Order, y: number): Phaser.GameObjects.Container {
+    const e = findEntity(GAME_DATA, order.ref);
+    const have = Math.min(matchOrderItems(store.state.inv, order).length, order.count);
+    const ok = canFulfill(store.state, order);
+    const c = this.cardBase(y, ok);
+    // たのむ ひと(まちの ひと)を 絵で 見せて、「おねがい されている」と わかる ように
+    c.add(addIcon(this, -CARD_W / 2 + 20, -CARD_H / 2 + 18, 'person:amber', 24));
+    const where = this.whereChip({ ref: order.ref, count: order.count }, ok);
+    this.cardTexts(
+      c,
+      e?.icon ?? 'question:gray',
+      UI_TEXT.order.ask(e?.name ?? '?', order.count),
+      `${have}/${order.count}${where ? `  ${where}` : ''}`,
+    );
+    this.cardButton(c, ok ? UI_TEXT.order.deliverBtn : UI_TEXT.order.collectingBtn, ok ? COLORS.orange : COLORS.gray, () => {
+      if (!canFulfill(store.state, order)) {
+        showToast(this, UI_TEXT.order.notEnough);
+        return;
+      }
+      const res = fulfillOrder(store.state, GAME_DATA, this.prefId, Math.random);
+      store.save();
+      SFX.fanfare();
+      confetti(this);
+      const done = new Modal(this, UI_TEXT.order.thanksTitle);
+      done.add(addIcon(this, 0, 0, e?.icon ?? 'question:gray', 50), 56);
+      done.addText(UI_TEXT.order.thanks(e?.name ?? '?'), 17);
+      if (res.kazari) {
+        done.add(addIcon(this, 0, 0, res.kazari.icon, 44), 50);
+        done.addText(UI_TEXT.order.kazariGet(res.kazari.name), 15, TEXT_COLORS.accent);
+      }
+      if (res.newTitle) done.addText(UI_TEXT.order.titleGet(res.newTitle), 15, TEXT_COLORS.good);
+      done.addText(UI_TEXT.order.totalLine(res.total), 13, TEXT_COLORS.sub);
+      done.addButton(UI_TEXT.recipe.yay, COLORS.primary, () => {
+        done.close();
+        this.rebuildCards();
+      });
+      done.show();
+    });
+    return c;
   }
 
   /** きわみ(Lv3)の どうぐレシピは、Lv2を もって いない うちは 出さない。

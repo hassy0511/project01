@@ -1,6 +1,7 @@
 /* 下部ナビ(ちず/ずかん/もちもの)+ ヘッダー + せってい(管理者の 早送り・保護者ゲートリセット) */
 import Phaser from 'phaser';
 import { GAME_DATA } from '../data/gameData';
+import { earnedKazari } from '../core/orders';
 import { UI_TEXT } from '../data/uiText';
 import { store } from '../game/store';
 import { isMuted, setMuted, SFX } from '../audio/sfx';
@@ -22,11 +23,15 @@ export type NavKey = 'map' | 'zukan' | 'inv';
 
 const NAV_SCENES: Record<NavKey, string> = { map: 'MapScene', zukan: 'ZukanScene', inv: 'InvScene' };
 
-/** ずかん進捗(集めた数/総数) */
+/** ずかん進捗(集めた数/総数)。ちゅうもんの おれい(かざり)も ずかんの あつめもの */
 export function zukanProgress(): { got: number; total: number } {
   const s = store.state;
-  const got = Object.keys(s.zukanMat).length + Object.keys(s.zukanProd).length + s.fest.length;
-  const total = GAME_DATA.materials.length + GAME_DATA.recipes.length;
+  const got =
+    Object.keys(s.zukanMat).length +
+    Object.keys(s.zukanProd).length +
+    s.fest.length +
+    earnedKazari(s, GAME_DATA).length;
+  const total = GAME_DATA.materials.length + GAME_DATA.recipes.length + GAME_DATA.kazari.length;
   return { got, total };
 }
 

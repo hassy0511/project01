@@ -200,6 +200,23 @@ export const UI_TEXT = {
     seasonChip: (season: string) => `しゅん: ${season}`,
   },
 
+  /** ちゅうもん(晴れた 県の まちの ひとの おねがい。core/orders.ts) */
+  order: {
+    head: 'ちゅうもん',
+    /** カードの 題字(たのむ ひとの ことば) */
+    ask: (item: string, count: number) => `${item}を ${count}こ ほしいなあ!`,
+    /** ここでは とれない ことの そえがき */
+    note: 'この まちでは てに はいらない みたい',
+    deliverBtn: 'とどける!',
+    collectingBtn: 'あつめちゅう',
+    notEnough: 'まだ たりないみたい。よその けんで あつめて こよう!',
+    thanksTitle: 'ありがとう!',
+    thanks: (item: string) => `${item}を とどけた!\nまちの ひとは おおよろこび!`,
+    kazariGet: (name: string) => `おれいに 「${name}」を もらった!`,
+    titleGet: (name: string) => `しょうごう 「${name}」に なった!`,
+    totalLine: (n: number) => `とどけた かず: ${n}`,
+  },
+
   craft: {
     confirmTitle: 'つくる',
     confirm: (name: string) => `「${name}」を つくる?`,
@@ -704,7 +721,11 @@ export const UI_TEXT = {
   },
 
   zukan: {
-    tabs: { mat: 'そざい', t2: 'さんぶつ', t3: 'めいぶつ', t4: 'でんとう' },
+    tabs: { mat: 'そざい', t2: 'さんぶつ', t3: 'めいぶつ', t4: 'でんとう', kazari: 'おれい' },
+    /** おれいタブ: 称号の セル */
+    noTitle: 'まだ しょうごうは ない',
+    nextTitle: (name: string, n: number) => `つぎ: ${name}\nあと ${n}かい`,
+    kazariFrom: (pref: string) => `${pref}の おれい`,
     /** ずかん 100%(真コンプ)。ごほうびは 称号だけ ── 作りこみすぎない */
     fullTitle: 'ずかん かんせい!',
     fullBody: 'ほっほう…わしの ずかんを こえたのう。\nきょうから きみが 「ものしりはかせ」じゃ!',
