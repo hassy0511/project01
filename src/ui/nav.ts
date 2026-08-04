@@ -59,6 +59,25 @@ export function buildHeader(scene: Phaser.Scene): void {
   c.add([bg, pikke, title, count]);
 }
 
+/** 「おした 指が その ボタンの 上で はなれた とき」だけ うごく ボタンに する。
+    Phaser の pointerup は 「はなした ときに 上に あった もの」で 発火する ので、
+    一覧を スクロールした 指が ナビの 上で はなれると ずかんが かってに ひらいて いた
+    (子供の 実機で 度々 おきた)。pointerdown も 同じ ボタンで 始まって いる ことを 見る */
+function onPress(obj: Phaser.GameObjects.GameObject, handler: () => void): void {
+  let armed = false;
+  obj.on('pointerdown', () => {
+    armed = true;
+  });
+  obj.on('pointerout', () => {
+    armed = false;
+  });
+  obj.on('pointerup', () => {
+    if (!armed) return;
+    armed = false;
+    handler();
+  });
+}
+
 /** 画面下部ナビバー */
 export function buildNav(scene: Phaser.Scene, active: NavKey): void {
   const c = scene.add.container(0, GAME_H - NAV_H).setDepth(DEPTH.nav);
@@ -86,7 +105,7 @@ export function buildNav(scene: Phaser.Scene, active: NavKey): void {
       .setOrigin(0.5);
     // アイコンと 文字を まとめて おせる ように、見えない あたり判定を かぶせる
     const hit = scene.add.zone(x, NAV_H / 2, 92, NAV_H - 8).setInteractive({ useHandCursor: true });
-    hit.on('pointerup', () => {
+    onPress(hit, () => {
       if (e.key !== active) scene.scene.start(NAV_SCENES[e.key]);
     });
     c.add([icon, t, hit]);
@@ -97,7 +116,7 @@ export function buildNav(scene: Phaser.Scene, active: NavKey): void {
   const snd = addIcon(scene, GAME_W - 100, NAV_H / 2, sndIcon(), NAV_TOOL_ICON)
     .setName('nav-sound')
     .setInteractive({ useHandCursor: true });
-  snd.on('pointerup', () => {
+  onPress(snd, () => {
     setMuted(!isMuted());
     setIcon(snd, sndIcon());
     if (!isMuted()) SFX.good();
@@ -107,7 +126,7 @@ export function buildNav(scene: Phaser.Scene, active: NavKey): void {
   const gear = addIcon(scene, GAME_W - 44, NAV_H / 2, 'gear:gray', NAV_TOOL_ICON)
     .setName('nav-gear')
     .setInteractive({ useHandCursor: true });
-  gear.on('pointerup', () => openSettings(scene));
+  onPress(gear, () => openSettings(scene));
   c.add(gear);
 }
 

@@ -89,7 +89,7 @@ export const ARCADE_TUNING: Record<ArcadeEngine, ArcadeTuning> = {
   rhythm: { durationSec: 45, star2: 320, star3: 700 },
   catch: { durationSec: 45, star2: 320, star3: 800 },
   flick: { durationSec: 40, star2: 75, star3: 160 },
-  mine: { durationSec: 50, star2: 170, star3: 330 },
+  mine: { durationSec: 60, star2: 170, star3: 330 }, // 子供FBで 50→60(推理する 時間が 足りない)
   fish: { durationSec: 45, star2: 300, star3: 650 },
   care: { durationSec: 25, star2: 0, star3: 0 }, // おせわは★なし(careDone のみ)
   fest: { durationSec: 60, star2: 0, star3: 0 }, // おまつりは★なし(さいこうスコア制)。集大成なので最長

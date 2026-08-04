@@ -146,45 +146,55 @@ export class ZukanScene extends Phaser.Scene {
     return out;
   }
 
+  /** セルを 小分けに 作る 係(タブを かえたら 前の 係は 止める) */
+  private gridBuilder?: Phaser.Time.TimerEvent;
+  /** 1回の 呼吸で 作る セルの 数。505セルを 一気に 作ると 3.5びょう 固まった ので、
+      すこしずつ 作って 画面を 止めない(スクロールの 高さは 先に 決めて おく) */
+  private static readonly CELLS_PER_STEP = 6;
+
   private buildGrid(): void {
+    this.gridBuilder?.remove();
     this.scroll?.destroy();
     const top = HEADER_H + TAB_H + 8;
     this.scroll = new ScrollArea(this, 0, top, GAME_W, GAME_H - top - 72);
 
-    const cells: Phaser.GameObjects.Container[] = [];
+    // セルは 「作りかた」だけ ならべて、あとで 小分けに 作る
+    const cells: (() => Phaser.GameObjects.Container)[] = [];
     if (this.tab === 'how') {
       // ネタバレを しない: あそんだ ものだけ 名まえを 出す
       for (const g of this.gameList()) {
         if (!store.state.playedGame[g.key]) {
-          cells.push(this.cell(UNKNOWN_ICON, UI_TEXT.howto.locked, UI_TEXT.howto.lockedNote, false));
+          cells.push(() => this.cell(UNKNOWN_ICON, UI_TEXT.howto.locked, UI_TEXT.howto.lockedNote, false));
           continue;
         }
-        const c = this.cell(g.icon, g.name, '', true);
-        const zone = this.add.zone(0, 0, CELL_W, CELL_H).setInteractive({ useHandCursor: true });
-        zone.on('pointerup', () => this.openHowToDetail(g));
-        c.add(zone);
-        cells.push(c);
+        cells.push(() => {
+          const c = this.cell(g.icon, g.name, '', true);
+          const zone = this.add.zone(0, 0, CELL_W, CELL_H).setInteractive({ useHandCursor: true });
+          zone.on('pointerup', () => this.openHowToDetail(g));
+          c.add(zone);
+          return c;
+        });
       }
     } else if (this.tab === 'kazari') {
       // 先頭は 称号の セル(ちゅうもんの 通算数で 上がる)
       const t = currentTitle(store.state, GAME_DATA);
       const titleSub = t.next ? UI_TEXT.zukan.nextTitle(t.next.name, t.next.remain) : '';
-      cells.push(this.cell('crown:gold', t.name ?? UI_TEXT.zukan.noTitle, titleSub, t.name !== null, t.name !== null));
+      cells.push(() => this.cell('crown:gold', t.name ?? UI_TEXT.zukan.noTitle, titleSub, t.name !== null, t.name !== null));
       // つづいて 47県の かざり(ちゅうもんに はじめて こたえた 県から うまる)
       for (const k of GAME_DATA.kazari) {
         const got = (store.state.orderDone[k.pref] ?? 0) > 0;
         const prefName = findPref(GAME_DATA, k.pref)?.name ?? '';
         if (!got) {
-          cells.push(this.cell(UNKNOWN_ICON, UI_TEXT.zukan.unknown, prefName, false));
+          cells.push(() => this.cell(UNKNOWN_ICON, UI_TEXT.zukan.unknown, prefName, false));
         } else {
-          cells.push(this.cell(k.icon, k.name, UI_TEXT.zukan.kazariFrom(prefName), true, true));
+          cells.push(() => this.cell(k.icon, k.name, UI_TEXT.zukan.kazariFrom(prefName), true, true));
         }
       }
     } else if (this.tab === 'mat') {
       for (const m of GAME_DATA.materials) {
         const rec = store.state.zukanMat[m.id];
         if (!rec) {
-          cells.push(this.cell(UNKNOWN_ICON, UI_TEXT.zukan.unknown, '', false));
+          cells.push(() => this.cell(UNKNOWN_ICON, UI_TEXT.zukan.unknown, '', false));
           continue;
         }
         // 要約表示: さいこうほし(アイコン) / さんち n/m(県が増えても そざいごとに1セルのまま)
@@ -195,11 +205,13 @@ export class ZukanScene extends Phaser.Scene {
         const seasonLine = m.season ? `\n${UI_TEXT.shin.seasonChip(SEASON_LABEL[m.season])}` : '';
         const sub =
           `${UI_TEXT.zukan.sanchi(gotOrigins.length, m.origins.length)}` + (comp ? `\n${UI_TEXT.zukan.comp}` : seasonLine);
-        const c = this.cell(m.icon, m.name, sub, true, comp || m.shin === true, best);
-        const zone = this.add.zone(0, 0, CELL_W, CELL_H).setInteractive({ useHandCursor: true });
-        zone.on('pointerup', () => this.openMatDetail(m));
-        c.add(zone);
-        cells.push(c);
+        cells.push(() => {
+          const c = this.cell(m.icon, m.name, sub, true, comp || m.shin === true, best);
+          const zone = this.add.zone(0, 0, CELL_W, CELL_H).setInteractive({ useHandCursor: true });
+          zone.on('pointerup', () => this.openMatDetail(m));
+          c.add(zone);
+          return c;
+        });
       }
     } else {
       const tier = TIER_OF[this.tab as 't2' | 't3' | 't4'];
@@ -207,17 +219,17 @@ export class ZukanScene extends Phaser.Scene {
         const got = tier === 4 ? store.state.fest.includes(r.id) : store.state.zukanProd[r.id];
         const prefName = findPref(GAME_DATA, r.pref)?.name ?? '';
         if (!got) {
-          cells.push(this.cell(UNKNOWN_ICON, UI_TEXT.zukan.unknown, prefName, false));
+          cells.push(() => this.cell(UNKNOWN_ICON, UI_TEXT.zukan.unknown, prefName, false));
         } else if (tier === 4) {
           const best = store.state.festBest[r.id];
           const bestLine = best ? `\n${UI_TEXT.fest.bestScore(best)}` : '';
           // ぼんぼりの いろも 出す(どの おまつりを もう一度 あそぶか えらぶ 手がかり)
           const rank = rankOf(r);
           const rankLine = rank === 'none' ? '' : `\n${UI_TEXT.fest.rank[rank]}`;
-          cells.push(this.cell(r.icon, r.name, prefName + bestLine + rankLine, true, rank === 'gold'));
+          cells.push(() => this.cell(r.icon, r.name, prefName + bestLine + rankLine, true, rank === 'gold'));
         } else {
           const jimoto = typeof got === 'object' && got.jimoto ? `\n${UI_TEXT.zukan.jimoto}` : '';
-          cells.push(this.cell(r.icon, r.name, prefName + jimoto, true, jimoto !== '' || r.shin === true));
+          cells.push(() => this.cell(r.icon, r.name, prefName + jimoto, true, jimoto !== '' || r.shin === true));
         }
       }
     }
@@ -231,14 +243,26 @@ export class ZukanScene extends Phaser.Scene {
       gridTop += hint.height + 8;
     }
     const cols = 3;
-    cells.forEach((c, i) => {
-      c.setPosition(
-        (GAME_W - cols * (CELL_W + 8)) / 2 + (i % cols) * (CELL_W + 8) + CELL_W / 2 + 4,
-        gridTop + Math.floor(i / cols) * (CELL_H + 8) + CELL_H / 2,
-      );
-      this.scroll?.content.add(c);
-    });
+    // 高さは 先に 決める(スクロールは すぐ できる)
     this.scroll.setContentHeight(gridTop + Math.ceil(cells.length / cols) * (CELL_H + 8) + 12);
+    const scroll = this.scroll;
+    let next = 0;
+    const step = (): void => {
+      if (scroll !== this.scroll) return; // タブが かわって いたら やめる
+      const end = Math.min(next + ZukanScene.CELLS_PER_STEP, cells.length);
+      for (; next < end; next++) {
+        const c = cells[next]();
+        c.setPosition(
+          (GAME_W - cols * (CELL_W + 8)) / 2 + (next % cols) * (CELL_W + 8) + CELL_W / 2 + 4,
+          gridTop + Math.floor(next / cols) * (CELL_H + 8) + CELL_H / 2,
+        );
+        scroll.content.add(c);
+      }
+      if (next < cells.length) {
+        this.gridBuilder = this.time.delayedCall(16, step);
+      }
+    };
+    step();
   }
 
   /** あそびかたの くわしい 見本: 説明 + ちいさな わくの 中で ゆびが 動く */
@@ -303,6 +327,24 @@ export class ZukanScene extends Phaser.Scene {
     modal.show();
   }
 
+  /** セルの 背景(白ふだ)は 4しゅるい しか ない ので、1回だけ 描いて つかいまわす。
+      まえは セルごとに Graphics を 作って いて、505セルぶんの 角丸描画が
+      ずかんを ひらいた ときの 固まりの 一因だった */
+  private cellBgTexture(known: boolean, gold: boolean): string {
+    const key = `zukan-cell:${known ? 'k' : 'u'}:${gold ? 'g' : 'n'}`;
+    if (!this.textures.exists(key)) {
+      const g = this.make.graphics({ x: 0, y: 0 }, false);
+      const SS = 2; // にじまない ように 2倍で 焼く
+      g.fillStyle(COLORS.panel, known ? 1 : 0.6);
+      g.lineStyle(2 * SS, gold ? COLORS.gold : COLORS.panelLine, 1);
+      g.fillRoundedRect(SS, SS, CELL_W * SS - SS * 2, CELL_H * SS - SS * 2, 12 * SS);
+      g.strokeRoundedRect(SS, SS, CELL_W * SS - SS * 2, CELL_H * SS - SS * 2, 12 * SS);
+      g.generateTexture(key, CELL_W * SS, CELL_H * SS);
+      g.destroy();
+    }
+    return key;
+  }
+
   private cell(
     icon: IconKey,
     name: string,
@@ -312,12 +354,7 @@ export class ZukanScene extends Phaser.Scene {
     stars = 0,
   ): Phaser.GameObjects.Container {
     const c = this.add.container(0, 0);
-    const g = this.add.graphics();
-    g.fillStyle(COLORS.panel, known ? 1 : 0.6);
-    g.lineStyle(2, gold ? COLORS.gold : COLORS.panelLine, 1);
-    g.fillRoundedRect(-CELL_W / 2, -CELL_H / 2, CELL_W, CELL_H, 12);
-    g.strokeRoundedRect(-CELL_W / 2, -CELL_H / 2, CELL_W, CELL_H, 12);
-    c.add(g);
+    c.add(this.add.image(0, 0, this.cellBgTexture(known, gold)).setDisplaySize(CELL_W, CELL_H));
     c.add(addIcon(this, 0, -CELL_H / 2 + 28, icon, 30).setAlpha(known ? 1 : 0.5));
     c.add(
       this.add

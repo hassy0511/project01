@@ -23,6 +23,12 @@ const FIRST_SHOVELS = 12;
 const MIN_SHOVELS = 9;
 const TREASURE_PTS = 30;
 const SHOVEL_BONUS = 5;
+/** ★子供FB「むずかしくて ただ 適当に タッチして いる」への 手あて。
+    はずれが つづいたら、お宝の ある マスを きらっと 光らせて
+    「ねらって ほる」に つれもどす。シャベルの 上限は そのまま なので、
+    でたらめ押し だけ では 盤面を クリアできない しくみは かわらない */
+const HINT_MISS_STREAK = 3;
+const HINT_MS = 2600;
 
 interface Tile {
   dug: boolean;
@@ -99,6 +105,8 @@ export function renderMine(api: MinigameApi, prompt: string, targetIcon: string)
   let board = 0;
   let shovels = 0;
   let found = 0;
+  let missStreak = 0;
+  let hint: { icon: Phaser.GameObjects.Image; tile: Tile } | undefined;
   let tiles: Tile[][] = [];
   const originX = (GAME_W - (COLS * TILE + (COLS - 1) * GAP)) / 2 + TILE / 2;
   const originY = GROUND_Y + 10 + TILE / 2;
@@ -106,6 +114,39 @@ export function renderMine(api: MinigameApi, prompt: string, targetIcon: string)
   const updateShovels = (): void => {
     drawShovels(shovels);
     scene.tweens.add({ targets: shovelRow, scale: { from: 1.12, to: 1 }, duration: 140 });
+  };
+
+  const clearHint = (): void => {
+    hint?.icon.destroy();
+    hint = undefined;
+  };
+
+  /** まだ ほって いない お宝マスを 1つ、しばらく きらきら 光らせる */
+  const showHint = (): void => {
+    clearHint();
+    const cands: Tile[] = [];
+    tiles.forEach((row) =>
+      row.forEach((t) => {
+        if (!t.dug && t.treasure) cands.push(t);
+      }),
+    );
+    if (cands.length === 0) return;
+    const tile = Phaser.Utils.Array.GetRandom(cands);
+    const icon = addIcon(scene, 0, -TILE / 4, 'star:gold', 30);
+    tile.c.add(icon);
+    scene.tweens.add({
+      targets: icon,
+      alpha: { from: 1, to: 0.3 },
+      scale: { from: iconScale(icon), to: iconScale(icon) * 1.3 },
+      duration: 360,
+      yoyo: true,
+      repeat: -1,
+    });
+    SFX.pop();
+    hint = { icon, tile };
+    scene.time.delayedCall(HINT_MS, () => {
+      if (hint?.icon === icon) clearHint();
+    });
   };
 
   const neighborCount = (r: number, c: number): number => {
@@ -132,6 +173,8 @@ export function renderMine(api: MinigameApi, prompt: string, targetIcon: string)
   const newBoard = (): void => {
     board++;
     found = 0;
+    missStreak = 0;
+    clearHint();
     shovels = Math.max(MIN_SHOVELS, FIRST_SHOVELS - (board - 1));
     updateShovels();
     tiles.forEach((row) => row.forEach((t) => t.c.destroy()));
@@ -164,6 +207,7 @@ export function renderMine(api: MinigameApi, prompt: string, targetIcon: string)
     const t = tiles[r][c];
     if (session.isEnded() || t.dug || shovels <= 0) return;
     t.dug = true;
+    if (hint?.tile === t) clearHint();
     shovels--;
     updateShovels();
     const wx = t.c.x;
@@ -179,6 +223,7 @@ export function renderMine(api: MinigameApi, prompt: string, targetIcon: string)
 
     if (t.treasure) {
       found++;
+      missStreak = 0;
       const icon = addIcon(scene, 0, 0, targetIcon, 44).setScale(0);
       t.c.add(icon);
       scene.tweens.add({ targets: icon, scale: iconScale(icon), ease: 'Back.easeOut', duration: 280 });
@@ -192,7 +237,7 @@ export function renderMine(api: MinigameApi, prompt: string, targetIcon: string)
     } else {
       // 数字ヒント: まわり8マスの お宝の数
       const n = neighborCount(r, c);
-      const hint = scene.add
+      const hintText = scene.add
         .text(0, 0, `${n}`, {
           fontFamily: FONT,
           fontSize: '30px',
@@ -201,9 +246,15 @@ export function renderMine(api: MinigameApi, prompt: string, targetIcon: string)
         })
         .setOrigin(0.5)
         .setScale(0);
-      t.c.add(hint);
-      scene.tweens.add({ targets: hint, scale: 1, ease: 'Back.easeOut', duration: 240 });
+      t.c.add(hintText);
+      scene.tweens.add({ targets: hintText, scale: 1, ease: 'Back.easeOut', duration: 240 });
       SFX.bad();
+      // はずれが つづいたら お宝マスを きらっと 教える(子供FB対応)
+      missStreak++;
+      if (missStreak >= HINT_MISS_STREAK) {
+        missStreak = 0;
+        showHint();
+      }
     }
     // シャベル切れ: 少し待って新しい掘り場へ(ペナルティなし・時間だけが過ぎる)。
     // お宝を ほって シャベルが 0 に なった ときも ここを 通る ―

@@ -22,6 +22,23 @@ const FRICTION = 0.984;
 const BOUNCE = 0.72;
 const STOP_SPEED = 26;
 const FRUIT_R = 24;
+/** ★子供FB「玉が はやすぎて 頭の 中で 計算できない」→ 引っぱり→速さ の 倍率を
+    5.2 から 落とす。おそく なる ぶん 目で 追えて、同じ 引っぱり幅でも
+    こまかく ねらえる(とどく 距離は じゅうぶん のこる) */
+const LAUNCH_K = 4.2;
+/** ★子供FB「障害物が けっこう 経路を ふさぐ」→ 岩を 少なく・小さく して、
+    岩どうしの あいだに 実が とおれる すきまを かならず のこす */
+const ROCK_BASE = 2;
+const ROCK_GROW = 2;
+const ROCK_R_MIN = 20;
+const ROCK_R_RAND = 10;
+const ROCK_GAP = FRUIT_R * 2 + 12;
+/** ねらいの 点線の 数。まえは 引っぱり幅の 1.5倍 しか 見せて おらず、
+    実さいの とぶ きょり(約4.4倍)と ぜんぜん ちがって いた。
+    まさつで 止まる ところ まで 点線を のばして 「どこまで とぶか」を 見せる */
+const AIM_DOTS = 8;
+/** 速さ→とぶ きょり の 倍率: 毎フレーム(1/60秒) FRICTION 倍で へる 速さの 合計 */
+const AIM_TRAVEL = 1 / 60 / (1 - FRICTION);
 
 export function renderFlick(api: MinigameApi, target: string, prompt: string): void {
   const { scene, area } = api;
@@ -37,11 +54,17 @@ export function renderFlick(api: MinigameApi, target: string, prompt: string): v
   const placeRocks = (): void => {
     rocks.forEach((r) => r.obj.destroy());
     rocks = [];
-    const count = 3 + Math.floor(session.progress() * 3);
+    const count = ROCK_BASE + Math.floor(session.progress() * ROCK_GROW);
     for (let i = 0; i < count; i++) {
-      const r = 24 + Math.random() * 14;
-      const x = 60 + Math.random() * (GAME_W - 120);
-      const y = 250 + Math.random() * 220;
+      const r = ROCK_R_MIN + Math.random() * ROCK_R_RAND;
+      // 岩どうしが かたまって 道を ふさがない ように、間の あいた ばしょを さがす
+      let x = 60 + Math.random() * (GAME_W - 120);
+      let y = 250 + Math.random() * 220;
+      for (let retry = 0; retry < 24; retry++) {
+        if (rocks.every((o) => Math.hypot(x - o.x, y - o.y) >= o.r + r + ROCK_GAP)) break;
+        x = 60 + Math.random() * (GAME_W - 120);
+        y = 250 + Math.random() * 220;
+      }
       const obj = scene.add.container(x, y);
       const g = scene.add.graphics();
       g.fillStyle(0x8d8d8d, 1);
@@ -115,10 +138,19 @@ export function renderFlick(api: MinigameApi, target: string, prompt: string): v
     const dx = fruit.x - p.worldX;
     const dy = fruit.y - (p.worldY - api.areaY);
     const power = Math.hypot(dx, dy);
-    for (let i = 1; i <= 6; i++) {
-      const d = scene.add.circle(fruit.x + (dx * i) / 4, fruit.y + (dy * i) / 4, 5 - i * 0.5, 0xffffff, 0.7);
-      area.add(d);
-      aimDots.push(d);
+    if (power > 1) {
+      // 止まる 見こみの ばしょ まで 点線を 打つ(かべ・岩で 曲がる ぶんは 出せない)
+      const travel = power * LAUNCH_K * AIM_TRAVEL;
+      for (let i = 1; i <= AIM_DOTS; i++) {
+        const f = i / AIM_DOTS;
+        const px = fruit.x + (dx / power) * travel * f;
+        const py = fruit.y + (dy / power) * travel * f;
+        // あそび場の そとに 出た 点は 見せない(はねかえりで うそに なる ので)
+        if (px < FRUIT_R || px > GAME_W - FRUIT_R || py < 84 || py > AREA_H - 24) continue;
+        const d = scene.add.circle(px, py, 6 - f * 3, 0xffffff, 0.7);
+        area.add(d);
+        aimDots.push(d);
+      }
     }
     // 引っぱるほど実が張りつめ、発射方向へわずかに向く(チャージの手応え)
     const charge = Math.min(power / 220, 1);
@@ -150,9 +182,8 @@ export function renderFlick(api: MinigameApi, target: string, prompt: string): v
       resetIcon(fruit);
       return; // 誤タップは無視
     }
-    const k = 5.2;
-    vx = dx * k;
-    vy = dy * k;
+    vx = dx * LAUNCH_K;
+    vy = dy * LAUNCH_K;
     rolling = true;
     // びよんっと縮んで飛び出す
     scene.tweens.add({ targets: fruit, scale: { from: iconScale(fruit, 0.8), to: iconScale(fruit) }, duration: 160, ease: 'Back.easeOut' });
