@@ -18,6 +18,8 @@ import {
 import { store, runtimeStory } from '../game/store';
 import { layoutLabels, leaderNeeded, type LabelBox } from '../core/labelLayout';
 import { currentGoldCount } from '../game/bonbori';
+import { showBonboriHelp } from '../ui/bonboriHelp';
+import { onPress } from '../ui/nav';
 import { getRegionAsset } from '../game/mapData';
 import { SFX } from '../audio/sfx';
 import { firework } from '../ui/effects';
@@ -95,9 +97,12 @@ export class RegionScene extends Phaser.Scene {
         .setOrigin(0.5),
     );
 
-    // きんの ぼんぼりの かず(くりかえし あそぶ 目あて)。1つでも きんに なってから 出す
+    // きんの ぼんぼりの かず(くりかえし あそぶ 目あて)。
+    // おまつりを 1つでも ひらいたら 出す(0/47 でも 目あてに なる)。
+    // おすと 説明(どう→ぎん→きんの 条件)が ひらく ―
+    // 子供FB「きんの ぼんぼりの とりかたが わからない」への 手あて
     const gold = currentGoldCount();
-    if (gold > 0) {
+    if (playedFestCount(store.state) > 0) {
       const gc = this.add.container(GAME_W / 2, TOP_H + 52).setDepth(DEPTH.header - 1);
       const gg = this.add.graphics();
       gg.fillStyle(0xffffff, 0.88);
@@ -116,6 +121,9 @@ export class RegionScene extends Phaser.Scene {
           })
           .setOrigin(0.5),
       );
+      gc.setSize(168, 26);
+      gc.setInteractive({ useHandCursor: true });
+      onPress(gc, () => showBonboriHelp(this));
     }
 
     // ぜんぶ 晴れた あとの そらは おいわいつづき(ときどき はなび)

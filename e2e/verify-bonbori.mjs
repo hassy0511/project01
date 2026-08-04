@@ -3,8 +3,10 @@
    しらべる こと:
      1. さいこうきろくに おうじて 地図の ぼんぼりの いろが かわる(どう/ぎん/きん)
      2. ずかんの おまつりセルに いろの 名まえが 出る
-     3. にっぽん地図に 「きんの ぼんぼり n/47」が 出る(1つ以上 きんの とき)
+     3. にっぽん地図に 「きんの ぼんぼり n/47」が 出る(おまつりを 1つでも ひらいたら)。
+        おすと 説明モーダル(どう→ぎん→きんの 条件)が ひらく
      4. 47県 ぜんぶ きんに すると おいわいが 1回だけ 出る
+     5. 県ページの おまつりカードに 「つぎの いろまで あと◯てん」が 出る
 
    実行: node e2e/verify-bonbori.mjs(preview サーバーを 立ててから) */
 import { chromium } from 'playwright';
@@ -108,12 +110,34 @@ await page.waitForTimeout(700);
 assert((await findPart('ぼんぼり')).length > 0, 'ずかんに ぼんぼりの いろが 出ない');
 await page.screenshot({ path: `${SHOTS}/bonbori-zukan.png` });
 
-/* 3. にっぽん地図の カウンタ */
+/* 3. にっぽん地図の カウンタ → おすと 説明が ひらく */
 await page.evaluate(() => window.__game.scene.getScenes(true)[0].scene.start('RegionScene'));
 await page.waitForTimeout(1000);
 const counter = await findPart('きんの ぼんぼり');
 assert(counter.length > 0, 'にっぽん地図に きんの カウンタが 出ない');
 console.log('カウンタ:', counter[0]);
+{
+  // カウンタの ばしょ(GAME_W/2, TOP_H+52)を おす → 説明モーダル
+  await page.mouse.click(240, 100);
+  await page.waitForTimeout(600);
+  assert((await findPart('きんの ぼんぼりとは')).length > 0, 'カウンタを おしても 説明が ひらかない');
+  assert((await findPart('320てん')).length > 0, '説明に ぎんの めやす点が ない');
+  assert((await findPart('680てん')).length > 0, '説明に きんの めやす点が ない');
+  await page.screenshot({ path: `${SHOTS}/bonbori-help.png` });
+  await d.clickText('わかった!');
+  await page.waitForTimeout(400);
+}
+
+/* 5. 県ページの おまつりカード: つぎの いろまで あと 何てんか が いつも 見える。
+      festAllButOne で ぐんまは 開催ずみ(きろく1てん=どう)に なって いる */
+{
+  await page.evaluate(() => window.__game.scene.getScenes(true)[0].scene.start('PrefScene', { prefId: 'gunma' }));
+  await page.waitForTimeout(900);
+  const goal = await findPart('まで あと');
+  assert(goal.length > 0, 'おまつりカードに 「つぎの いろまで あと◯てん」が 出ない');
+  if (goal.length) console.log('カードの 目あて:', goal[0].split('\n').pop());
+  await page.screenshot({ path: `${SHOTS}/bonbori-card.png` });
+}
 
 /* 4. しきい値ちょうど: ぎん/きんの さかいめ */
 await setSave(() => {

@@ -36,6 +36,8 @@ import { nextTask, type NextTask } from '../core/nextTask';
 import { TOOL_LV3_USES, toolLevel } from '../core/tools';
 import { isShinOpen } from '../core/shin';
 import { canFulfill, ensureOrder, fulfillOrder, matchOrderItems, type Order } from '../core/orders';
+import { bonboriRank } from '../core/bonbori';
+import { thresholdsOf } from '../game/bonbori';
 import { inSeason, SEASON_LABEL, seasonAt } from '../core/season';
 import { whereFrom } from '../core/whereFrom';
 import { confetti, wobble } from '../ui/effects';
@@ -772,7 +774,21 @@ export class PrefScene extends Phaser.Scene {
     }
     // まつり名は長いのでタイトルは名前だけにし、開催ずみバッジは下段に置く(ボタンと重ねない)
     const ings = r.ingredients.map((ing) => this.ingChipText(ing)).join('  ');
-    this.cardTexts(c, r.icon, r.name, held ? `${UI_TEXT.fest.held}  ${ings}` : ings);
+    // 開催ずみなら 「つぎの ぼんぼりまで あと何点か」を いつも 見せる
+    // (子供FB: きんの ぼんぼりの とりかたが わからない)
+    let goal = '';
+    if (held) {
+      const best = s.festBest[r.id] ?? 0;
+      const th = thresholdsOf(r);
+      const rank = bonboriRank(best, th);
+      goal =
+        rank === 'gold'
+          ? `\n${UI_TEXT.fest.goldDone}`
+          : rank === 'silver'
+            ? `\n${UI_TEXT.fest.rankNext(UI_TEXT.fest.rank.gold, th.gold - best)}`
+            : `\n${UI_TEXT.fest.rankNext(UI_TEXT.fest.rank.silver, th.silver - best)}`;
+    }
+    this.cardTexts(c, r.icon, r.name, held ? `${UI_TEXT.fest.held}  ${ings}${goal}` : ings);
     const ok = craftable(s.inv, r);
     this.cardButton(c, held ? UI_TEXT.fest.againBtn : UI_TEXT.fest.openBtn, ok ? COLORS.orange : COLORS.gray, () => {
       if (craftable(store.state.inv, r)) this.startFestival(r);

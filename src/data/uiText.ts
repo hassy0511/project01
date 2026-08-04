@@ -623,6 +623,19 @@ export const UI_TEXT = {
     rankUp: (name: string) => `${name}に なった!`,
     /** 地図の したの カウンタ */
     goldCount: (n: number, total: number) => `きんの ぼんぼり ${n}/${total}`,
+    /** おまつりカードに いつも 出す いまの 目あて(きんに なったら これ) */
+    goldDone: 'きんの ぼんぼり ともった!',
+    /** ぼんぼりの 説明(カウンタを おすと 出る)。
+        子供FB「きんの ぼんぼりの コンプの しかたが わからない」への 手あて */
+    bonbori: {
+      title: 'きんの ぼんぼりとは',
+      intro: 'おまつりの さいこうきろくで\nぼんぼりの いろが かわるよ!',
+      copper: 'どう: おまつりを 1かい ひらく',
+      silver: (n: number) => `ぎん: 1かいで ${n}てん いじょう とる`,
+      gold: (n: number) => `きん: 1かいで ${n}てん いじょう とる`,
+      footer: 'ぜんぶの けんで きんに できるかな?',
+      close: 'わかった!',
+    },
     /** 47県 ぜんぶ きんの おいわい */
     allGoldTitle: 'にっぽんじゅうが きんいろ!',
     allGoldBody:

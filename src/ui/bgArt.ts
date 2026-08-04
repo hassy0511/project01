@@ -33,17 +33,49 @@ export const bgTextureKey = (name: string): string => `bgart:${name}`;
 /** 背景SVGの ある ばしょ。public/art/bg/ に 置く だけで つかわれる */
 export const bgUrl = (name: string): string => `${import.meta.env.BASE_URL}art/bg/${name}.svg`;
 
-/** 一度 焼いたら おぼえておく(同じ ゲームを 何回 あそんでも 1回だけ) */
+/** 一度 焼いたら おぼえておく(同じ ゲームを 何回 あそんでも 1回だけ)。
+    ならびは 「つかった 順」(さいごが いちばん あたらしい) */
 const baked = new Set<string>();
 /** いま 焼いて いる ものの やくそく(同時に よばれても 1回で すむ) */
 const baking = new Map<string, Promise<boolean>>();
 /** 取りに いって 「なかった」ものは もう 取りに いかない(毎回 404 を 出さない) */
 const missing = new Set<string>();
 
+/** おぼえておく 背景の 枚数。
+    ★背景は 1まいで 960×1376×4バイト ≈ 5MB(canvas と GPU の 両方に のる)。
+    まえは 一度 焼いたら ずっと もって いた ので、ゲームを わたり歩く ほど
+    メモリが つみあがり、ふるい iPad で 「あそぶほど ぜんたいが 重くなる」
+    (子供の 実機で 報告)。すぐ また あそぶ ぶんだけ のこして、古い ものは すてる。
+    すてても SVG は サービスワーカーが おぼえて いる ので、つぎは 取りなおして 焼くだけ */
+const KEEP_BAKED = 3;
+
+/** つかった しるし(LRU)。いちど けして 入れなおすと ならびの さいごに くる */
+function touch(texKey: string): void {
+  baked.delete(texKey);
+  baked.add(texKey);
+}
+
+/** 古い 背景を すてる。いま 出して いる もの(= さいきん touch した もの)は のこる */
+function evictOld(scene: Phaser.Scene): void {
+  while (baked.size > KEEP_BAKED) {
+    const oldest = baked.values().next().value as string | undefined;
+    if (!oldest) return;
+    baked.delete(oldest);
+    try {
+      scene.textures.remove(oldest);
+    } catch {
+      /* すでに ない なら それで よい */
+    }
+  }
+}
+
 /** 背景SVG を テクスチャに 焼く。@returns 焼けたら true */
 async function bake(scene: Phaser.Scene, name: string): Promise<boolean> {
   const texKey = bgTextureKey(name);
-  if (baked.has(texKey)) return true;
+  if (baked.has(texKey)) {
+    touch(texKey);
+    return true;
+  }
   if (missing.has(name)) return false;
   try {
     const res = await fetch(bgUrl(name));
@@ -62,14 +94,15 @@ async function bake(scene: Phaser.Scene, name: string): Promise<boolean> {
       img.src = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(text)))}`;
     });
     if (scene.textures.exists(texKey)) {
-      baked.add(texKey);
+      touch(texKey);
       return true;
     }
     const canvas = scene.textures.createCanvas(texKey, w, h);
     if (!canvas) return false;
     canvas.context.drawImage(img, 0, 0, w, h);
     canvas.refresh();
-    baked.add(texKey);
+    touch(texKey);
+    evictOld(scene);
     return true;
   } catch (e) {
     // 絵が こわれて いても ゲームは 止めない(コード描画の まま)
@@ -101,6 +134,7 @@ export function applyBgArt(scene: Phaser.Scene, area: Phaser.GameObjects.Contain
   };
 
   if (scene.textures.exists(texKey)) {
+    touch(texKey); // いま つかう ものを 「さいきん」に して、すてられない ように する
     put();
     return;
   }

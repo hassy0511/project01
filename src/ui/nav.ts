@@ -63,7 +63,7 @@ export function buildHeader(scene: Phaser.Scene): void {
     Phaser の pointerup は 「はなした ときに 上に あった もの」で 発火する ので、
     一覧を スクロールした 指が ナビの 上で はなれると ずかんが かってに ひらいて いた
     (子供の 実機で 度々 おきた)。pointerdown も 同じ ボタンで 始まって いる ことを 見る */
-function onPress(obj: Phaser.GameObjects.GameObject, handler: () => void): void {
+export function onPress(obj: Phaser.GameObjects.GameObject, handler: () => void): void {
   let armed = false;
   obj.on('pointerdown', () => {
     armed = true;
