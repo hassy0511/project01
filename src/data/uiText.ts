@@ -244,7 +244,7 @@ export const UI_TEXT = {
     /** しゅうかくゲームの 名まえと あそびかた(おまつりは レシピの 名まえと
         fest.intro… を つかうので ここには 書かない) */
     harvest: {
-      mine: { name: 'すいりで ほる', intro: 'すうじは 「まわりに いくつ あるか」の ヒント!\nあんぜんな マスを えらんで ほりすすもう!' },
+      mine: { name: 'すいりで ほる', intro: 'すうじは 「まわりに いくつ あるか」の ヒント!\nいそがなくて だいじょうぶ。ゆっくり すいりして、\nシャベルが なくなる まえに おたからを さがそう!' },
       catch: { name: 'かごで うける', intro: 'かごを よこに うごかして、\nおちてくる みを うけとめよう!\nえだは よけてね!' },
       chain: { name: 'つなげて つむ', intro: 'うれた みを つづけて タップ!\nつなげると どんどん てんが ふえるよ!' },
       reap: { name: 'いねを かる', intro: 'いねの うえを ゆびで なぞって かろう!\nひとふりで たくさん かると おおきい てん!' },
@@ -672,7 +672,9 @@ export const UI_TEXT = {
     timeBonus: (n: number) => `タイムボーナス +${n}!`,
     cleanRow: 'ひとふでがり!',
     noShovels: 'シャベルが きれた… あたらしい ほりばへ!',
+    noShovelsEnd: 'シャベルが きれた…',
     shovelBonus: (n: number) => `シャベルのこり ×${n} ボーナス!`,
+    mineBoard: (i: number, n: number) => `ほりば ${i}/${n}`,
     careResult: (bopped: number, leaked: number) => `おいはらった: ${bopped}ひき\nたべられた: ${leaked}かい`,
     /* つみとり(pluck) */
     notRipe: 'まだ あおい!',

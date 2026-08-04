@@ -7,7 +7,7 @@
 この ファイルは 「何を 何個 描くか」だけを ならべた ものです。
 
 - かたち: **202**
-- いろちがいを ふくめた のべ数: **560**
+- いろちがいを ふくめた のべ数: **582**
 - せかい(ミニゲームの 背景): **59**
 
 いろは かたち1つに つき 1まいの SVG を つくり、`#MAIN` / `#DARK` の 2つの
@@ -29,8 +29,8 @@
 | `citrus.svg` | かんきつ(みかん・レモン・ゆず)。まるい みに はっぱ 1まいと へた | amber deepgreen gold lime orange yellow | — | StoryScene / かぼす / かぼす(しゅうかく中) / きんかん ほか14 |
 | `clay.svg` | ねんどの かたまり。きれいな まるでは なく ゆがんだ かたまり。てで つかんだ あとが ある | brown | — | ねんど |
 | `cloth.svg` | ぬの・わた の ぬの(たたんだ ぬの)。towel(ほしてある タオル)とは かたちで 見わける: cloth は かどが めくれた いちまい | navy pink red white | — | あわあいぞめの ハンカチ / きぬの スカーフ / べにばなぞめ / わた ほか1 |
-| `cow.svg` | うし。まえは 「まるに ぶちが 2つ」で なにか わからなかった。 かおを 大きく して、つの・みみ・はなを はっきり させる | dark white | 46〜46 | ushioniGame / ぎゅうにゅう(たてもの) / わぎゅう |
-| `crab.svg` | かに。ひらたい こうらと はさみ 2つ、あし 6本。正面から | amber crimson gold orange red | 26〜54 | kaniGame / えちぜん がにまつり / かに / かに(しゅうかく中) ほか3 |
+| `cow.svg` | うし。まえは 「まるに ぶちが 2つ」で なにか わからなかった。 かおを 大きく して、つの・みみ・はなを はっきり させる | dark red white | 46〜46 | ushioniGame / ぎゅうにゅう(たてもの) / なは おおづなひき / わぎゅう |
+| `crab.svg` | かに。ひらたい こうらと はさみ 2つ、あし 6本。正面から | amber crimson gold orange red | 26〜54 | kaniGame / えちぜん がにまつり / かに / かに(しゅうかく中) ほか4 |
 | `craft.svg` | わりばし(きの こうげいひん)。めがね・コースターには つかわない (それぞれ glasses / mat が ある) | tan | — | よしのすぎの わりばし |
 | `cucumber.svg` | きゅうり・ゴーヤー。ながい みに たての すじ。ゴーヤーは 表面が いぼいぼに 見える ように | cream deepgreen green lime | — | きゅうり / きゅうり(しゅうかく中) / きゅうり(まだ はやい) / ゆうがお ほか5 |
 | `cup.svg` | ゆのみ(おちゃ・ジュース)。ほかの アイコンと 同じ 大きさに なる ように 64枠を つかう | amber brown cream deepgreen green lime orange purple sky tan teal white yellow | — | あさみやちゃ / あしがらちゃ / いせちゃ / しずおかちゃ ほか10 |
@@ -39,12 +39,12 @@
 | `egg.svg` | たまご 1つ。たてに ながい だえん | amber cream white | — | うずらのたまご / おんせんたまご / ゆでうずらたまご |
 | `eggplant.svg` | なす。まるみの ある みに、みどりの がくと へた | lime pink purple violet | — | なす / なす(いろづきかけ) / なす(しゅうかく中) / なす(まだ はやい) ほか4 |
 | `fish.svg` | ふつうの さかな(いわし・あじ・たい)。よこむき。せびれと しっぽ。bigfish より ほそい | amber blue brown cream crimson gray navy orange pink red silver sky tan teal white | 34〜54 | fishGame / kingyoGame / yukimatsuriGame / あじ ほか35 |
-| `flower.svg` | はな(ブロッコリー・べにばな・はなっこりー)。はなびら 5まいと まんなかの まる | cream crimson deepgreen green lime orange pink yellow | — | かいらくえん うめまつり / なばな / なばな(しゅうかく中) / はなっこりー ほか12 |
+| `flower.svg` | はな(ブロッコリー・べにばな・はなっこりー)。はなびら 5まいと まんなかの まる | cream crimson deepgreen green lime orange pink red yellow | — | かいらくえん うめまつり / なは おおづなひき / なばな / なばな(しゅうかく中) ほか13 |
 | `ginger.svg` | しょうが。まえは 3つの まるで「ねずみのかお」に 見えて いた。 ごつごつした 塊+こぶ を つないだ かたちに する | tan | — | しょうが |
 | `glasses.svg` | めがね(さばえの めがね) | silver | — | さばえの めがね |
 | `grain.svg` | こくもつ(こめ・むぎ・とうもろこし)。つぶが たてに ならんだ ほ | amber brown cream gray tan yellow | — | yamayakiGame / こむぎ / こむぎ(しゅうかく中) / こめ ほか8 |
 | `icecream.svg` | ソフトクリーム(sweet(だんご)で 代用すると 意味が わからない) | green white | — | まっちゃアイス / ソフトクリーム |
-| `jar.svg` | ひろくちの びん(ジャム・つけもの)。大きな ふたが めじるし。bottle(くびの ある びん)とは 見わける | amber blue brown cream crimson dark deepgreen gold green lime navy orange pink purple red silver sky tan teal violet white yellow | — | あすかルビーの ジャム / あまおうの ジャム / いちごジャム / きゅうりの あさづけ ほか22 |
+| `jar.svg` | ひろくちの びん(ジャム・つけもの)。大きな ふたが めじるし。bottle(くびの ある びん)とは 見わける | amber blue brown cream crimson dark deepgreen gold green lime navy orange pink purple red silver sky tan teal violet white yellow | — | あすかルビーの ジャム / あまおうの ジャム / いちごジャム / きゅうりの あさづけ ほか23 |
 | `kamaboko.svg` | かまぼこ(いたに のった はんえん) | cream pink red | — | いろどりかまぼこ / かまぼこ / ささかまぼこ |
 | `kiwi.svg` | キウイの 断面。まるい わの 中が しろく、たねの 点が わに ならぶ | brown lime | — | キウイ / キウイ(しゅうかく中) / キウイ(まだ はやい) |
 | `leafy.svg` | はっぱの やさい(こまつな・レタス・しゅんぎく)。はっぱ 3〜4まいが たばに なって いる | deepgreen green lime teal | — | あしたば / あしたば(しゅうかく中) / あしたば(まだ はやい) / かつおな ほか11 |
@@ -59,17 +59,17 @@
 | `octopus.svg` | たこ。まるい あたまと、見えている あし 3〜4本 | crimson red | — | かに(しゅうかく中) / たこ / たこ(しゅうかく中) |
 | `onigiri.svg` | おにぎり。ごはんは いつも 白(c で ぬると のりと 見わけが つかない)。 いろは「うえに のせた ぐ」に つかうので、ぐの ちがいで 見わけられる | amber cream crimson dark green navy pink silver tan white | — | うめぼし / おうみまいの おにぎり / かんぴょうまき / さがびよりの おにぎり ほか6 |
 | `onion.svg` | たまねぎ。まるい みに たての すじ、上に みどりの め | amber cream dark tan white | — | あわじたまねぎの まるやき / くろにんにく / たまねぎ / たまねぎ(しゅうかく中) ほか2 |
-| `pearl.svg` | しんじゅ。かいを こく して、たまが 白く 浮くように する | silver white | — | しんじゅ / しんじゅ(しゅうかく中) / しんじゅの ネックレス |
+| `pearl.svg` | しんじゅ。かいを こく して、たまが 白く 浮くように する | silver white | — | しんじゅ / しんじゅ(しゅうかく中) / しんじゅの ネックレス / なは おおづなひき |
 | `pepper.svg` | ピーマン・ししとう。まるい 実だと りんごと 見わけが つかないので したが 3つに わかれた ピーマンの かたちに する | cream deepgreen green lime yellow | — | ししとう / ししとう(いろづきかけ) / ししとう(しゅうかく中) / ししとう(まだ はやい) ほか4 |
 | `pineapple.svg` | パイナップル。あみめの みと、上に とがった はっぱ | amber | — | パイナップル / パイナップル(しゅうかく中) |
-| `plate.svg` | たいらな さら。よこから 見た あさい さら。bowl(ふかい わん)とは 見わける | brown cream crimson deepgreen gray green lime pink red silver sky teal white | — | あじの ひらき / ありたやきの おさら / かつおの たたき / ししとうの やきびたし ほか9 |
+| `plate.svg` | たいらな さら。よこから 見た あさい さら。bowl(ふかい わん)とは 見わける | brown cream crimson deepgreen gold gray green lime pink red silver sky teal white | — | あじの ひらき / ありたやきの おさら / かつおの たたき / ししとうの やきびたし ほか10 |
 | `pod.svg` | さや(えだまめ・そらまめ・だいず)。ななめの ふとい さやに して まめの ふくらみを 3つ 見せる | cream dark green lime tan yellow | — | えだまめ / えだまめ(いろづきかけ) / えだまめ(しゅうかく中) / えだまめ(まだ はやい) ほか8 |
-| `pot.svg` | なべ。ふたと とっての ある なべ。よこから | amber brown cream crimson dark green lime orange pink tan teal white | — | いもに / かがぼうちゃ / かきの どてなべ / かつおなの ぞうに ほか9 |
+| `pot.svg` | なべ。ふたと とっての ある なべ。よこから | amber brown cream crimson dark green lime orange pink tan teal white | — | いもに / かがぼうちゃ / かきの どてなべ / かつおなの ぞうに ほか10 |
 | `pottery.svg` | やきもの(とうき)。ろくろで つくった つぼ。くびが すこし しまって いる | brown cream dark gray red tan | — | StoryScene / かさまやき / くたにやき / しがらきやきの たぬき ほか3 |
 | `pudding.svg` | プリン(カラメルの のった むしがし) | amber gold pink violet | — | いもようかん / たまごプリン / べにいもの タルト / らくのうの ミルクプリン |
 | `pufferfish.svg` | ふぐ。まるく ふくらんだ 体と ちいさな ひれ、とげ | cream white | — | fishGame / とらふぐの てっさ / ふぐ / ふぐ(えんしゅつ3) ほか1 |
 | `root.svg` | ねの やさい(わさび・にんじん・しょうが)。したが とがった ねと、上に みどりの は | cream crimson lime orange white | — | きんときにんじん / きんときにんじん(しゅうかく中) / きんときにんじん(まだ はやい) / みうらだいこん ほか7 |
-| `round.svg` | かたちが まるい だけの み(もも・トマト・すいか)。まるに へた 1つ。とくちょうの ある みは べつの かたちを つかう | amber brown cream crimson deepgreen gold green lime orange pink red tan violet | — | あかしやき / うめ / うめ(しゅうかく中) / かきのみ ほか22 |
+| `round.svg` | かたちが まるい だけの み(もも・トマト・すいか)。まるに へた 1つ。とくちょうの ある みは べつの かたちを つかう | amber brown cream crimson deepgreen gold green lime orange pink red tan violet | — | あかしやき / うめ / うめ(しゅうかく中) / かきのみ ほか23 |
 | `salt.svg` | しお。もりあがった しろい やまと、ちいさな つぶ | cream white | — | しお / しお(たてもの) |
 | `seaweed.svg` | かいそう(わかめ・こんぶ・のり)。ゆらゆらした ながい は 2まい | brown dark deepgreen green navy teal | — | ありあけの やきのり / のり / のり(しゅうかく中) / ほしわかめ ほか5 |
 | `senbei.svg` | せんべい。まるく ひらたい やきもの。やきめの もようが すこし | amber brown cream tan white | — | いもせんべい / くさかせんべい / くまもとの こめせんべい / こめせんべい ほか1 |
@@ -81,7 +81,7 @@
 | `stalk.svg` | ねぎ・せり など「くきの やさい」。はっぱは いつも みどり (c で ぬると white/cream/yellow の とき まっしろに 消えて しまう)。 c は じくの いろに つかう | amber cream deepgreen gold green lime tan white yellow | — | いぐさ / いぐさ(しゅうかく中) / うど / きにら ほか18 |
 | `stone.svg` | いし。かどの ある ちいさな かたまり。rock より 小さく たいらな 面が ある | dark gray silver | — | yamayakiGame / てついし / チタン |
 | `strawberry.svg` | いちご。さきが とがった みに たねの 点、上に みどりの がく | cream red | — | PrefScene / StoryScene / いちご / いちご(しゅうかく中) ほか1 |
-| `sweet.svg` | わがし。まるい もちの 中に あんこが 見える。cake(ようがし)とは 見わける | amber brown cream dark deepgreen gray lime orange tan | — | くりの きんとん / くろざとう / こんにゃく / さつまいもの かりんとう ほか6 |
+| `sweet.svg` | わがし。まるい もちの 中に あんこが 見える。cake(ようがし)とは 見わける | amber brown cream dark deepgreen gray lime orange tan | — | くりの きんとん / くろざとう / こんにゃく / さつまいもの かりんとう ほか7 |
 | `tealeaf.svg` | ちゃば。ひしがた 3つでは「はっぱ」に 見えなかったので さきの とがった はっぱ+まんなかの すじ に する | deepgreen green lime | — | ちゃば / ちゃば(しゅうかく中) / にしおの まっちゃ / みやざきの ちゃ |
 | `tree.svg` | き。太い みきと まるい はっぱの かたまり。forest(すぎ 3本)や palm(やしのき)とは べつ | deepgreen | 20〜22 | PrefScene / onbashiraGame / yamayakiGame / よしのすぎ ほか1 |
 | `tuber.svg` | いも(さつまいも・じゃがいも)。ながい たまごがたに 土の 点 | amber brown dark gray purple tan teal violet | — | くわい / こんにゃくいも / さつまいも / さといも ほか3 |
@@ -95,8 +95,8 @@
 | `boar.svg` | いのしし(やまの けもの・きばと せの けが とくちょう) | brown | — | かぼちゃ(しゅうかく中) / くり(しゅうかく中) / こんにゃくいも(しゅうかく中) / さつまいも(しゅうかく中) ほか5 |
 | `bug.svg` | いもむし(はっぱの むし・そざいの じゃま) | brown green lime | — | あい(しゅうかく中) / あしたば(しゅうかく中) / うめ(しゅうかく中) / えだまめ(しゅうかく中) ほか33 |
 | `crowd.svg` | ひとだかり(にんき・おきゃくさんが たくさん) | teal | — | fukuotokoGame |
-| `deer.svg` | しか(なら・やまの けもの・つのが とくちょう) | brown | 30〜30 | yamayakiGame / エリア きんき |
-| `dragon.svg` | りゅう(ねぶた・たつの おまつり) | gold green red | 44〜44 | kaguraGame / いわみかぐら / ながさきくんち |
+| `deer.svg` | しか(なら・やまの けもの・つのが とくちょう) | brown | 30〜30 | yamayakiGame / なは おおづなひき / エリア きんき |
+| `dragon.svg` | りゅう(ねぶた・たつの おまつり) | gold green red | 44〜44 | kaguraGame / いわみかぐら / ながさきくんち / なは おおづなひき |
 | `duck.svg` | かも(みずべの とり・ひらたい くちばし) | brown white | — | くわい(しゅうかく中) / しじみ(しゅうかく中) / のり(しゅうかく中) / れんこん(しゅうかく中) |
 | `face-angry.svg` | おこった かお(だめ・きけんの しるし) | cream | — | kazariumaGame |
 | `face-sad.svg` | かなしい かお(ざんねん・もういちど) | cream | — | festivalGame / fukuotokoGame |
@@ -109,11 +109,11 @@
 | `hand-clap.svg` | ぱちぱち(はくしゅ・おいわい) | tan | — | awaodoriGame / minyouGame |
 | `hand-point.svg` | ゆびさし(あそびかたの 「ここを おす」の しるし)。うえむきの ひとさしゆび | cream | 52〜52 | howto / tsunahikiGame |
 | `hawk.svg` | たか(はねを ひろげた もうきん・そらの おうさま) | brown | — | いかなご(しゅうかく中) / かき(しゅうかく中) / さくらえび(しゅうかく中) / しらす(しゅうかく中) ほか3 |
-| `horse.svg` | うま(やぶさめ・のうぎょうの うま) | brown | 48〜48 | kazariumaGame / ふじさきはちまんぐうの あきまつり |
-| `mask.svg` | おめんの かたち(おまつり・やたいの おめん) | cream red violet | 80〜80 | hyottokoGame / kabukiGame / たかさき だるまいち / ひゅうが ひょっとこ なつまつり |
+| `horse.svg` | うま(やぶさめ・のうぎょうの うま) | brown | 48〜48 | kazariumaGame / なは おおづなひき / ふじさきはちまんぐうの あきまつり |
+| `mask.svg` | おめんの かたち(おまつり・やたいの おめん) | amber cream red violet white | 80〜80 | hyottokoGame / kabukiGame / たかさき だるまいち / なは おおづなひき ほか1 |
 | `oni.svg` | おに(せつぶん・おにの おまつり) | brown crimson | 46〜58 | betchaGame / nebutaGame / うわじま うしおにまつり / おのみち べっちゃーまつり |
 | `owl.svg` | ふくろう(よるの とり・おおきな目) | brown | 66〜84 | StoryScene / widgets |
-| `person.svg` | ふつうの ひと(むらびと・だれか) | gray navy pink teal | 18〜46 | MapScene / awaodoriGame / chousaGame / crowd ほか17 |
+| `person.svg` | ふつうの ひと(むらびと・だれか) | amber gray navy pink teal | 18〜46 | MapScene / PrefScene / awaodoriGame / chousaGame ほか18 |
 | `person-carry.svg` | ぼうを かつぐ ひと(にもつ・おこめを はこぶ) | white | — | はかた ぎおん やまかさ |
 | `person-child.svg` | こども(あたま 大きめ・せは ひくい) | amber pink sky | 18〜32 | MapScene / betchaGame / crowd / festivalGame ほか5 |
 | `person-dancer.svg` | おどる ひと(ぼんおどり・おまつりの おどり) | amber crimson pink teal violet | 34〜34 | karakuriGame / yosakoiGame / あわおどり / にいがた まつり |
@@ -139,24 +139,24 @@
 | `fire.svg` | ほのお(かまど・やきもの・はなび の たね火) | orange | 14〜40 | balloonGame / himatsuriGame / ougiGame / rokuroGame ほか3 |
 | `forest.svg` | もり(すぎの き 3本。しんりん・きこり) | — | — | — |
 | `gem.svg` | すいしょう(たからもの・ほうせき) | sky violet | — | すいしょう / すいしょうざいく |
-| `hibiscus.svg` | ハイビスカス(おきなわ・あたたかい みなみの はな) | pink | 26〜26 | tsunahikiGame / エリア きゅうしゅう・おきなわ |
+| `hibiscus.svg` | ハイビスカス(おきなわ・あたたかい みなみの はな) | pink red | 26〜26 | tsunahikiGame / なは おおづなひき / エリア きゅうしゅう・おきなわ |
 | `hill.svg` | なだらかな おか(のはら・けしき) | — | — | — |
-| `hotspring.svg` | おんせん(お湯の うつわと ゆげ 3本) | sky | 30〜30 | yukakeGame / べっぷ おんせんまつり |
+| `hotspring.svg` | おんせん(お湯の うつわと ゆげ 3本) | orange sky | 30〜30 | yukakeGame / なは おおづなひき / べっぷ おんせんまつり |
 | `leaf.svg` | はっぱ(みどり・しょくぶつ・おちゃ) | lime navy | — | PrefScene / あい / あい(しゅうかく中) |
-| `log.svg` | まるた・ほだぎ(きのこ さいばい・きを きる) | brown cream dark tan | 34〜34 | catchGame / eyouGame / き / き(しゅうかく中) ほか5 |
+| `log.svg` | まるた・ほだぎ(きのこ さいばい・きを きる) | brown cream dark tan | 34〜34 | catchGame / eyouGame / き / き(しゅうかく中) ほか6 |
 | `moon.svg` | つき(よる・ねむる じかん) | — | — | — |
-| `mountain.svg` | やま(ゆきがしらの ふじさん風。けしき・りっち) | gray sky | — | PrefScene / すいしょう(えんしゅつ1) / てついし(えんしゅつ1) / ねんど(えんしゅつ1) ほか2 |
+| `mountain.svg` | やま(ゆきがしらの ふじさん風。けしき・りっち) | gray sky | — | PrefScene / すいしょう(えんしゅつ1) / てついし(えんしゅつ1) / なは おおづなひき ほか3 |
 | `palm.svg` | やしのき(おきなわ・あたたかい みなみの しま) | deepgreen | 34〜34 | tsunahikiGame |
 | `rock.svg` | いわ(てついし・こうぶつを ほる) | gray | — | fukuotokoGame |
-| `sakura.svg` | さくら(はなみ・はる) | pink | 16〜40 | PrefScene / hanagasaGame |
+| `sakura.svg` | さくら(はなみ・はる) | pink | 16〜40 | PrefScene / hanagasaGame / なは おおづなひき |
 | `snow.svg` | ふる ゆき(ゆきの ひ・つもった ゆき) | white | — | — |
-| `snowflake.svg` | ゆきの けっしょう(ゆき・さむさの しるし) | sky | — | エリア ほっかいどう・とうほく |
+| `snowflake.svg` | ゆきの けっしょう(ゆき・さむさの しるし) | sky | — | なは おおづなひき / エリア ほっかいどう・とうほく |
 | `snowman.svg` | ゆきだるま(ゆきの おまつり・ふゆの けしき) | white | — | yukimatsuriGame / さっぽろ ゆきまつり |
 | `sparkle.svg` | きらきら(できばえ・ごほうびの えんしゅつ) | amber gold pink | 18〜58 | FestivalScene / MapScene / StoryScene / effects ほか9 |
 | `splash.svg` | はねた みず(みずやり・しぶき) | sky | 26〜26 | kazariumaGame / yukakeGame |
-| `star-night.svg` | よぞらの ほし(よるの けしき・ほしまつり) | — | — | — |
+| `star-night.svg` | よぞらの ほし(よるの けしき・ほしまつり) | navy | — | なは おおづなひき |
 | `sun.svg` | おひさま(はれの ひ・あさ) | amber gold | 22〜26 | PrefScene / RegionScene |
-| `tulip.svg` | チューリップ(はなだん・はなの さいばい) | green pink red | — | チューリップ / チューリップ(しゅうかく中) / チューリップ(まだ はやい) / チューリップの はなたば |
+| `tulip.svg` | チューリップ(はなだん・はなの さいばい) | green pink red | — | なは おおづなひき / チューリップ / チューリップ(しゅうかく中) / チューリップ(まだ はやい) ほか1 |
 | `volcano.svg` | けむりを 上げる やま(さくらじま・かざん) | — | — | — |
 | `wave.svg` | うみの なみ(3すじの 波がしら) | navy sky teal | — | PrefScene / あじ(えんしゅつ2) / あなご(えんしゅつ2) / あゆ(えんしゅつ2) ほか16 |
 | `wind.svg` | かぜ(うずまきと ながれる すじ) | teal | — | いぐさ(しゅうかく中) / うど(しゅうかく中) / きにら(しゅうかく中) / さとうきび(しゅうかく中) ほか7 |
@@ -165,28 +165,28 @@
 
 | ファイル | 何を 描くか | つかう いろ | 出る 大きさ(px) | どこで つかう |
 |---|---|---|---|---|
-| `balloon.svg` | ねつききゅう。まるい ふくらみと したの かご | red | 22〜54 | balloonGame / さが バルーンフェスタ |
-| `banner.svg` | のぼりばた(おまつりの はた) | pink | — | せんだい たなばたまつり |
+| `balloon.svg` | ねつききゅう。まるい ふくらみと したの かご | red | 22〜54 | balloonGame / さが バルーンフェスタ / なは おおづなひき |
+| `banner.svg` | のぼりばた(おまつりの はた) | gold pink | — | せんだい たなばたまつり / なは おおづなひき |
 | `basket.svg` | かご(しゅうかくを いれる たけかご) | amber brown crimson gold lime tan | 28〜32 | rhythmGame / shellGame / べにいもの タルト |
-| `bell.svg` | かね(いしどり・しゃんしゃん傘の すず) | gold | — | ishidoriGame |
-| `boat.svg` | ふね。よこから 見た 船体と ほばしら 1本。rowboat(こぶね)・raft(いかだ)とは 見わける | cream navy white | 28〜28 | PrefScene / scoopGame / あじ(えんしゅつ1) / あなご(えんしゅつ1) ほか13 |
+| `bell.svg` | かね(いしどり・しゃんしゃん傘の すず) | gold | — | ishidoriGame / なは おおづなひき |
+| `boat.svg` | ふね。よこから 見た 船体と ほばしら 1本。rowboat(こぶね)・raft(いかだ)とは 見わける | cream navy sky white | 28〜28 | PrefScene / scoopGame / あじ(えんしゅつ1) / あなご(えんしゅつ1) ほか14 |
 | `bucket.svg` | おけ(みずくみ・しゅうかくの いれもの) | silver | — | うなぎ(えんしゅつ1) |
 | `cage.svg` | かにかご(あみを はった しかけかご) | — | — | — |
-| `cart.svg` | 山車(だんじり。くるまの ついた おまつりの やたい) | brown cream crimson dark gold red | — | かわごえまつり / きしわだ だんじりまつり / ぎおんまつり / くわなの いしどりまつり ほか2 |
+| `cart.svg` | 山車(だんじり。くるまの ついた おまつりの やたい) | brown cream crimson dark gold red | — | かわごえまつり / きしわだ だんじりまつり / ぎおんまつり / くわなの いしどりまつり ほか3 |
 | `castle.svg` | てんしゅかく(おしろ) | cream | 34〜34 | yamayakiGame |
 | `drum.svg` | たいこ。ほかと 大きさを そろえ、びょうを うって「バケツ」に 見えない ように する | brown crimson gold | 30〜34 | awaodoriGame / chousaGame / hyottokoGame / ishidoriGame ほか5 |
-| `fan.svg` | おうぎ(ひらいた せんす)。したの かなめから 上に ひろがる おうぎ形に すじ | crimson gold tan | 26〜30 | kabukiGame / ougiGame / なちの おうぎまつり / べにいもの タルト |
+| `fan.svg` | おうぎ(ひらいた せんす)。したの かなめから 上に ひろがる おうぎ形に すじ | cream crimson gold red sky tan | 26〜30 | kabukiGame / ougiGame / なちの おうぎまつり / なは おおづなひき ほか1 |
 | `flute.svg` | よこぶえ(おはやしの ふえ) | tan | — | hyottokoGame |
 | `glove.svg` | てぶくろ(はたけしごとの ぐんて) | gold white | — | さぬきの てぶくろ / べにいもの タルト |
-| `horn.svg` | ほらがい(みなとの あいずの つのぶえ) | gold | — | sousenGame |
+| `horn.svg` | ほらがい(みなとの あいずの つのぶえ) | crimson gold | — | sousenGame / なは おおづなひき |
 | `house.svg` | まちや(むらの いえ) | teal | 40〜40 | ushioniGame |
 | `hut.svg` | こや(かやぶきの ちいさな こや) | brown | — | わぎゅう(たてもの) |
 | `kiln.svg` | かま(やきものを やく かま) | brown | — | びんちょうたん(たてもの) |
-| `kite.svg` | たこ(あげる たこ)。ひしがたの 本体と しっぽ 2本、いと | sky | 20〜20 | takoGame / はままつまつり |
+| `kite.svg` | たこ(あげる たこ)。ひしがたの 本体と しっぽ 2本、いと | red sky | 20〜20 | takoGame / なは おおづなひき / はままつまつり |
 | `knife.svg` | ほうちょう(りょうりの どうぐ) | amber gold red silver | 40〜40 | kaguraGame / たたらの ほうちょう / べにいもの タルト |
-| `ladle.svg` | ひしゃく(みずを くむ たけの どうぐ) | gold sky tan | 34〜34 | yukakeGame / べにいもの タルト |
-| `lantern.svg` | ちょうちん。たてに ながい たまご形に 上下の わく。中が ぼんやり 明るい。 おまつりの しるしなので いちばん たくさん でてくる | amber crimson gold orange violet white | 16〜28 | FestivalScene / MapScene / PrefScene / StoryScene ほか13 |
-| `naruko.svg` | よさこいの なるこ(木の いたを うちならす どうぐ) | red | 46〜46 | yosakoiGame / よさこいまつり |
+| `ladle.svg` | ひしゃく(みずを くむ たけの どうぐ) | brown gold sky tan | 34〜34 | yukakeGame / なは おおづなひき / べにいもの タルト |
+| `lantern.svg` | ちょうちん。たてに ながい たまご形に 上下の わく。中が ぼんやり 明るい。 おまつりの しるしなので いちばん たくさん でてくる | amber crimson gold orange red violet white | 16〜58 | FestivalScene / MapScene / PrefScene / RegionScene ほか15 |
+| `naruko.svg` | よさこいの なるこ(木の いたを うちならす どうぐ) | red | 46〜46 | yosakoiGame / なは おおづなひき / よさこいまつり |
 | `net.svg` | あみ(さかなを すくう たまあみ) | gold tan teal | — | べにいもの タルト |
 | `pick.svg` | つるはし(こうざん・かいたくの どうぐ) | gold gray silver | — | mineGame / すいしょう(えんしゅつ2) / てついし(えんしゅつ2) / ねんど(えんしゅつ2) ほか2 |
 | `raft.svg` | いかだ(まるたを ならべた ふね) | tan | — | むつごろう(えんしゅつ1) |
@@ -196,12 +196,12 @@
 | `saw.svg` | のこぎり(きを きる どうぐ) | — | — | — |
 | `scroll.svg` | まきもの(ずかん・いいつたえ) | cream | — | みのわし |
 | `shamisen.svg` | しゃみせん(かぶきの おはやし) | tan | — | kabukiGame |
-| `shrine.svg` | とりい。2本の はしらと 上の よこぎ 2本 | gold red | 34〜40 | eyouGame / kazariumaGame / yamakasaGame / かんだまつり ほか1 |
+| `shrine.svg` | とりい。2本の はしらと 上の よこぎ 2本 | crimson gold red | 34〜40 | eyouGame / kazariumaGame / yamakasaGame / かんだまつり ほか2 |
 | `stall.svg` | おまつりの やたい(しま模様の やね+だい) | brown | — | ましこ とうきいち |
-| `tassel.svg` | ふさ(つなひきの つなの まんなかの かざり) | crimson | 34〜34 | tsunahikiGame |
+| `tassel.svg` | ふさ(つなひきの つなの まんなかの かざり) | crimson teal | 34〜34 | tsunahikiGame / なは おおづなひき |
 | `torch.svg` | たいまつ(よまつりの ひ) | orange | — | よしだの ひまつり |
-| `towel.svg` | てぬぐい(ものほしに かけた ぬの) | white | — | いまばりの タオル |
-| `tower.svg` | てっとう(とうきょうタワー風の たかい とう) | red | — | エリア かんとう |
+| `towel.svg` | てぬぐい(ものほしに かけた ぬの) | sky white | — | いまばりの タオル / なは おおづなひき |
+| `tower.svg` | てっとう(とうきょうタワー風の たかい とう) | crimson red | — | なは おおづなひき / エリア かんとう |
 | `umbrella.svg` | わがさ(かさおどりの かさ) | pink | — | とっとり しゃんしゃんまつり |
 | `well.svg` | いど(石の わく+つるべ) | gray sky | — | PrefScene / みず(たてもの) |
 
@@ -220,8 +220,8 @@
 | `cross.svg` | ✕(ちがう・とじる) | gray | 24〜24 | widgets |
 | `crown.svg` | かんむり(いちばんの ごほうび) | gold | 58〜58 | ZukanScene |
 | `doc.svg` | しょるい(きろく・レシピの かみ) | — | — | — |
-| `flag.svg` | はた(もくひょう・ゴール) | crimson red | 18〜26 | chousaGame / sousenGame |
-| `gear.svg` | はぐるま(せってい) | gray | — | nav |
+| `flag.svg` | はた(もくひょう・ゴール) | crimson red | 18〜26 | chousaGame / sousenGame / なは おおづなひき |
+| `gear.svg` | はぐるま(せってい) | gray | — | nav / なは おおづなひき |
 | `heart.svg` | ハート(すき・げんき) | white | 20〜20 | kaniGame |
 | `lock.svg` | かぎが かかっている(まだ ひらけない) | — | — | — |
 | `medal.svg` | メダル(ごほうび) | gold | 64〜64 | MapScene / RegionScene |
@@ -234,7 +234,7 @@
 | `sound-on.svg` | おとが なる(スピーカー+おとの なみ) | navy | — | nav |
 | `spin-left.svg` | ↺(ひだりに まわす) | gold | — | hanagasaGame |
 | `spin-right.svg` | ↻(みぎに まわす。はながさ回しの あいず) | gold | 46〜46 | hanagasaGame |
-| `star.svg` | ★(できばえの ほし。ついた ぶん) | gold | — | InvScene / PrefScene / StoryScene / ZukanScene ほか3 |
+| `star.svg` | ★(できばえの ほし。ついた ぶん) | gold | 30〜30 | InvScene / PrefScene / StoryScene / ZukanScene ほか4 |
 | `star-empty.svg` | ☆(まだ ついていない ほし。star と ならべて ★★☆ に する) | tan | — | widgets |
 | `target.svg` | まるい 的(ねらい・もくひょう) | red teal | 20〜32 | balloonGame |
 | `trash.svg` | ごみばこ(けす・すてる) | — | — | — |
@@ -281,7 +281,7 @@
 | `bg-kokkodesho.svg` | kokkodesho | ながさき くんち「コッコデショ」: たいこやまを そらへ ほうり上げて、かた手で うけとめる ど迫力の だしもの。 だから これは「なげ上げ → うけとめ」の 2だん タイミング。 1. ゲージが みどりの ゾーンに きたら タップ = ちょうど よい ちからで なげ上げ (よわいと ひくい / つよすぎると かたむい | 0x2a2f55 0x4a3a2a 0xffd34d 0x8a2f2f 0xc9a23f 0xffffff |
 | `bg-makiwara.svg` | makiwara | つしま てんのうさい(あいち): まきわら舟の ちょうちん飾りゲーム。 ふねの うえに ちょうちんを「はんえん(半円)」に かざる。 ひかった とりつけ位置を タップすると ちょうちんが ともる。 じゅんばんは 自由だが、ひかりは すぐ 別の位置へ 移るので 目と指の 追いかけっこ。 はんえんが 1つ 完成すると ボー | 0x141a33 0x1d3a52 0xffd34d 0x5a4a3a 0x8a6a4a |
 | `bg-mikoshi.svg` | mikoshi | かんだまつり(とうきょう): 神輿(みこし)かつぎバランスゲーム。 みこしは かってに かたむいていく。かたむいた側の「はんたい」を押して(押しっぱなしOK) バランスを取り、まっすぐ担げているあいだ どんどん得点が入る。 大きくかたむくと「おっとっと!」でよろけるだけ(落とさない=成功保証)。 ときどき「わっしょいタ | 0xaee3f7 0xb89b6a 0xd94f4f 0xa9713a 0xffd34d 0x3d3129 |
-| `bg-mine.svg` | mine | 採掘パズル(さつまいも・らっかせい・ねんど): シャベルの回数に限りがある。 はずれを掘ると「まわり8マスに お宝がいくつあるか」の数字ヒントが出るので、 推理して掘る場所を選ぶ(マインスイーパーの逆型)。 全部見つけると 残りシャベル×ボーナス + 新しい盤面(だんだんシャベルが減る) | 0xffffff 0xc9a06a 0xdbb87f 0x6b4a26 |
+| `bg-mine.svg` | mine | 採掘パズル(さつまいも・らっかせい・ねんど): 時間なしの 盤面制。 はずれを掘ると「まわり8マスに お宝がいくつあるか」の数字ヒントが出るので、 推理して掘る場所を選ぶ(マインスイーパーの逆型)。 シャベル10本で お宝5個を さがす 盤面を 3つ あそんだら おわり。 全部見つけると 残りシャベル×ボーナス。シャベ | 0xffffff 0xc9a06a 0xdbb87f 0x6b4a26 |
 | `bg-minyou.svg` | minyou | にいがた まつり(だいみんようながし): 振り(ふり)おぼえゲーム。 まちを ながれる おどりの列。お手本の「ふり」が じゅんばんに ひかるので、 おなじ じゅんばんに タップして そろえる。そろえるほど 列が のびて 得点アップ。 まちがえても おなじ長さで やりなおすだけ(成功保証)。 実在の「大民謡流し」の「みん | 0xf7c873 0xb89b6a 0x8a6a4a |
 | `bg-nebuta.svg` | nebuta | ねぶたまつり(あおもり): 太鼓のビートで はねる(跳人=ハネト)ゲーム。 縮んでいく わっかが 的に かさなった しゅんかんに タップ=「ラッセラー!」と はねる。 外しても コンボが切れるだけ(成功保証)。 ときどき「おおねぶたタイム」= ねぶたが せまってきて 得点2倍 が C 要素。 実在のねぶた祭の「囃子に合 | 0x1d2547 0x141a33 0xe05b5b 0xffd34d 0xf2e6c9 0xd94f4f |
 | `bg-onbashira.svg` | onbashira | すわの おんばしら(ながの): 木落し(きおとし)ゲーム。 坂を すべりおりる 大きな木。木は 左右に かたむいていくので、 かたむいた「はんたいがわ」を タップして たてなおしながら、下まで おりる。 まっすぐなほど はやく すべり、得点も 高い。おおきく かたむくと 速度が おちるだけ(成功保証)。 1本 おりきる | 0xaee3f7 0x6faf5b 0x8a6a4a 0xa9713a 0xc9a86a 0xffffff |

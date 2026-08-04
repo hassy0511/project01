@@ -62,8 +62,10 @@ await page.evaluate(() => window.__mqAdmin.boostAll());
 await page.waitForTimeout(1600);
 await d.clickText('しゅうかく!');
 await harvestFlow(async () => {
-  // 上の列を順にタップして掘り進める
-  for (let col = 0; col < 5; col++) await page.mouse.click(52 + col * 92 + 43, 268);
+  // 上2列(10マス=シャベル10本)を順にタップ。時間なし盤面制なので
+  // シャベルを つかいきる ことで 盤面が すすむ
+  for (let row = 0; row < 2; row++)
+    for (let col = 0; col < 5; col++) await page.mouse.click(52 + col * 92 + 43, 268 + row * 92);
 });
 log('さつまいも(すいり掘り アーケード)');
 
@@ -79,13 +81,11 @@ await harvestFlow(async () => {
 });
 log('うめ(キャッチ アーケード)');
 
-/* 4. ねんど(mine): 採掘。上の列から掘る */
+/* 4. ねんど(mine): 採掘。時間なし盤面制なので 2列(10マス)で シャベルを つかいきる */
 await d.scrollAndClick('ほりに いく');
 await d.playArcade(async () => {
-  // 上の列(y≈216+52)を順にタップして掘り進める
-  for (let col = 0; col < 5; col++) {
-    await page.mouse.click(52 + col * 92 + 43, 268);
-  }
+  for (let row = 0; row < 2; row++)
+    for (let col = 0; col < 5; col++) await page.mouse.click(52 + col * 92 + 43, 268 + row * 92);
 });
 await d.answerQuiz();
 await d.waitText('もどる');
@@ -121,7 +121,8 @@ log('うめジュース(レシピ探索→クラフト)');
 /* 7. かさまやき: ねんどをもう1回掘って2個確保 → クラフト */
 await d.scrollAndClick('ほりに いく');
 await d.playArcade(async () => {
-  for (let col = 0; col < 5; col++) await page.mouse.click(52 + col * 92 + 43, 268);
+  for (let row = 0; row < 2; row++)
+    for (let col = 0; col < 5; col++) await page.mouse.click(52 + col * 92 + 43, 268 + row * 92);
 });
 await d.answerQuiz();
 await d.waitText('もどる');

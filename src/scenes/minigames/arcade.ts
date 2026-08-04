@@ -25,6 +25,9 @@ export interface ArcadeOpts {
   engine: ArcadeEngine;
   /** 残り時間わずか(5秒)で毎秒鳴らすかどうか */
   onEnd: () => void;
+  /** 時間なしモード(すいり掘りなどの 盤面制)。タイマーを 出さず、
+      おわりは ゲーム側が finish() を よんで 決める */
+  untimed?: boolean;
 }
 
 export class ArcadeSession {
@@ -34,6 +37,7 @@ export class ArcadeSession {
   private durationSec: number;
   private startedAt: number;
   private ended = false;
+  private untimed: boolean;
 
   score = 0;
   combo = 0;
@@ -57,8 +61,10 @@ export class ArcadeSession {
     this.engine = opts.engine;
     this.onEnd = opts.onEnd;
     // どうぐが あると あそびの じかんが すこし のびる(★しきい値は そのまま)。
-    // つかいこみも ここで きろく(Lv3 レシピの 目ざめ判定に つかう)
-    this.durationSec = scaledDuration(opts.engine, toolAssist(store.state, opts.engine));
+    // つかいこみも ここで きろく(Lv3 レシピの 目ざめ判定に つかう)。
+    // 時間なしモードは じかんの かわりに ゲーム側で 手数を のばす(mineGame の シャベル)
+    this.untimed = opts.untimed === true;
+    this.durationSec = this.untimed ? 0 : scaledDuration(opts.engine, toolAssist(store.state, opts.engine));
     recordToolUse(GAME_DATA, store.state, opts.engine);
     store.save();
     this.startedAt = Date.now();
@@ -82,12 +88,14 @@ export class ArcadeSession {
           return;
         }
         if (this.pausedAt) return; // あそびかたを 読んでいる あいだは すすめない
-        const left = this.secLeft();
-        this.drawTimer(left / this.durationSec);
-        this.timerLabel.setText(`${Math.ceil(left)}`);
+        const left = this.untimed ? 0 : this.secLeft();
+        if (!this.untimed) {
+          this.drawTimer(left / this.durationSec);
+          this.timerLabel.setText(`${Math.ceil(left)}`);
+        }
         if (this.combo > 0 && Date.now() - this.lastHitAt > ArcadeSession.COMBO_TIMEOUT_MS) this.resetCombo();
         setHook({ kind: 'arcade', engine: this.engine, score: this.score, secLeft: left, durationSec: this.durationSec });
-        if (left <= 0) this.finish();
+        if (!this.untimed && left <= 0) this.finish();
       },
     });
   }
@@ -144,8 +152,9 @@ export class ArcadeSession {
     return Math.max(0, this.durationSec - (Date.now() - this.startedAt) / 1000);
   }
 
-  /** 経過率 0→1(難易度の escalation 用) */
+  /** 経過率 0→1(難易度の escalation 用)。時間なしモードは つねに 0 */
   progress(): number {
+    if (this.untimed) return 0;
     return Phaser.Math.Clamp((Date.now() - this.startedAt) / 1000 / this.durationSec, 0, 1);
   }
 
@@ -179,24 +188,26 @@ export class ArcadeSession {
       .setOrigin(0.5);
     this.area.add(this.comboText);
 
-    // タイマー(右側の帯+残り秒)
-    const barX = GAME_W - 150;
-    const barBg = this.scene.add.graphics();
-    barBg.fillStyle(0xe6e0d0, 1);
-    barBg.fillRoundedRect(barX, 4 + HUD_H / 2 - 7, 100, 14, 7);
-    this.area.add(barBg);
-    this.timerFill = this.scene.add.graphics();
-    this.area.add(this.timerFill);
-    this.drawTimer(1);
-    this.timerLabel = this.scene.add
-      .text(GAME_W - 26, 4 + HUD_H / 2, `${this.durationSec}`, {
-        fontFamily: FONT,
-        fontSize: '16px',
-        color: TEXT_COLORS.main,
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5);
-    this.area.add(this.timerLabel);
+    // タイマー(右側の帯+残り秒)。時間なしモードは 出さない
+    if (!this.untimed) {
+      const barX = GAME_W - 150;
+      const barBg = this.scene.add.graphics();
+      barBg.fillStyle(0xe6e0d0, 1);
+      barBg.fillRoundedRect(barX, 4 + HUD_H / 2 - 7, 100, 14, 7);
+      this.area.add(barBg);
+      this.timerFill = this.scene.add.graphics();
+      this.area.add(this.timerFill);
+      this.drawTimer(1);
+      this.timerLabel = this.scene.add
+        .text(GAME_W - 26, 4 + HUD_H / 2, `${this.durationSec}`, {
+          fontFamily: FONT,
+          fontSize: '16px',
+          color: TEXT_COLORS.main,
+          fontStyle: 'bold',
+        })
+        .setOrigin(0.5);
+      this.area.add(this.timerLabel);
+    }
 
     // どうぐを もって いれば、タイマーの 下に どうぐの しるし
     // (じかんが のびて いる ことの 見える化。Lv1 は 出さない)

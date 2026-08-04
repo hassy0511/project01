@@ -6,7 +6,7 @@
      pluck: ふつうの実 10pt ×コンボ、おおつぶ 40pt。ていねいに引ききると 800pt 前後
      rhythm: ばっちり14/おしい6 ×コンボ、きんの葉 30pt。リズムを守ると 900pt 前後
      catch: 実1個 10pt ×コンボ、金の実 30pt。終盤ラッシュを取り切ると 800pt 超
-     mine:  お宝 30pt ×5個/盤 + シャベル残ボーナス。1盤クリア ≈ 170pt
+     mine:  時間なし・盤面制。お宝 30pt ×5個/盤 ×3盤 + クリア時シャベル残×5。全クリア ≈ 450pt+
      fish:  小10(1タップ)/中25(2タップ)/大50(3タップ)/ぬし120(4タップ)×コンボ。★3はぬし必須
      flick: ゴール 25pt + ど真ん中 10pt(コンボなし)
      fest:  おきゃくさん12pt×コンボ + はやわざ6pt、とくべつな客30pt。★なし(さいこうスコア制)
@@ -74,12 +74,16 @@ export type ArcadeEngine =
   | 'tsunahiki';
 
 export interface ArcadeTuning {
-  /** 制限時間(秒) */
+  /** 制限時間(秒)。0 = 時間なし(盤面制。boards/shovels を見る) */
   durationSec: number;
   /** ★2 に必要なスコア */
   star2: number;
   /** ★3 に必要なスコア */
   star3: number;
+  /** 時間なしゲームの 盤面の数(1回のあそび = この数だけ 盤面を まわす) */
+  boards?: number;
+  /** 時間なしゲームの 1盤面あたりの 手数(シャベルなど) */
+  shovels?: number;
 }
 
 export const ARCADE_TUNING: Record<ArcadeEngine, ArcadeTuning> = {
@@ -89,7 +93,9 @@ export const ARCADE_TUNING: Record<ArcadeEngine, ArcadeTuning> = {
   rhythm: { durationSec: 45, star2: 320, star3: 700 },
   catch: { durationSec: 45, star2: 320, star3: 800 },
   flick: { durationSec: 40, star2: 75, star3: 160 },
-  mine: { durationSec: 60, star2: 170, star3: 330 }, // 子供FBで 50→60(推理する 時間が 足りない)
+  // 子供FBで 時間制を やめた: 時間に 追われて 適当タッチに なる ので、
+  // じっくり 推理して「シャベル10本で お宝5個」を 盤面3つ ぶん あそぶ 形に
+  mine: { durationSec: 0, star2: 280, star3: 430, boards: 3, shovels: 10 },
   fish: { durationSec: 45, star2: 300, star3: 650 },
   care: { durationSec: 25, star2: 0, star3: 0 }, // おせわは★なし(careDone のみ)
   fest: { durationSec: 60, star2: 0, star3: 0 }, // おまつりは★なし(さいこうスコア制)。集大成なので最長

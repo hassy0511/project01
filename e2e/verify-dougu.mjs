@@ -5,6 +5,7 @@
      2. かま(Lv2)を もつと あそび時間が のびて、HUD に どうぐの しるしが 出る
      3. もちものに どうぐの ならびが あり、まだの ものは 「〜で つくれるよ」
      4. どうぐレシピを ほんとうに UI から 作れて、作ると tools が 上がる
+     5. 時間なしの mine では どうぐ(つるはし)は シャベル +1本 に なる
 
    実行: node e2e/verify-dougu.mjs(preview サーバーを 立ててから) */
 import { chromium } from 'playwright';
@@ -154,6 +155,26 @@ assert((await findPart('てに いれた')).length > 0, 'どうぐを 作った 
 const tools = await page.evaluate(() => JSON.parse(localStorage.getItem('meisanquest-save-v1')).tools);
 assert(tools.sweep === 2, `ゆきべらを 作っても tools.sweep が 2 に ならない(${JSON.stringify(tools)})`);
 assert(tools.reap === 2, 'かまの Lv2 が きえた');
+
+/* 5. mine は 時間なし盤面制 なので、つるはし(Lv2)の 効果は
+      「じかんが のびる」でなく 「シャベル +1本」(10 → 11本の 表示に なる) */
+await page.evaluate(() => {
+  const key = 'meisanquest-save-v1';
+  const s = JSON.parse(localStorage.getItem(key));
+  s.tools.mine = 2;
+  localStorage.setItem(key, JSON.stringify(s));
+});
+await page.reload();
+await page.waitForSelector('canvas');
+await page.waitForTimeout(1300);
+await page.evaluate(() => window.__game.scene.getScenes(true)[0].scene.start('PrefScene', { prefId: 'ibaraki' }));
+await page.waitForTimeout(900);
+await d.scrollAndClick('ほりに いく'); // ねんど(いばらき, mine)
+await page.waitForFunction(() => window.__mq?.kind === 'arcade', null, { timeout: 8000 });
+await page.waitForTimeout(700);
+// シャベルは 10本まで 絵で ならび、それを こえた ぶんは 「×N」の 文字に なる
+const over = await findPart('×11');
+assert(over.length > 0, 'つるはしLv2 でも シャベルが 11本に ならない');
 
 await browser.close();
 if (problems.length) {

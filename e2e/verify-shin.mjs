@@ -4,7 +4,7 @@
      1. おまつり前: 県ページに しんの そざいは 出ない
      2. おまつり後: 「しんの めいさん」の 見出しと そざいが 出る
      3. 季節外れの 激レアは 「◯◯に なったら とれるよ」で うえられない
-     4. しんの 収穫は あそび時間が みじかい(SHIN_TUNING.durationScale)
+     4. しんの 収穫は むずかしい(時間制: あそび時間×0.85 / 盤面制の mine: シャベル-1本)
      5. きわみ(Lv3)どうぐは つかいこみ 20回まで ねむって いる
 
    実行: node e2e/verify-shin.mjs(preview サーバーを 立ててから) */
@@ -13,8 +13,6 @@ import { CHROMIUM_PATH, makeDriver } from './helpers.mjs';
 
 const BASE_URL = process.env.MQ_BASE_URL ?? 'http://localhost:4273/project01/';
 const SHOTS = new URL('./shots/out', import.meta.url).pathname;
-/** しんの あそび時間の 倍率(data/arcadeTuning.ts の SHIN_TUNING と そろえる) */
-const SHIN_DURATION_SCALE = 0.85;
 
 const browser = await chromium.launch({ executablePath: CHROMIUM_PATH });
 const page = await browser.newPage({ viewport: { width: 480, height: 800 } });
@@ -87,13 +85,41 @@ if (ankouLocked.length > 0) {
   console.log('季節: いまは ふゆ(あんこうが とれる) ✓');
 }
 
-/* 4. しんの あそび時間は みじかい。れんこん(mine)と ふつうの mine そざいを くらべる */
+/* 4. しんの mine は シャベルが 1本 すくない(時間なし盤面制の むずかしさ)。
+      れんこん(しん)と ねんど(ふつう)で シャベルの 絵の 数を くらべる */
+const countShovels = () =>
+  page.evaluate(() => {
+    let n = 0;
+    for (const scene of window.__game.scene.getScenes(true)) {
+      const walk = (list) => {
+        for (const o of list) {
+          if (o.list) walk(o.list);
+          // コード描画は icon:pick:gray、手描きSVGは svgicon:pick:gray に なる
+          if (o.texture?.key?.endsWith('pick:gray')) n++;
+        }
+      };
+      walk(scene.children.list);
+    }
+    return n;
+  });
+/** 盤面制の mine を ほりきる(上2列=10マスで シャベルを つかいきる)。
+    クイズに うつった しゅんかんに 押さない よう、1タップごとに 見はる */
+const digRows = async () => {
+  for (let row = 0; row < 2; row++) {
+    for (let col = 0; col < 5; col++) {
+      if ((await page.evaluate(() => window.__mq?.kind)) !== 'arcade') return;
+      await page.mouse.click(52 + col * 92 + 43, 268 + row * 92);
+    }
+  }
+};
+
 // ふつうの mine: ねんど(いばらき)
 await gotoPref('ibaraki');
 await d.scrollAndClick('ほりに いく');
 await page.waitForFunction(() => window.__mq?.kind === 'arcade', null, { timeout: 8000 });
-const normalDur = await page.evaluate(() => window.__mq.durationSec);
-await d.playArcade();
+await page.waitForTimeout(700);
+const normalShovels = await countShovels();
+await d.playArcade(digRows, 60000);
 await d.answerQuiz();
 await d.waitText('もどる');
 await d.clickText('もどる');
@@ -109,10 +135,9 @@ await page.evaluate(() => window.__mqAdmin.boostAll());
 await page.waitForTimeout(1600);
 await d.scrollAndClick('しゅうかく!');
 await page.waitForFunction(() => window.__mq?.kind === 'arcade', null, { timeout: 8000 });
-const shinDur = await page.evaluate(() => window.__mq.durationSec);
-const hudShin = await findPart('どうぐ');
-void hudShin;
-await d.playArcade();
+await page.waitForTimeout(700);
+const shinShovels = await countShovels();
+await d.playArcade(digRows, 60000);
 await d.answerQuiz();
 await d.waitText('もどる');
 await d.clickText('もどる');
@@ -121,9 +146,9 @@ const trivia2 = await d.findTexts('へえ!');
 if (trivia2.length) await page.mouse.click(trivia2[0].x, trivia2[0].y);
 await page.waitForTimeout(400);
 
-const ratio = shinDur / normalDur;
-console.log(`mine あそび時間: ふつう ${normalDur.toFixed(2)}s / しん ${shinDur.toFixed(2)}s (×${ratio.toFixed(3)})`);
-assert(Math.abs(ratio - SHIN_DURATION_SCALE) < 0.02, `しんの 時間倍率が おかしい(×${ratio.toFixed(3)})`);
+console.log(`mine シャベル: ふつう ${normalShovels}本 / しん ${shinShovels}本`);
+assert(normalShovels === 10, `ふつうの mine の シャベルが 10本でない(${normalShovels})`);
+assert(shinShovels === 9, `しんの mine の シャベルが 9本でない(${shinShovels})`);
 
 /* 5. きわみ(Lv3)どうぐ: Lv2を もって いても つかいこみ 20回までは ねむったまま */
 await page.evaluate(() => {

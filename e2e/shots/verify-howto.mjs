@@ -107,7 +107,17 @@ else console.log(`出なおした: ${JSON.stringify(again)}`);
 await page.screenshot({ path: `${SHOTS}/howto-mine-again.png` });
 
 /* --- 4. クイズに すすんだら もう 出ない
-       (ここまでの まちで 時間切れに なって いる。そのまま クイズを まつ) --- */
+       (時間なし盤面制なので、ほりきって ゲームを おわらせて から クイズを まつ) --- */
+for (let i = 0; i < 12; i++) {
+  if ((await page.evaluate(() => window.__mq?.kind)) !== 'arcade') break;
+  for (let row = 0; row < 2; row++) {
+    for (let col = 0; col < 5; col++) {
+      if ((await page.evaluate(() => window.__mq?.kind)) !== 'arcade') break;
+      await page.mouse.click(52 + col * 92 + 43, 268 + row * 92);
+    }
+  }
+  await page.waitForTimeout(600);
+}
 await d.waitText('ものしりクイズ! せいかいで スコアボーナス!', 20000);
 await page.waitForTimeout(800);
 if ((await finger()).length) problems.push('クイズの ときに ゆびマークが のこっている');

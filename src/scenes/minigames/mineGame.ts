@@ -1,13 +1,21 @@
-/* 採掘パズル(さつまいも・らっかせい・ねんど): シャベルの回数に限りがある。
+/* 採掘パズル(さつまいも・らっかせい・ねんど): 時間なしの 盤面制。
    はずれを掘ると「まわり8マスに お宝がいくつあるか」の数字ヒントが出るので、
    推理して掘る場所を選ぶ(マインスイーパーの逆型)。
-   全部見つけると 残りシャベル×ボーナス + 新しい盤面(だんだんシャベルが減る) */
+   シャベル10本で お宝5個を さがす 盤面を 3つ あそんだら おわり。
+   全部見つけると 残りシャベル×ボーナス。シャベル切れは 得点そのまま 次の盤面へ。
+
+   ★子供FB「時間が 足りなくて 適当タッチに なる」→ 時間制を やめた。
+     じっくり 考える 子ほど 報われる。シャベルの 上限が ある ので
+     でたらめ押し では 盤面クリア(ボーナス)に とどかない(★1保証は そのまま) */
 import Phaser from 'phaser';
 import { addIcon, iconScale } from '../../ui/icons';
 import { SFX } from '../../audio/sfx';
 import { burst, floatUp, screenFlash, soilPuff } from '../../ui/effects';
 import { UI_TEXT } from '../../data/uiText';
-import { FONT, GAME_AREA_H, GAME_W } from '../../ui/theme';
+import { ARCADE_TUNING, runtimeTuning } from '../../data/arcadeTuning';
+import { toolAssist } from '../../core/tools';
+import { store } from '../../game/store';
+import { FONT, GAME_AREA_H, GAME_W, TEXT_COLORS } from '../../ui/theme';
 import { drawUnderground } from '../../ui/scenery';
 import { ArcadeSession } from './arcade';
 import type { MinigameApi } from './types';
@@ -19,8 +27,14 @@ const ROWS = 5;
 const TILE = 86;
 const GAP = 6;
 const TREASURES = 5;
-const FIRST_SHOVELS = 12;
-const MIN_SHOVELS = 9;
+/** 盤面の数・シャベル本数は データ(ARCADE_TUNING.mine)から とる */
+const BOARDS = ARCADE_TUNING.mine.boards ?? 3;
+const BASE_SHOVELS = ARCADE_TUNING.mine.shovels ?? 10;
+/** どうぐの 補助(toolAssist 0.12/0.18)を シャベルの 本数に かえる 倍率。
+    時間なしゲーム なので 「じかんが のびる」の かわりに 「シャベル +1/+2本」 */
+const SHOVELS_PER_ASSIST = 10;
+/** しんの めいさんは シャベル 1本 すくない(時間なしゲームの むずかしさ) */
+const SHIN_SHOVEL_PENALTY = 1;
 const TREASURE_PTS = 30;
 const SHOVEL_BONUS = 5;
 /** ★子供FB「むずかしくて ただ 適当に タッチして いる」への 手あて。
@@ -46,11 +60,18 @@ export function renderMine(api: MinigameApi, prompt: string, targetIcon: string)
 
   const session = new ArcadeSession(api, {
     engine: 'mine',
+    untimed: true,
     onEnd: () => {
       api.addScore(session.score);
       api.advance(400);
     },
   });
+  const shovelsPerBoard = Math.max(
+    1,
+    BASE_SHOVELS +
+      Math.round(toolAssist(store.state, 'mine') * SHOVELS_PER_ASSIST) -
+      (runtimeTuning.shinHard ? SHIN_SHOVEL_PENALTY : 0),
+  );
 
   /* シャベルの のこり。
 
@@ -101,6 +122,19 @@ export function renderMine(api: MinigameApi, prompt: string, targetIcon: string)
     shovelText.setText(n === 0 ? '0' : n > SHOVEL_ICON_MAX ? `×${n}` : '');
     shovelText.setX(n === 0 ? 10 : 8 + shown * SHOVEL_GAP + 4);
   };
+
+  // 「いま なんばんめの ほりば か」(時間の かわりの ものさし)
+  const boardLabel = scene.add
+    .text(GAME_W - 20, GROUND_Y - 44, '', {
+      fontFamily: FONT,
+      fontSize: '18px',
+      color: TEXT_COLORS.main,
+      fontStyle: 'bold',
+      stroke: '#ffffff',
+      strokeThickness: 4,
+    })
+    .setOrigin(1, 0.5);
+  area.add(boardLabel);
 
   let board = 0;
   let shovels = 0;
@@ -170,12 +204,35 @@ export function renderMine(api: MinigameApi, prompt: string, targetIcon: string)
     t.bg.fillRoundedRect(-TILE / 2 + 5, -TILE / 2 + 5, TILE - 10, 10, 5);
   };
 
+  /** 盤面の おわり: さいごの 盤面なら セッションを とじ、まだなら 次の 盤面へ */
+  const endOrNext = (delayMs: number): void => {
+    scene.time.delayedCall(delayMs, () => {
+      if (session.isEnded()) return;
+      if (board >= BOARDS) session.finish();
+      else newBoard();
+    });
+  };
+
+  /** シャベル切れで 見つからなかった お宝を ふわっと 見せる(次の 推理の 学びに) */
+  const revealTreasures = (): void => {
+    tiles.forEach((row) =>
+      row.forEach((t) => {
+        if (t.dug || !t.treasure) return;
+        const icon = addIcon(scene, 0, 0, targetIcon, 40).setAlpha(0);
+        t.c.add(icon);
+        scene.tweens.add({ targets: icon, alpha: 0.55, duration: 450 });
+      }),
+    );
+  };
+
   const newBoard = (): void => {
     board++;
     found = 0;
     missStreak = 0;
     clearHint();
-    shovels = Math.max(MIN_SHOVELS, FIRST_SHOVELS - (board - 1));
+    boardLabel.setText(UI_TEXT.arcade.mineBoard(board, BOARDS));
+    scene.tweens.add({ targets: boardLabel, scale: { from: 1.25, to: 1 }, duration: 200 });
+    shovels = shovelsPerBoard;
     updateShovels();
     tiles.forEach((row) => row.forEach((t) => t.c.destroy()));
     tiles = [];
@@ -256,15 +313,22 @@ export function renderMine(api: MinigameApi, prompt: string, targetIcon: string)
         showHint();
       }
     }
-    // シャベル切れ: 少し待って新しい掘り場へ(ペナルティなし・時間だけが過ぎる)。
+    // シャベル切れ: この 盤面は クリアならず。とった 点は そのまま、
+    // のこりの お宝を 見せてから 次の 盤面へ(うしなう ものは ない)。
     // お宝を ほって シャベルが 0 に なった ときも ここを 通る ―
     // まえは 「はずれ」の ときだけ 見ていたので、最後の 1ぷりで お宝が 出ると
     // つぎの 掘り場が こないまま 盤面が 死んでいた
     if (shovels <= 0) {
-      floatUp(scene, GAME_W / 2, 400 + api.areaY, UI_TEXT.arcade.noShovels, '#c04545');
-      scene.time.delayedCall(1100, () => {
-        if (!session.isEnded()) newBoard();
-      });
+      clearHint();
+      revealTreasures();
+      floatUp(
+        scene,
+        GAME_W / 2,
+        400 + api.areaY,
+        board >= BOARDS ? UI_TEXT.arcade.noShovelsEnd : UI_TEXT.arcade.noShovels,
+        '#c04545',
+      );
+      endOrNext(1500);
     }
   };
 
@@ -276,9 +340,7 @@ export function renderMine(api: MinigameApi, prompt: string, targetIcon: string)
       session.addPoints(bonus, GAME_W / 2, 380 + api.areaY, false);
       floatUp(scene, GAME_W / 2, 420 + api.areaY, UI_TEXT.arcade.shovelBonus(shovels), '#3f7d2c');
     }
-    scene.time.delayedCall(1000, () => {
-      if (!session.isEnded()) newBoard();
-    });
+    endOrNext(1000);
   };
 
   newBoard();
