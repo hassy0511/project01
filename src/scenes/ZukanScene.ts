@@ -11,7 +11,7 @@ import { currentTitle, earnedKazari } from '../core/orders';
 import { HARVEST_ICON, HOW_TO } from '../data/howto';
 import { showHowTo, type HowToHandle } from '../ui/howto';
 import { store, runtimeStory } from '../game/store';
-import { buildHeader, buildNav, HEADER_H, zukanProgress } from '../ui/nav';
+import { rebuildOnWakeIfChanged, buildHeader, buildNav, HEADER_H, zukanProgress } from '../ui/nav';
 import { SFX } from '../audio/sfx';
 import { confetti } from '../ui/effects';
 import { COLORS, FONT, GAME_AREA_H, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
@@ -50,6 +50,7 @@ export class ZukanScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(COLORS.ground);
     buildHeader(this);
     buildNav(this, 'zukan');
+    rebuildOnWakeIfChanged(this);
     this.buildTabs();
     this.buildGrid();
     this.maybeCelebrateFull();

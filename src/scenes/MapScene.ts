@@ -19,7 +19,7 @@ import { getMapAsset, hasMapAsset } from '../game/mapData';
 import { BONBORI_COLOR } from '../core/bonbori';
 import { rankOf } from '../game/bonbori';
 import { SFX } from '../audio/sfx';
-import { buildHeader, buildNav, HEADER_H } from '../ui/nav';
+import { rebuildOnWakeIfChanged, buildHeader, buildNav, HEADER_H } from '../ui/nav';
 import { runQuizModal } from '../ui/quizRunner';
 import { COLORS, DEPTH, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { makeGuideRow, Modal, showToast, type MascotMood } from '../ui/widgets';
@@ -71,6 +71,7 @@ export class MapScene extends Phaser.Scene {
     this.drawMap();
     buildHeader(this);
     buildNav(this, 'map');
+    rebuildOnWakeIfChanged(this);
     this.buildJapanButton();
     this.buildRegionBanner();
     // 晴れたのに おいわいが まだの 県が あれば、地図が 見えてから シネマ。

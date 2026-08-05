@@ -19,7 +19,7 @@ import { ensureInfra, collectInfra, infraNextSec, infraStock, plantSeed, plotKey
 import { pickRecipeQuizzes, recordQuizAsked } from '../core/quiz';
 import { store } from '../game/store';
 import { SFX } from '../audio/sfx';
-import { buildNav } from '../ui/nav';
+import { rebuildOnWakeIfChanged, buildNav } from '../ui/nav';
 import { runQuizModal } from '../ui/quizRunner';
 import { showTriviaOnce } from '../ui/trivia';
 import { COLORS, DEPTH, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
@@ -116,6 +116,7 @@ export class PrefScene extends Phaser.Scene {
     this.buildBanner();
     this.rebuildCards();
     buildNav(this, 'map');
+    rebuildOnWakeIfChanged(this, () => ({ prefId: this.prefId }));
     this.updateTaskRow();
     // まえの ばめんで 出したかった しらせ(おせわ できた / 産地コンプ)
     if (this.arrivalToast) {

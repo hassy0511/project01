@@ -128,14 +128,17 @@ console.log('カウンタ:', counter[0]);
   await page.waitForTimeout(400);
 }
 
-/* 5. 県ページの おまつりカード: つぎの いろまで あと 何てんか が いつも 見える。
-      festAllButOne で ぐんまは 開催ずみ(きろく1てん=どう)に なって いる */
+/* 5. 県ページの おまつりカード: ぼんぼりの 目あてが いつも 見える。
+      開催ずみなら 「◯◯まで あと◯てん!」か 「きんの ぼんぼり ともった!」の
+      どちらかが かならず 出る(ぐんまの きろくは 手前の ステップしだい) */
 {
   await page.evaluate(() => window.__game.scene.getScenes(true)[0].scene.start('PrefScene', { prefId: 'gunma' }));
   await page.waitForTimeout(900);
-  const goal = await findPart('まで あと');
-  assert(goal.length > 0, 'おまつりカードに 「つぎの いろまで あと◯てん」が 出ない');
-  if (goal.length) console.log('カードの 目あて:', goal[0].split('\n').pop());
+  const next = await findPart('まで あと');
+  const done = await findPart('ぼんぼり ともった');
+  assert(next.length + done.length > 0, 'おまつりカードに ぼんぼりの 目あてが 出ない');
+  const line = next[0] ?? done[0];
+  if (line) console.log('カードの 目あて:', line.split('\n').pop());
   await page.screenshot({ path: `${SHOTS}/bonbori-card.png` });
 }
 

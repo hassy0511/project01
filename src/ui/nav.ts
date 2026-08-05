@@ -78,6 +78,22 @@ export function onPress(obj: Phaser.GameObjects.GameObject, handler: () => void)
   });
 }
 
+/** ナビで ねむらせた シーンの 目ざめかた:
+    ねむって いる あいだに セーブが 変わって いたら 作りなおし(restart)、
+    変わって いなければ そのまま 目ざめる(= 一瞬で もどれる)。
+    ナビの ある シーンの create() で よぶ。restart で SHUTDOWN が 走ると
+    ききみみは はずれ、つぎの create() が あたらしい 番号で つけなおす */
+export function rebuildOnWakeIfChanged(scene: Phaser.Scene, data: () => object = () => ({})): void {
+  const builtRev = store.rev;
+  const onWake = (): void => {
+    if (store.rev !== builtRev) scene.scene.restart(data());
+  };
+  scene.events.on(Phaser.Scenes.Events.WAKE, onWake);
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+    scene.events.off(Phaser.Scenes.Events.WAKE, onWake);
+  });
+}
+
 /** 画面下部ナビバー */
 export function buildNav(scene: Phaser.Scene, active: NavKey): void {
   const c = scene.add.container(0, GAME_H - NAV_H).setDepth(DEPTH.nav);
@@ -106,7 +122,12 @@ export function buildNav(scene: Phaser.Scene, active: NavKey): void {
     // アイコンと 文字を まとめて おせる ように、見えない あたり判定を かぶせる
     const hit = scene.add.zone(x, NAV_H / 2, 92, NAV_H - 8).setInteractive({ useHandCursor: true });
     onPress(hit, () => {
-      if (e.key !== active) scene.scene.start(NAV_SCENES[e.key]);
+      // start でなく switch: いまの シーンを こわさず ねむらせ、行き先が ねむって
+      // いれば そのまま 起こす。ずかん(セル505個)や もちものを ひらく たびに
+      // ぜんぶ 作りなおして いたのが、ふるい iPad で 「行ったり来たりで 固まる」
+      // 原因だった(子供の 実機で 報告)。作りなおしは 目ざめた ときに セーブが
+      // 変わって いた とき だけ(rebuildOnWakeIfChanged)
+      if (e.key !== active) scene.scene.switch(NAV_SCENES[e.key]);
     });
     c.add([icon, t, hit]);
   });

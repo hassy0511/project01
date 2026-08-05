@@ -5,7 +5,7 @@ import { findEntity, findPref, GAME_DATA } from '../data/gameData';
 import { UI_TEXT } from '../data/uiText';
 import { store } from '../game/store';
 import { toolLevel } from '../core/tools';
-import { buildHeader, buildNav, HEADER_H } from '../ui/nav';
+import { rebuildOnWakeIfChanged, buildHeader, buildNav, HEADER_H } from '../ui/nav';
 import { COLORS, FONT, GAME_H, GAME_W, TEXT_COLORS } from '../ui/theme';
 import { ScrollArea } from '../ui/widgets';
 import { addIcon, type IconKey } from '../ui/icons';
@@ -30,6 +30,7 @@ export class InvScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(COLORS.ground);
     buildHeader(this);
     buildNav(this, 'inv');
+    rebuildOnWakeIfChanged(this);
 
     const top = HEADER_H + 10;
     const scroll = new ScrollArea(this, 0, top, GAME_W, GAME_H - top - 72);

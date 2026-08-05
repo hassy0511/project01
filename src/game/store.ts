@@ -20,12 +20,19 @@ import {
 class Store {
   state: SaveState = defaultState();
 
+  /** セーブの 通し番号。保存の たびに ふえる。
+      ナビで ねむらせた シーンが 「ねむって いる あいだに 何か 変わったか」を
+      これで 見わけ、変わって いない ときは 作りなおさず そのまま 目ざめる */
+  rev = 0;
+
   load(): void {
     this.state = loadState(localStorage);
+    this.rev++;
   }
 
   save(): void {
     saveState(this.state, localStorage);
+    this.rev++;
   }
 
   reset(): void {
