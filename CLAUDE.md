@@ -16,7 +16,8 @@
 - Phaser 3 / TypeScript (strict) / Vite
 - テスト: Vitest(ロジック層のユニットテスト)
 - デプロイ: GitHub Actions → GitHub Pages(main への push で自動)
-- 将来: Capacitor でストアビルド(今は考慮のみ、導入しない)
+- ストアビルド: Capacitor 導入済み(ios/ android/)。手順は docs/CAPACITOR_BUILD.md。
+  Web 用は `npm run build`、ネイティブ用は `npm run cap:sync`(--base が違う)
 
 ## コマンド
 
