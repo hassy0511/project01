@@ -99,31 +99,36 @@ export function defaultState(): SaveState {
     そのまま 入って あとで TypeError に なり、白い画面で 何も できなく なる。
     そこで **キーごとに 型を たしかめて、あわない ものは 既定値に もどす** */
 export function loadState(storage: StorageLike): SaveState {
-  const base = defaultState();
   try {
     const raw = storage.getItem(SAVE_KEY);
-    if (!raw) return base;
-    const parsed: unknown = JSON.parse(raw);
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return base;
-    const src = parsed as Record<string, unknown>;
-    const out = base as unknown as Record<string, unknown>;
-    for (const key of Object.keys(base)) {
-      const v = src[key];
-      const def = out[key];
-      if (v === null || v === undefined) continue; // 既定値の まま
-      if (Array.isArray(def)) {
-        if (Array.isArray(v)) out[key] = v;
-      } else if (typeof def === 'object') {
-        if (typeof v === 'object' && !Array.isArray(v)) out[key] = v;
-      } else if (typeof v === typeof def) {
-        out[key] = v;
-      }
-    }
-    return base;
+    if (!raw) return defaultState();
+    return sanitizeState(JSON.parse(raw)) ?? defaultState();
   } catch {
     /* 破損時は初期化 */
   }
   return defaultState();
+}
+
+/** 外から来た JSON を SaveState に ならす(バックアップの 読みこみでも つかう)。
+    オブジェクトで なければ null。キーごとに 型を たしかめ、あわない ものは 既定値 */
+export function sanitizeState(parsed: unknown): SaveState | null {
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+  const base = defaultState();
+  const src = parsed as Record<string, unknown>;
+  const out = base as unknown as Record<string, unknown>;
+  for (const key of Object.keys(base)) {
+    const v = src[key];
+    const def = out[key];
+    if (v === null || v === undefined) continue; // 既定値の まま
+    if (Array.isArray(def)) {
+      if (Array.isArray(v)) out[key] = v;
+    } else if (typeof def === 'object') {
+      if (typeof v === 'object' && !Array.isArray(v)) out[key] = v;
+    } else if (typeof v === typeof def) {
+      out[key] = v;
+    }
+  }
+  return base;
 }
 
 export function saveState(state: SaveState, storage: StorageLike): void {

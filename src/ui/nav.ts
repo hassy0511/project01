@@ -2,6 +2,7 @@
 import Phaser from 'phaser';
 import { GAME_DATA } from '../data/gameData';
 import { earnedKazari } from '../core/orders';
+import { backupFileName, exportBackup, importBackup } from '../core/backup';
 import { UI_TEXT } from '../data/uiText';
 import { store } from '../game/store';
 import { isMuted, setMuted, SFX } from '../audio/sfx';
@@ -238,6 +239,27 @@ function openParentMenu(scene: Phaser.Scene): void {
     48,
   );
   modal.addButton(
+    UI_TEXT.settings.backupBtn,
+    COLORS.primary,
+    () => {
+      downloadBackup();
+      modal.close();
+      showToast(scene, UI_TEXT.settings.backupDone);
+    },
+    380,
+    48,
+  );
+  modal.addButton(
+    UI_TEXT.settings.restoreBtn,
+    COLORS.primary,
+    () => {
+      modal.close();
+      pickBackupFile(scene);
+    },
+    380,
+    48,
+  );
+  modal.addButton(
     UI_TEXT.settings.privacyBtn,
     COLORS.primary,
     () => {
@@ -258,6 +280,60 @@ function openParentMenu(scene: Phaser.Scene): void {
     48,
   );
   modal.show();
+}
+
+/* --- セーブの バックアップ(保護者メニュー)。
+   端末の localStorage は ブラウザの データ消去や 機種変えで きえる ので、
+   ファイルに のこして いつでも もどせる ように する(docs/STORE_REVIEW.md ST-2)。
+   封筒の 形と 検証は core/backup.ts(純ロジック・テストずみ)に ある --- */
+
+/** いまの セーブを JSON ファイルとして ダウンロードする */
+function downloadBackup(): void {
+  const blob = new Blob([exportBackup(store.state, Date.now())], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = backupFileName(new Date());
+  a.click();
+  // すぐ revoke すると iOS Safari で ダウンロードが 空に なる ことが ある ため 少し まつ
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+/** ファイルを えらんで もらい、確認の うえで セーブを 置きかえる */
+function pickBackupFile(scene: Phaser.Scene): void {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json,.json';
+  input.onchange = () => {
+    const file = input.files?.[0];
+    if (!file) return;
+    void file.text().then((text) => {
+      const result = importBackup(text);
+      if (!result.ok) {
+        showToast(scene, result.reason === 'notOurs' ? UI_TEXT.settings.restoreBadFile : UI_TEXT.settings.restoreBroken);
+        return;
+      }
+      const modal = new Modal(scene, UI_TEXT.settings.restoreTitle, true);
+      const d = result.at ? new Date(result.at).toLocaleDateString('ja-JP') : '?';
+      modal.addText(UI_TEXT.settings.restoreConfirm(d), 15, TEXT_COLORS.main);
+      modal.addButton(
+        UI_TEXT.settings.restoreYes,
+        COLORS.gray,
+        () => {
+          store.state = result.save;
+          store.save();
+          modal.close();
+          scene.scene.start('MapScene');
+          showToast(scene, UI_TEXT.settings.restoreDone);
+        },
+        380,
+        48,
+      );
+      modal.addButton(UI_TEXT.settings.resetNo, COLORS.primary, () => modal.close(), 380, 48);
+      modal.show();
+    });
+  };
+  input.click();
 }
 
 function openPrivacy(scene: Phaser.Scene): void {

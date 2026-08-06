@@ -799,6 +799,17 @@ export const UI_TEXT = {
       '・広告表示、アプリ内課金、プッシュ通知はありません\n' +
       '・外部サービスとの通信は行いません\n\n' +
       '地図データ: svg-maps(© Victor Cazanave, CC BY 4.0)',
+    /* --- セーブの バックアップ(書き出し / 読みこみ)。保護者向けのため漢字表記 --- */
+    backupBtn: 'セーブをファイルに残す',
+    backupDone: 'セーブをファイルに書き出しました',
+    restoreBtn: 'セーブをファイルから戻す',
+    restoreTitle: 'セーブの読みこみ',
+    restoreConfirm: (d: string) =>
+      `このファイルのセーブに置きかえますか?\n(${d} に書き出したもの)\nいまの端末のデータは上書きされます。`,
+    restoreYes: 'はい、置きかえる',
+    restoreDone: 'セーブを読みこみました',
+    restoreBadFile: 'このファイルは はれはれクエストのセーブではないようです',
+    restoreBroken: 'ファイルがこわれていて読みこめませんでした',
     resetBtn: 'データをリセット',
     resetTitle: 'リセットの確認',
     resetConfirm: '本当に最初からはじめますか?\nこの端末のセーブデータが消えます。',
