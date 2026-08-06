@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">はれはれクエスト</string>
+    <string name="title_activity_main">はれはれクエスト</string>
+    <string name="package_name">io.github.hassy0511.harehare</string>
+    <string name="custom_url_scheme">io.github.hassy0511.harehare</string>
+</resources>

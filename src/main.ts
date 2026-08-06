@@ -78,9 +78,22 @@ document.addEventListener('visibilitychange', () => {
 window.addEventListener('pagehide', () => setAudioHidden(true));
 window.addEventListener('focus', kickAudio);
 
-// オフライン対応: 一度開けば、電波が無い場所でもホーム画面から起動できるようにする
-if ('serviceWorker' in navigator) {
+/* ストアビルド(Capacitor)か どうか。ネイティブの ときだけ window.Capacitor が 入る */
+const isNativeApp = (): boolean =>
+  (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.() === true;
+
+// オフライン対応: 一度開けば、電波が無い場所でもホーム画面から起動できるようにする。
+// ストアビルドでは 全アセットが 同梱される ので サービスワーカーは いらない(登録しない)
+if ('serviceWorker' in navigator && !isNativeApp()) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => undefined);
+  });
+}
+
+// Android の もどるボタン: アプリを 閉じずに ホームへ ひっこめる
+// (子供が おしても 進みが きえた ように 見えない。iOS では 何も おきない)
+if (isNativeApp()) {
+  void import('@capacitor/app').then(({ App }) => {
+    void App.addListener('backButton', () => void App.minimizeApp());
   });
 }

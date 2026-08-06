@@ -11,9 +11,16 @@
     "typecheck": "tsc --noEmit",
     "art:list": "node scripts/gen-art-list.mjs",
     "art:check": "node scripts/check-art-svg.mjs",
-    "test:e2e": "vite build && node e2e/run.mjs"
+    "test:e2e": "vite build && node e2e/run.mjs",
+    "build:app": "tsc --noEmit && vite build --base ./",
+    "cap:sync": "npm run build:app && cap sync"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/cli": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
+    "@capacitor/ios": "^8.5.0",
     "phaser": "^3.90.0"
   },
   "devDependencies": {
