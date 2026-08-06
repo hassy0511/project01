@@ -19,4 +19,17 @@ const dropInlinedIcons = {
 export default defineConfig({
   base: '/project01/',
   plugins: [dropInlinedIcons],
+  build: {
+    /* たばの 分けかた(ST-6):
+       - phaser: エンジン本体(約1.2MB)。ゲームを 更新しても 変わらない ので、
+         分けて おくと 2回目からは キャッシュが きいて ゲームの ぶんだけ 取りなおす
+       - 手描きSVG(svgData)は 動的 import で 勝手に 分かれる
+       のこりの メイン(ゲーム+データ)は 500KB を きる */
+    chunkSizeWarningLimit: 1300,
+    rollupOptions: {
+      output: {
+        manualChunks: (id: string) => (id.includes('node_modules/phaser') ? 'phaser' : undefined),
+      },
+    },
+  },
 });

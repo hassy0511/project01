@@ -20,26 +20,31 @@
 import type Phaser from 'phaser';
 import { ICON_COLORS, S } from './kit';
 
-/** SVG の 文字列を そのまま バンドルに 入れる(fetch しないので オフラインでも 動く)。
-    public/ に 置く のは 絵を たのむ ときの 決めごと(docs/ART_DIRECTION.md §6)。 */
-const SOURCES = import.meta.glob('../../../public/art/icons/*.svg', {
-  query: '?raw',
-  import: 'default',
-  eager: true,
-}) as Record<string, string>;
+/* SVG の 本体(約800KB)は svgData.ts に 分けて、うしろから 動的に よみこむ。
+   メインの たばを 小さく して 起動を はやく する ため(ST-6)。
+   よみこみが おわる まえに applySvg が よばれたら 「あとで やる」列に ならべ、
+   とどいた しゅんかんに まとめて 差しかえる(見た目は それまで コード描画) */
+let SVG_OF: Record<string, string> | null = null;
+/** 絵の たばが とどく まえに たのまれた 差しかえ(とどいたら 順に やる) */
+const pendingApply: (() => void)[] = [];
 
-/** かたちの 名まえ → SVG の 文字列 */
-const SVG_OF: Record<string, string> = {};
-for (const [p, text] of Object.entries(SOURCES)) {
-  const name = p.split('/').pop()?.replace(/\.svg$/, '');
-  if (name) SVG_OF[name] = text;
-}
+void import('./svgData')
+  .then((m) => {
+    SVG_OF = m.SVG_OF;
+    for (const f of pendingApply.splice(0)) f();
+  })
+  .catch(() => {
+    // たばが とどかなくても ゲームは 止めない(コード描画の まま)
+    SVG_OF = {};
+    pendingApply.length = 0;
+    if (import.meta.env.DEV) console.warn('[icons] 手描きSVGの たばを よみこめなかった');
+  });
 
-/** 手描きの SVG が ある かたちか */
-export const hasSvg = (shape: string): boolean => shape in SVG_OF;
+/** 手描きの SVG が ある かたちか(たばが まだ なら false。差しかえは applySvg が あとで やる) */
+export const hasSvg = (shape: string): boolean => SVG_OF !== null && shape in SVG_OF;
 
 /** SVG が ある かたちの 名まえ ぜんぶ(iconsheet の 見くらべ用) */
-export const svgShapes = (): string[] => Object.keys(SVG_OF).sort();
+export const svgShapes = (): string[] => (SVG_OF ? Object.keys(SVG_OF).sort() : []);
 
 /** 焼いた SVG の テクスチャキー(コード描画の `icon:` と 分ける) */
 export const svgTextureKey = (key: string): string => `svgicon:${key}`;
@@ -59,7 +64,7 @@ async function bake(scene: Phaser.Scene, key: string): Promise<boolean> {
   const texKey = svgTextureKey(key);
   if (baked.has(texKey)) return true;
   const [shape, colorName] = key.split(':');
-  const src = SVG_OF[shape];
+  const src = SVG_OF?.[shape];
   if (!src) return false;
 
   const c = ICON_COLORS[colorName ?? 'cream'] ?? ICON_COLORS.cream;
@@ -104,6 +109,11 @@ export const svgReady = (scene: Phaser.Scene, key: string): boolean =>
  * SVG が ない かたちは 何も しない(コード描画の まま)。
  */
 export function applySvg(img: Phaser.GameObjects.Image, key: string, size: number): void {
+  // 絵の たばが まだ とどいて いない → とどいたら もう一度 ここへ 来る
+  if (SVG_OF === null) {
+    pendingApply.push(() => applySvg(img, key, size));
+    return;
+  }
   const shape = key.split(':')[0];
   if (!hasSvg(shape)) return;
   const scene = img.scene;
