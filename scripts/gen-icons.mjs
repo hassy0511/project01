@@ -11,7 +11,8 @@ const CHROMIUM_PATH =
 const OUT_DIR = 'public/icons';
 fs.mkdirSync(OUT_DIR, { recursive: true });
 
-const SIZES_ANY = [512, 192, 180, 167, 152, 120, 32, 16];
+/* 1024 は App Store 提出用(透過なし必須。icon.svg は背景つきなので満たす) */
+const SIZES_ANY = [1024, 512, 192, 180, 167, 152, 120, 32, 16];
 const SIZES_MASKABLE = [512, 192];
 
 const browserShared = await chromium.launch({ executablePath: CHROMIUM_PATH });
