@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <path d="M31 22C24 14 11 13 7 23C3 33 10 47 20 51C27 53 33 48 34 40C35 32 33 25 31 22ZM25 27C21 22 15 21 13 26C11 31 15 40 20 43C24 45 27 41 27 36C27 32 26 29 25 27ZM33 22C40 14 53 13 57 23C61 33 54 47 44 51C37 53 31 48 30 40C29 32 31 25 33 22ZM39 27C43 22 49 21 51 26C53 31 49 40 44 43C40 45 37 41 37 36C37 32 38 29 39 27Z" fill="#MAIN" fill-rule="evenodd" stroke="#DARK" stroke-width="2.8" stroke-linejoin="round"/>
+  <path d="M29 25H35C37 25 39 27 39 29V46C39 48 37 50 35 50H29C27 50 25 48 25 46V29C25 27 27 25 29 25Z" fill="#MAIN" stroke="#DARK" stroke-width="2.8" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <path d="M30 40L25 8C25 5 28 4 30 7L36 37Z" fill="#MAIN" stroke="#DARK" stroke-width="2.8" stroke-linejoin="round"/>
+  <path d="M34 38L40 7C41 4 44 5 44 8L40 41Z" fill="#MAIN" stroke="#DARK" stroke-width="2.8" stroke-linejoin="round"/>
+  <path d="M32 41C32 51 26 59 19 59C13 59 10 54 11 49C12 42 18 37 25 37C29 37 32 39 32 41ZM26 46C25 43 21 43 18 46C15 49 16 53 19 53C22 53 25 50 26 46Z" fill="#MAIN" fill-rule="evenodd" stroke="#DARK" stroke-width="2.8" stroke-linejoin="round"/>
+  <path d="M33 41C33 51 39 59 46 59C52 59 55 54 54 49C53 42 47 37 40 37C36 37 33 39 33 41ZM39 46C40 43 44 43 47 46C50 49 49 53 46 53C43 53 40 50 39 46Z" fill="#MAIN" fill-rule="evenodd" stroke="#DARK" stroke-width="2.8" stroke-linejoin="round"/>
+  <circle cx="33" cy="39" r="3.2" fill="#DARK"/>
+</svg>
