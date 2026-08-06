@@ -30,7 +30,9 @@ for (const f of ICON_FILES) {
   const src = fs.readFileSync(path.join(ICON_DIR, f), 'utf8');
   // せつめいの 中に `*​/` を ふくめない こと(ふくめると コメント1つが 何十行も
   // のみこんで、あいだの かたちが まるごと 消える。lantern と fan が 消えていた)
-  const re = /(?:\/\*\*((?:(?!\*\/)[\s\S])*)\*\/\s*)?\n\s{2}'?([a-z][a-z0-9-]*)'?:\s*\(g,\s*c\)\s*=>/g;
+  // (g) => だけの かたち(マスコットの ぴっけ・はち)も ひろう。まえは (g, c) => しか
+  // 見て いなかった ので、chick / chick-cheer / chick-egg / bee が 発注リストから 漏れて いた
+  const re = /(?:\/\*\*((?:(?!\*\/)[\s\S])*)\*\/\s*)?\n\s{2}'?([a-z][a-z0-9-]*)'?:\s*\(g(?:,\s*c)?\)\s*=>/g;
   let m;
   while ((m = re.exec(src))) {
     const desc = (m[1] ?? '').replace(/\s*\n\s*/g, ' ').trim();

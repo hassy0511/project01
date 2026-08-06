@@ -6,6 +6,6 @@
   <path d="M10 17c7 1 12 5 15 10l-8 6-7-4zm44 0c-7 1-12 5-15 10l8 6 7-4z"
         fill="#C0392B" stroke="#DARK" stroke-width="2.5" stroke-linejoin="round"/>
   <path d="M21 32c3-3 7-3 10 0-3 4-7 4-10 0zm12 0c3-3 7-3 10 0-3 4-7 4-10 0z"
-        fill="#FAF6EC" stroke="#DARK" stroke-width="2.4" stroke-linejoin="round"/>
+        fill="#F5EEDF" stroke="#DARK" stroke-width="2.4" stroke-linejoin="round"/>
   <path d="M27 46c3 3 7 3 10 0" fill="none" stroke="#DARK" stroke-width="2.7" stroke-linecap="round"/>
 </svg>
