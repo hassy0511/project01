@@ -95,6 +95,10 @@
       <span class="t"><span class="tag sml">小</span>管理者ボタンを 本番で どうするか</span>
       <div class="d">いまは わざと 出したまま。公開の 前に 隠すか、保護者ゲートの 中に 入れるか。</div>
     </li>
+    <li>
+      <span class="t"><span class="tag sml">小</span>対象の 年齢帯を どれに するか</span>
+      <div class="d">Apple の 子ども向けは「5歳以下 / 6〜8 / 9〜11」から 1つ えらぶ。いまの 仕様書は「4〜8歳」なので <b>6〜8 が おすすめ</b>。決めたら 仕様書も なおす。</div>
+    </li>
   </ul>
 
   <h2>これから やる こと</h2>
@@ -105,7 +109,15 @@
     </li>
     <li>
       <span class="t"><span class="tag big">大</span>アプリストア むけの ビルド(Capacitor)</span>
-      <div class="d">いまは Web(GitHub Pages)だけ。App Store / Google Play に 出すなら ここから。</div>
+      <div class="d">いまは Web(GitHub Pages)だけ。提出までの 全タスクを 洗い出して <code>docs/STORE_REVIEW.md</code> に 一覧に した(2026-08-06)。コード側 7つ + 人の 宿題 6つ(開発者アカウント・Mac の 確保 など)。</div>
+    </li>
+    <li>
+      <span class="t"><span class="tag mid">中</span>ものしりカードの 裏取り のこり 23件</span>
+      <div class="d">あとから 足した エリア(ちゅうぶ より 西)の ぶん。統計や 発祥の 話を 確かめてから 断定の 文に する。教育もの なので ストア提出の 前に 必ず。</div>
+    </li>
+    <li>
+      <span class="t"><span class="tag mid">中</span>ストアに 出す 素材の 用意</span>
+      <div class="d">1024px の アイコン・スクリーンショット(自動撮影の 台本は 作れる)・紹介文・英語版の プライバシーポリシー。</div>
     </li>
     <li>
       <span class="t"><span class="tag sml">小</span>Codex 第7回の 絵の 発注(11個)</span>
@@ -116,8 +128,8 @@
       <div class="d">ミニゲームの さいちゅうに 迷った ときの 助け。いまは 最初の ゆびマークだけ。</div>
     </li>
     <li>
-      <span class="t"><span class="tag sml">小</span>商標の 確認(J-PlatPat)</span>
-      <div class="d">「はれはれクエスト」で 実際に 出願されて いないか、特許庁の 検索で 裏を とる。ストア公開の 前に。</div>
+      <span class="t"><span class="tag sml">小</span>商標の 確認(J-PlatPat)— のこりは 手作業 5分だけ</span>
+      <div class="d">Web の 再調査は 済み(2026-08-06): 完全一致は なし、近い ものも 別分野のみ。特許庁の J-PlatPat は 機械からは 見られない ので、<b>人が 5分で できる 手順書</b>を <code>docs/APP_NAME.md</code> に 用意した。「ハレハレ」「ハレバレ」を 称呼検索 → 9類・41類に 重なりが なければ OK。</div>
     </li>
     <li>
       <span class="t"><span class="tag sml">小</span>ずかん100%の お祝いの 自動テスト</span>
@@ -131,6 +143,8 @@
 
   <h2 class="done-head">おわった こと<span class="n">(新しい順)</span></h2>
   <ul class="done">
+    <li><span class="t">ストア公開までの 課題を 洗い出して 一覧に した</span>
+      <div class="d">いまの コードを 審査の きまり(Apple 子ども向け / Google ファミリー)と つきあわせて 点検。プライバシー・保護者ゲート・外部リンクなし などは 済んで いて、のこりは 13タスク(<code>docs/STORE_REVIEW.md</code>)。商標の Web再調査も 済み(衝突なし。J-PlatPat の 手順書つき)。</div></li>
     <li><span class="t">ふるい iPad で ぜんたいが 重く なるのを なおした</span>
       <div class="d">原因は 2つ。①ナビで 行き来する たびに ずかん(セル505個)や もちものを ゼロから 作りなおして いた → 画面を ねむらせて つかいまわす 方式に(なかみが 変わった ときだけ 作りなおす)。ずかんを ひらきなおすのが 1.9秒 → 0.17秒に。②ミニゲームの 背景の 絵(1まい 約5MB×59種)を ためこんで いた → 直近3まいだけ のこして すてる ように。</div></li>
     <li><span class="t">きんの ぼんぼりの とりかたを 見える ように した</span>
