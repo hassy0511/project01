@@ -659,4 +659,29 @@ export const NATURE_ICONS: Record<string, IconDraw> = {
       }
     }
   },
+  /** もみじの 葉 1まい(あきの しるし。季節マークの ために 用意。まだ データからは つかって いない) */
+  momiji: (g, c) => {
+    fill(g, c[0]);
+    const pts: [number, number][] = [
+      [32, 6], [38, 22], [52, 14], [46, 30], [58, 34],
+      [44, 40], [50, 54], [34, 46], [32, 58], [30, 46],
+      [14, 54], [20, 40], [6, 34], [18, 30], [12, 14], [26, 22],
+    ];
+    g.beginPath();
+    g.moveTo(pts[0][0], pts[0][1]);
+    for (const [x, y] of pts.slice(1)) g.lineTo(x, y);
+    g.closePath();
+    g.fillPath();
+    line(g, c[1]);
+    g.beginPath();
+    g.moveTo(pts[0][0], pts[0][1]);
+    for (const [x, y] of pts.slice(1)) g.lineTo(x, y);
+    g.closePath();
+    g.strokePath();
+    line(g, c[1], 1.6);
+    g.beginPath();
+    g.moveTo(32, 52);
+    g.lineTo(32, 26);
+    g.strokePath();
+  },
 };

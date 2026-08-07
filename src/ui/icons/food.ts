@@ -1420,4 +1420,84 @@ export const FOOD_ICONS: Record<string, IconDraw> = {
     g.arc(32, 45, 19, Math.PI * 1.03, Math.PI * 1.97, false);
     g.strokePath();
   },
+  /** あんこう。ひらたい 体と 大きな 口、ひとつの ちょうちん。こわく しない */
+  ankou: (g, c) => {
+    fill(g, c[0]);
+    g.fillEllipse(30, 38, 46, 30);
+    line(g, c[1]);
+    g.strokeEllipse(30, 38, 46, 30);
+    // 大きな 口(したむき の カーブ)
+    line(g, c[1], 2.6);
+    g.beginPath();
+    g.arc(18, 40, 12, Math.PI * 1.75, Math.PI * 0.35, false);
+    g.strokePath();
+    // ちょうちん(あたまから 1本)
+    line(g, c[1], 2.4);
+    g.beginPath();
+    g.moveTo(26, 24);
+    g.lineTo(34, 12);
+    g.strokePath();
+    fill(g, c[1]);
+    g.fillCircle(36, 11, 4);
+    g.fillCircle(20, 33, 2.6); // め
+    // しっぽ
+    fill(g, c[0]);
+    g.fillTriangle(52, 30, 62, 38, 52, 46);
+    line(g, c[1]);
+    g.beginPath();
+    g.moveTo(52, 30);
+    g.lineTo(62, 38);
+    g.lineTo(52, 46);
+    g.strokePath();
+  },
+  /** かんぴょう。ほした 帯を まいた たば(わが 2つ ならぶ) */
+  kanpyo: (g, c) => {
+    line(g, c[1], 5);
+    for (const cx of [22, 42] as const) {
+      g.beginPath();
+      g.arc(cx, 34, 13, 0, Math.PI * 2, false);
+      g.strokePath();
+    }
+    fill(g, c[0]);
+    for (const cx of [22, 42] as const) {
+      g.fillStyle(c[0], 1);
+      g.beginPath();
+      g.arc(cx, 34, 13, 0, Math.PI * 2, false);
+      g.strokePath();
+    }
+    // まんなかを しばった おび
+    fill(g, c[0]);
+    g.fillRoundedRect(27, 22, 10, 24, 3);
+    line(g, c[1]);
+    g.strokeRoundedRect(27, 22, 10, 24, 3);
+  },
+  /** くわい。まるい 球から 芽が 1本 ぴんと のびる */
+  kuwai: (g, c) => {
+    ellipseOutlined(g, 32, 42, 34, 30, c);
+    fill(g, c[1]);
+    g.fillRoundedRect(29, 20, 6, 12, 2);
+    // 芽(さきが とがる)
+    fill(g, c[0]);
+    g.fillTriangle(32, 6, 26, 26, 38, 26);
+    line(g, c[1]);
+    g.beginPath();
+    g.moveTo(32, 6);
+    g.lineTo(26, 26);
+    g.lineTo(38, 26);
+    g.closePath();
+    g.strokePath();
+    shine(g, 24, 40, 6, 4);
+  },
+  /** パッションフルーツ。半分に 切って つぶつぶが 見える */
+  passionfruit: (g, c) => {
+    ellipseOutlined(g, 32, 34, 46, 46, c);
+    g.fillStyle(c[1], 0.28);
+    g.fillCircle(32, 34, 17);
+    fill(g, c[1]);
+    for (const [dx, dy] of [
+      [-9, -7], [0, -10], [9, -6], [-11, 2], [-1, 1], [10, 3], [-7, 10], [3, 10],
+    ] as const)
+      g.fillCircle(32 + dx, 34 + dy, 2.6);
+    shine(g, 21, 22, 6, 4);
+  },
 };

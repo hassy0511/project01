@@ -1,6 +1,10 @@
 /* 手描き SVG が ゲーム画面に 出て いるか しらべる。
-   ・SVG が ある かたち(いちご・さかな・ひと・ちょうちん・わん)は svgicon: に なる
-   ・SVG が ない かたちは これまでの icon: の まま(1個ずつ 差しかえの 確認)
+   ・データが つかう かたちは ぜんぶ svgicon: に なる
+   ・まえは 「SVG が ない かたちは icon: の まま」も 見て いた(1個ずつ 差しかえて
+     いた ころの ガード)。第7回で ぴっけ・はちも SVG に なり、絵が ぜんぶ そろった ので
+     「コード描画が のこって いる こと」は もう 正しさの しるしでは ない。
+     いまは 「SVG が じゅうぶんな 数 出て いる」ことと、コード描画に おちて いる
+     かたちが あれば その 名まえを 出す(発注もれの 早期発見)ように した
    実行: node e2e/shots/verify-svg-icons.mjs(preview サーバーを 立ててから) */
 import { chromium } from 'playwright';
 import { CHROMIUM_PATH, makeDriver } from '../helpers.mjs';
@@ -53,7 +57,11 @@ const svgKeys = Object.keys(zk).filter((k) => k.startsWith('svgicon:'));
 const codeKeys = Object.keys(zk).filter((k) => k.startsWith('icon:'));
 console.log(`ずかん: SVG ${svgKeys.length}しゅ / コード描画 ${codeKeys.length}しゅ`);
 if (svgKeys.length) console.log('  SVG:', svgKeys.join(' '));
-if (!codeKeys.length) problems.push('コード描画が 1つも ない(差しかえの 切りわけが おかしい)');
+// 絵が ぜんぶ そろった ので、コード描画に おちて いる ものは 「発注もれ」の しるし。
+// 落ちても すぐ こまる わけでは ない ので しらせるだけ(SVG が 出て いない ほうが 大ごと)
+if (codeKeys.length) console.log('  コード描画の まま:', codeKeys.join(' '));
+// ずかんは まだ 集めて いない セルが 「?」なので、出る かたちは ヘッダー+ナビ+? の 7しゅ ほど
+if (svgKeys.length < 5) problems.push(`ずかんの SVG が すくなすぎる(${svgKeys.length}しゅ)。差しかえが うごいて いない`);
 await page.screenshot({ path: `${SHOTS}/svg-zukan.png` });
 
 /* いちごが 出る 県(とちぎ)の 県ページ */

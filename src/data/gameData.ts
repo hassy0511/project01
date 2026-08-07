@@ -869,17 +869,17 @@ export const GAME_DATA: GameData = {
        ゲームは 格段に むずかしい(SHIN_TUNING)。季節つきは 激レアのみ。
        docs/DOUGU_SHIN_PLAN.md */
     /* いばらき */
-    { id: 'm127', name: 'れんこん', icon: 'root:cream', origins: ['ibaraki'], rarity: 'unique', shin: true,
+    { id: 'm127', name: 'れんこん', icon: 'lotus:cream', origins: ['ibaraki'], rarity: 'unique', shin: true,
       gather: { type: 'plant', verb: 'たねばすを うえる', growSec: 2400, fieldLabel: 'はすだ',
         harvest: { engine: 'mine', prompt: 'れんこんは どろの なか。すうじの ヒントで ばしょを すいりして ほろう!' },
         care: { targetIcon: 'duck:white', label: 'かもが はすを ついばんでる! タップで おいはらえ!' } } },
-    { id: 'm128', name: 'あんこう', icon: 'bigfish:navy', origins: ['ibaraki'], rarity: 'unique', shin: true, season: 'fuyu',
+    { id: 'm128', name: 'あんこう', icon: 'ankou:navy', origins: ['ibaraki'], rarity: 'unique', shin: true, season: 'fuyu',
       gather: { type: 'timing', verb: 'りょうに でる',
-        theme: { intro: 'ふゆの うみに あんこうが やってきた!', prompt: 'さかなを タップして つりあげよう! おおきい さかなほど なんかいも タップ! ぬしを つると ほし3つ!', stopBtn: 'あみを ひく!', markerIcon: 'bigfish:navy', success: 'たいりょうだ!', stageIcons: ['boat:white', 'wave:navy', 'bigfish:navy'] } } },
+        theme: { intro: 'ふゆの うみに あんこうが やってきた!', prompt: 'さかなを タップして つりあげよう! おおきい さかなほど なんかいも タップ! ぬしを つると ほし3つ!', stopBtn: 'あみを ひく!', markerIcon: 'ankou:navy', success: 'たいりょうだ!', stageIcons: ['boat:white', 'wave:navy', 'ankou:navy'] } } },
     /* とちぎ */
-    { id: 'm129', name: 'かんぴょう', icon: 'noodle:tan', origins: ['tochigi'], rarity: 'unique', shin: true,
+    { id: 'm129', name: 'かんぴょう', icon: 'kanpyo:tan', origins: ['tochigi'], rarity: 'unique', shin: true,
       gather: { type: 'plant', verb: 'ゆうがおを うえる', growSec: 2100, fieldLabel: 'ゆうがおばたけ',
-        harvest: { engine: 'reap', targetIcon: 'noodle:tan', prompt: 'よこに なぞって かんぴょうを けずりとろう! 1れつを ひとふででボーナス!' },
+        harvest: { engine: 'reap', targetIcon: 'kanpyo:tan', prompt: 'よこに なぞって かんぴょうを けずりとろう! 1れつを ひとふででボーナス!' },
         care: { targetIcon: 'bird:sky', label: 'とりが みを つついてる! タップで おいはらえ!' } } },
     { id: 'm130', name: 'にら', icon: 'stalk:green', origins: ['tochigi'], rarity: 'unique', shin: true,
       gather: { type: 'plant', verb: 'たねを まく', growSec: 1800, fieldLabel: 'にらばたけ',
@@ -895,7 +895,7 @@ export const GAME_DATA: GameData = {
         harvest: { engine: 'chain', targetIcon: 'mushroom:brown', unripeIcon: 'mushroom:cream', prompt: 'ひらいた まいたけだけ つもう! ちいさいのは まだ はやいよ' },
         care: { targetIcon: 'snail:brown', label: 'かたつむりが きのこを かじってる! タップで おいはらえ!' } } },
     /* さいたま */
-    { id: 'm133', name: 'くわい', icon: 'tuber:teal', origins: ['saitama'], rarity: 'unique', shin: true, season: 'fuyu',
+    { id: 'm133', name: 'くわい', icon: 'kuwai:teal', origins: ['saitama'], rarity: 'unique', shin: true, season: 'fuyu',
       gather: { type: 'plant', verb: 'たねいもを うえる', growSec: 2400, fieldLabel: 'くわいだ',
         harvest: { engine: 'mine', prompt: 'くわいは どろの なか。すうじの ヒントで ばしょを すいりして ほろう!' },
         care: { targetIcon: 'duck:white', label: 'かもが たんぼを あらしてる! タップで おいはらえ!' } } },
@@ -908,9 +908,9 @@ export const GAME_DATA: GameData = {
       gather: { type: 'plant', verb: 'たねを まく', growSec: 1800, fieldLabel: 'しまの はたけ',
         harvest: { engine: 'pluck', targetIcon: 'leafy:deepgreen', unripeIcon: 'leafy:lime', prompt: 'そだった はっぱを おさえて、ゆーっくり つみとろう! はやいと ちぎれちゃう' },
         care: { targetIcon: 'bug:green', label: 'むしが はを かじってる! タップで おいはらえ!' } } },
-    { id: 'm136', name: 'パッションフルーツ', icon: 'round:violet', origins: ['tokyo'], rarity: 'unique', shin: true, season: 'natsu',
+    { id: 'm136', name: 'パッションフルーツ', icon: 'passionfruit:violet', origins: ['tokyo'], rarity: 'unique', shin: true, season: 'natsu',
       gather: { type: 'plant', verb: 'なえを うえる', growSec: 2400, fieldLabel: 'しまの かじゅえん',
-        harvest: { engine: 'catch', targetIcon: 'round:violet', prompt: 'おちてくる みを かごで キャッチ! えだは よけてね' },
+        harvest: { engine: 'catch', targetIcon: 'passionfruit:violet', prompt: 'おちてくる みを かごで キャッチ! えだは よけてね' },
         care: { targetIcon: 'bird:sky', label: 'とりが みを ついばんでる! タップで おいはらえ!' } } },
     /* ちば */
     { id: 'm137', name: 'きんめだい', icon: 'fish:red', origins: ['chiba'], rarity: 'unique', shin: true,
@@ -966,7 +966,7 @@ export const GAME_DATA: GameData = {
       menu: ['r07', 'r10', 'r09'] },
 
     /* --- とちぎ --- */
-    { id: 'r12', name: 'かんぴょう', icon: 'rope:cream', tier: 2, type: 'kakou', pref: 'tochigi',
+    { id: 'r12', name: 'かんぴょう', icon: 'kanpyo:cream', tier: 2, type: 'kakou', pref: 'tochigi',
       ingredients: [{ ref: 'm12', count: 2 }] },
     { id: 'r13', name: 'いちごジャム', icon: 'jar:red', tier: 2, type: 'kakou', pref: 'tochigi',
       ingredients: [{ ref: 'm11', count: 2 }] },
@@ -1701,10 +1701,10 @@ export const GAME_DATA: GameData = {
        各地の ほんものの 工芸の 県で 作る(docs/DOUGU_SHIN_PLAN.md)。
        作ると save.tools[engine] = 2 に なり、その あそびの じかんが すこし のびる。
        もちものには 入らない(なんども 作れない ように 県ページで 出しわけ) */
-    { id: 'rd01', name: 'えちごの かま', icon: 'knife:silver', tier: 2, type: 'dougu', pref: 'niigata',
+    { id: 'rd01', name: 'えちごの かま', icon: 'sickle:silver', tier: 2, type: 'dougu', pref: 'niigata',
       tool: { engine: 'reap', level: 2 },
       ingredients: [{ ref: 'm24', count: 2 }, { ref: 'm126', count: 1 }] },
-    { id: 'rd02', name: 'みきの つみとりばさみ', icon: 'knife:red', tier: 2, type: 'dougu', pref: 'hyogo',
+    { id: 'rd02', name: 'みきの つみとりばさみ', icon: 'scissors:red', tier: 2, type: 'dougu', pref: 'hyogo',
       tool: { engine: 'pluck', level: 2 },
       ingredients: [{ ref: 'm24', count: 2 }] },
     { id: 'rd03', name: 'べっぷの たけかご', icon: 'basket:tan', tier: 2, type: 'dougu', pref: 'oita',
@@ -1719,10 +1719,10 @@ export const GAME_DATA: GameData = {
     { id: 'rd06', name: 'えっちゅうの すくいあみ', icon: 'net:teal', tier: 2, type: 'dougu', pref: 'toyama',
       tool: { engine: 'scoop', level: 2 },
       ingredients: [{ ref: 'm126', count: 1 }, { ref: 'm24', count: 1 }] },
-    { id: 'rd07', name: 'みかわの くまで', icon: 'fan:tan', tier: 2, type: 'dougu', pref: 'aichi',
+    { id: 'rd07', name: 'みかわの くまで', icon: 'rake:tan', tier: 2, type: 'dougu', pref: 'aichi',
       tool: { engine: 'shell', level: 2 },
       ingredients: [{ ref: 'm126', count: 1 }, { ref: 'm24', count: 1 }] },
-    { id: 'rd08', name: 'あきたの ゆきべら', icon: 'ladle:sky', tier: 2, type: 'dougu', pref: 'akita',
+    { id: 'rd08', name: 'あきたの ゆきべら', icon: 'shovel:sky', tier: 2, type: 'dougu', pref: 'akita',
       tool: { engine: 'sweep', level: 2 },
       ingredients: [{ ref: 'm126', count: 2 }] },
     { id: 'rd09', name: 'きょうの しゅうかくかご', icon: 'basket:brown', tier: 2, type: 'dougu', pref: 'kyoto',
@@ -1731,7 +1731,7 @@ export const GAME_DATA: GameData = {
     { id: 'rd10', name: 'かがわの てぶくろ', icon: 'glove:white', tier: 2, type: 'dougu', pref: 'kagawa',
       tool: { engine: 'flick', level: 2 },
       ingredients: [{ ref: 'm97', count: 2 }] },
-    { id: 'rd11', name: 'きしゅうの つりざお', icon: 'stalk:tan', tier: 2, type: 'dougu', pref: 'wakayama',
+    { id: 'rd11', name: 'きしゅうの つりざお', icon: 'rod:tan', tier: 2, type: 'dougu', pref: 'wakayama',
       tool: { engine: 'fish', level: 2 },
       ingredients: [{ ref: 'm125', count: 1 }, { ref: 'm24', count: 1 }] },
 
@@ -1740,10 +1740,10 @@ export const GAME_DATA: GameData = {
        TOOL_LV3_USES)。材料は どうぐの 材料の ★3(うでまえの あかし)。
        ※設計時は 「しんの めいさん級の 素材」の 予定だったが、どうぐの 県と
          しんの 県が はなれて いて 不自然なので ★3指定に かえた */
-    { id: 'rd21', name: 'きわみの かま', icon: 'knife:gold', tier: 2, type: 'dougu', pref: 'niigata',
+    { id: 'rd21', name: 'きわみの かま', icon: 'sickle:gold', tier: 2, type: 'dougu', pref: 'niigata',
       tool: { engine: 'reap', level: 3 },
       ingredients: [{ ref: 'm24', count: 2, quality: 3 }, { ref: 'm126', count: 1, quality: 3 }] },
-    { id: 'rd22', name: 'きわみの つみとりばさみ', icon: 'knife:amber', tier: 2, type: 'dougu', pref: 'hyogo',
+    { id: 'rd22', name: 'きわみの つみとりばさみ', icon: 'scissors:amber', tier: 2, type: 'dougu', pref: 'hyogo',
       tool: { engine: 'pluck', level: 3 },
       ingredients: [{ ref: 'm24', count: 2, quality: 3 }] },
     { id: 'rd23', name: 'きわみの たけかご', icon: 'basket:gold', tier: 2, type: 'dougu', pref: 'oita',
@@ -1758,10 +1758,10 @@ export const GAME_DATA: GameData = {
     { id: 'rd26', name: 'きわみの すくいあみ', icon: 'net:gold', tier: 2, type: 'dougu', pref: 'toyama',
       tool: { engine: 'scoop', level: 3 },
       ingredients: [{ ref: 'm126', count: 1, quality: 3 }, { ref: 'm24', count: 1, quality: 3 }] },
-    { id: 'rd27', name: 'きわみの くまで', icon: 'fan:gold', tier: 2, type: 'dougu', pref: 'aichi',
+    { id: 'rd27', name: 'きわみの くまで', icon: 'rake:gold', tier: 2, type: 'dougu', pref: 'aichi',
       tool: { engine: 'shell', level: 3 },
       ingredients: [{ ref: 'm126', count: 1, quality: 3 }, { ref: 'm24', count: 1, quality: 3 }] },
-    { id: 'rd28', name: 'きわみの ゆきべら', icon: 'ladle:gold', tier: 2, type: 'dougu', pref: 'akita',
+    { id: 'rd28', name: 'きわみの ゆきべら', icon: 'shovel:gold', tier: 2, type: 'dougu', pref: 'akita',
       tool: { engine: 'sweep', level: 3 },
       ingredients: [{ ref: 'm126', count: 2, quality: 3 }] },
     { id: 'rd29', name: 'きわみの しゅうかくかご', icon: 'basket:crimson', tier: 2, type: 'dougu', pref: 'kyoto',
@@ -1770,7 +1770,7 @@ export const GAME_DATA: GameData = {
     { id: 'rd30', name: 'きわみの てぶくろ', icon: 'glove:gold', tier: 2, type: 'dougu', pref: 'kagawa',
       tool: { engine: 'flick', level: 3 },
       ingredients: [{ ref: 'm97', count: 2, quality: 3 }] },
-    { id: 'rd31', name: 'きわみの つりざお', icon: 'stalk:gold', tier: 2, type: 'dougu', pref: 'wakayama',
+    { id: 'rd31', name: 'きわみの つりざお', icon: 'rod:gold', tier: 2, type: 'dougu', pref: 'wakayama',
       tool: { engine: 'fish', level: 3 },
       ingredients: [{ ref: 'm125', count: 1, quality: 3 }, { ref: 'm24', count: 1, quality: 3 }] },
 

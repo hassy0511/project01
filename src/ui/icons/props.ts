@@ -967,4 +967,81 @@ export const PROP_ICONS: Record<string, IconDraw> = {
     g.arc(32, 24, 8, Math.PI * 1.1, Math.PI * 1.9, false);
     g.strokePath();
   },
+  /** かま(いねかり用)。ゆるく まがった 刃と 木の え */
+  sickle: (g, c) => {
+    rod(g, 14, 56, 34, 40, [WOOD, WOOD_D], 5.5);
+    poly(g, [
+      [10, 36],
+      [26, 16],
+      [46, 12],
+      [52, 20],
+      [34, 24],
+      [22, 38],
+    ], [METAL, METAL_D]);
+    fill(g, c[1]);
+    g.fillCircle(30, 42, 2.4);
+  },
+  /** しゅうかくばさみ。まるい にぎりの 園芸ばさみ(とじた 状態) */
+  scissors: (g, c) => {
+    poly(g, [
+      [26, 8],
+      [32, 8],
+      [34, 34],
+      [28, 34],
+    ], [METAL, METAL_D]);
+    poly(g, [
+      [32, 8],
+      [38, 8],
+      [36, 34],
+      [30, 34],
+    ], [METAL, METAL_D]);
+    line(g, c[1], 4.5);
+    for (const cx of [24, 40] as const) {
+      g.beginPath();
+      g.arc(cx, 48, 9, 0, Math.PI * 2, false);
+      g.strokePath();
+    }
+    fill(g, c[1]);
+    g.fillCircle(32, 34, 3);
+  },
+  /** くまで(しおひがり用)。みじかい えに 4〜5本の 曲がった つめ */
+  rake: (g, c) => {
+    rod(g, 32, 10, 32, 32, [WOOD, WOOD_D], 5.5);
+    box(g, 14, 30, 36, 8, 3, c);
+    line(g, c[1], 3.4);
+    for (const x of [18, 26, 34, 42] as const) {
+      g.beginPath();
+      g.moveTo(x, 38);
+      g.lineTo(x - 2, 50);
+      g.strokePath();
+    }
+  },
+  /** ゆきべら。木の 雪かき(はばひろの ヘラ + え)。金属に しない */
+  shovel: (g, c) => {
+    rod(g, 32, 8, 32, 30, [WOOD, WOOD_D], 5.5);
+    poly(g, [
+      [14, 30],
+      [50, 30],
+      [46, 54],
+      [18, 54],
+    ], c);
+    line(g, c[1], 1.8);
+    g.beginPath();
+    g.moveTo(32, 32);
+    g.lineTo(32, 52);
+    g.strokePath();
+  },
+  /** つりざお(たけの へらざお)。ななめの さお + いと + うき。リールなし */
+  rod: (g, c) => {
+    rod(g, 10, 54, 46, 12, [TAN, TAN_D], 4.5);
+    line(g, c[1], 1.6);
+    g.beginPath();
+    g.moveTo(46, 12);
+    g.lineTo(52, 30);
+    g.strokePath();
+    fill(g, c[0]);
+    g.fillEllipse(52, 36, 9, 13);
+    line(g, c[1]);
+    g.strokeEllipse(52, 36, 9, 13);
+  },
 };

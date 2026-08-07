@@ -34,10 +34,6 @@ for (const f of ICON_FILES) {
   const src = fs.readFileSync(path.join(ICON_DIR, f), 'utf8');
   for (const m of src.matchAll(/\n\s{2}'?([a-z][a-z0-9-]*)'?:\s*\(g(?:,\s*c)?\)\s*=>/g)) expectedShapes.add(m[1]);
 }
-// 第7回の新規名。アプリ側の仮アイコン名は納品後に別作業で差しかえる。
-for (const name of ['sickle', 'scissors', 'rake', 'shovel', 'rod', 'renkon', 'ankou', 'kanpyo', 'kuwai', 'passionfruit', 'momiji']) {
-  expectedShapes.add(name);
-}
 const expectedBg = new Set(
   fs
     .readdirSync(MINIGAME_DIR)
@@ -54,8 +50,7 @@ const PALETTE_OF = {}; // いろ名 -> [MAIN, DARK]
   }
 }
 /** 「その ものの 色」として 指示書が みとめて いる もの(§5・作例) */
-// 最後の3色は、色替え時の衝突を避けるため既存アイコンに承認済みの固定色。
-const EXTRA_OK = ['#5AA04A', '#37702C', '#FFFFFF', '#000000', '#E3B83F', '#F5EEDF', '#755031', 'NONE'];
+const EXTRA_OK = ['#5AA04A', '#37702C', '#FFFFFF', '#000000', 'NONE'];
 const PALETTE = new Set([...Object.values(PALETTE_OF).flat(), ...EXTRA_OK]);
 const FIXED_COLOR_ICONS = new Set(['chick', 'chick-cheer', 'chick-egg', 'bee']);
 
