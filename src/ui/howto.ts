@@ -38,9 +38,14 @@ export interface HowToHandle {
   stop(): void;
   /** もう一度 はじめから 見せる(「?」ボタン用) */
   replay(): void;
+  /** まよって いる 子に 見せる(点が 入らない ときの 助け)。
+      replay と ちがい、**さわられても すぐには ひっこまない**。
+      でたらめに タップして いる 子ほど 助けが 必要 なのに、
+      タップの たびに ひっこんで いたら 一度も 見えない ため */
+  nudge(): void;
 }
 
-const NOOP: HowToHandle = { stop: () => undefined, replay: () => undefined };
+const NOOP: HowToHandle = { stop: () => undefined, replay: () => undefined, nudge: () => undefined };
 
 /** 名まえで さがした 見えている もの(いちばん 上に あるもの)の area 内 ざひょう */
 const findTarget = (scene: Phaser.Scene, name: string, areaY: number): Pt | null => {
@@ -282,6 +287,12 @@ export function showHowTo(scene: Phaser.Scene, key: string, areaY: number, opts:
   /** いま ゆびが 画面に ついて いるか(なぞり・長おしの さいちゅう) */
   const isTouching = (): boolean => scene.input.manager.pointers.some((p) => p.isDown);
 
+  /** この 時こくまでは さわられても ひっこまない(nudge の あいだだけ)。
+      1回の 実演を さいごまで 見せる ための もの */
+  let holdUntil = 0;
+  /** ひっこまずに 見せる 長さ。実演 1回ぶん(いちばん 長い もので 1.7秒)+ すこし */
+  const NUDGE_HOLD_MS = 2200;
+
   /** 「まよって いる」を はかる ための まちうけ。さわる たびに かけなおす */
   let idleTimer: Phaser.Time.TimerEvent | undefined;
   /** さいごに まちうけを かけなおした 時こく(なぞり中に かけ直しすぎない ため) */
@@ -307,13 +318,13 @@ export function showHowTo(scene: Phaser.Scene, key: string, areaY: number, opts:
        なぞって いる あいだ(pointermove)と はなした とき も 操作の うち。
        pointerdown だけを 見て いた ため、ドラッグ中は 5秒ごとに 出て きて いた */
   const onTouch = (): void => {
-    if (showing) hide();
+    if (showing && Date.now() >= holdUntil) hide();
     armIdle();
   };
   const onDrag = (p: Phaser.Input.Pointer): void => {
     if (!p.isDown) return;
     if (showing) {
-      onTouch();
+      onTouch(); // まもられて いる あいだは onTouch の 中で ひっこまない
       return;
     }
     // なぞって いる あいだ タイマーを 毎フレーム かけ直さない(200ms に 1回で じゅうぶん)
@@ -339,6 +350,13 @@ export function showHowTo(scene: Phaser.Scene, key: string, areaY: number, opts:
       if (stopped) return;
       idleTimer?.remove();
       hide();
+      loop();
+    },
+    nudge: () => {
+      if (stopped) return;
+      idleTimer?.remove();
+      hide();
+      holdUntil = Date.now() + NUDGE_HOLD_MS;
       loop();
     },
   };

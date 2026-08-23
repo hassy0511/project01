@@ -21,6 +21,17 @@ const HUD_H = 44;
 export const HELP_OPEN = 'mq-help-open';
 export const HELP_CLOSE = 'mq-help-close';
 
+/** 「まよって いる みたい」の しらせ。ホストの シーンが 受けて
+    ゆびマークを もう一度 見せる(ui/howto.ts の replay) */
+export const HELP_NUDGE = 'mq-help-nudge';
+
+/** 点が 入らない まま これだけ たったら 「まよって いる」と みなす。
+    ゆびマークは 「5びょう さわらない」と 出る しくみだが、
+    **手は うごいて いるのに 点が 入らない** 子には 出て こない。
+    でたらめに タップして いる子・ねらう ものが わかって いない子が
+    ここに はまる ので、点で 見て 助ける */
+const STUCK_MS = 9000;
+
 export interface ArcadeOpts {
   engine: ArcadeEngine;
   /** 残り時間わずか(5秒)で毎秒鳴らすかどうか */
@@ -42,6 +53,8 @@ export class ArcadeSession {
   score = 0;
   combo = 0;
   private lastHitAt = 0;
+  /** さいごに 点が 入った 時こく(まよい の ものさし。はじまりを 起点に する) */
+  private lastScoreAt = 0;
   /** 「?」で あそびかたを 読んでいる あいだ(0 = 読んでいない)。
       読んでいる うちに 時間切れに なるのは かわいそう なので 時計を 止める */
   private pausedAt = 0;
@@ -68,6 +81,7 @@ export class ArcadeSession {
     recordToolUse(GAME_DATA, store.state, opts.engine);
     store.save();
     this.startedAt = Date.now();
+    this.lastScoreAt = this.startedAt;
     // いま いる UPDATE の ききみみ = Phaser 内部の もの(と、セッションより
     // 先に つける ゲームの ぶん。catchGame の かご追従など、止めなくても
     // こまらない ものだけ)。freezeGameUpdates で これは はずさない
@@ -94,10 +108,22 @@ export class ArcadeSession {
           this.timerLabel.setText(`${Math.ceil(left)}`);
         }
         if (this.combo > 0 && Date.now() - this.lastHitAt > ArcadeSession.COMBO_TIMEOUT_MS) this.resetCombo();
+        this.checkStuck();
         setHook({ kind: 'arcade', engine: this.engine, score: this.score, secLeft: left, durationSec: this.durationSec });
         if (!this.untimed && left <= 0) this.finish();
       },
     });
+  }
+
+  /* 点が 入らない まま つづいて いたら ゆびマークを もう一度 見せて もらう。
+     ★ 時間なしモード(すいり掘り)は のぞく:
+       ほれども お宝が 出ない のは ふつうの あそび(まよって いる のでは ない)。
+       ここで ゆびマークを 出すと 考えて いる さいちゅうに じゃまを する */
+  private checkStuck(): void {
+    if (this.untimed || this.ended || this.pausedAt) return;
+    if (Date.now() - this.lastScoreAt < STUCK_MS) return;
+    this.lastScoreAt = Date.now(); // つぎの しらせまで また STUCK_MS あける
+    this.scene.events.emit(HELP_NUDGE);
   }
 
   private onHelpOpen(): void {
@@ -112,6 +138,8 @@ export class ArcadeSession {
     // 止まって いた ぶんだけ 「はじまり」を 後ろに ずらす
     this.startedAt += Date.now() - this.pausedAt;
     this.lastHitAt += Date.now() - this.pausedAt;
+    // 説明を 読んで いた ぶんは 「まよって いた 時間」に 入れない
+    this.lastScoreAt += Date.now() - this.pausedAt;
     this.pausedAt = 0;
     this.thawGameUpdates();
   }
@@ -254,6 +282,7 @@ export class ArcadeSession {
       }
     }
     this.score += pts;
+    this.lastScoreAt = Date.now(); // うまく いって いる = 助けは いらない
     this.scoreText.setText(UI_TEXT.arcade.score(this.score));
     this.scene.tweens.add({ targets: this.scoreText, scale: { from: 1.18, to: 1 }, duration: 140 });
     floatUp(this.scene, x, y, `+${pts}`);

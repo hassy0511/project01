@@ -66,6 +66,7 @@ declare global {
       unlockAll: () => void;
       skipGuides: () => void;
       fest: (prefId: string) => void;
+      zukanFull: () => void;
       festAllButOne: () => void;
       hitStopTest: () => { paused: boolean; tweenScale: number } | null;
       sfx: (name: string) => void;
@@ -136,6 +137,40 @@ export function installAdminApi(onChange: () => void): void {
       const last = actives[0];
       delete store.state.flags[regionCompFlagKey(last.region)];
       store.state.flags.introSeen = true;
+      store.save();
+      onChange();
+    },
+    // ずかんを 505件 ぜんぶ 集めた ことに する(真コンプの おいわいの E2E 用)。
+    // お祝いの 既読フラグ(zukanFull)は 立てない ので、つぎに ずかんを ひらくと 演出が 走る
+    zukanFull: () => {
+      const s = store.state;
+      for (const m of GAME_DATA.materials) {
+        s.zukanMat[m.id] ??= {};
+        // 産地ごとの できばえ。infra は ★2どまり(データ整合性テストと そろえる)
+        const stars = m.gather.type === 'infra' ? 2 : 3;
+        for (const o of m.origins) s.zukanMat[m.id][o] = stars;
+      }
+      for (const r of GAME_DATA.recipes) {
+        if (r.type === 'matsuri') {
+          // おまつりは 「ひらいた」ほうで 数える(zukanProd では ない)
+          if (!s.fest.includes(r.id)) s.fest.push(r.id);
+          s.festBest[r.id] ??= 1;
+        } else {
+          s.zukanProd[r.id] ??= { jimoto: true };
+        }
+      }
+      // かざり47こは 「その県の ちゅうもんに 1回でも こたえた」で もらえる
+      for (const k of GAME_DATA.kazari) s.orderDone[k.pref] = Math.max(s.orderDone[k.pref] ?? 0, 1);
+      // ★ ここまで 集めた 人は 演出を ぜんぶ 見おわって いる はず。
+      //   既読に して おかないと、地図に もどった とたん 47県ぶんの 晴れシネマと
+      //   エンディングが 走りだして 何も さわれなく なる(E2E が そこで 止まった)
+      for (const p of GAME_DATA.prefectures) s.flags[hareFlagKey(p.id)] = true;
+      for (const r of GAME_DATA.regions) {
+        s.flags[regionOpenFlagKey(r.id)] = true;
+        s.flags[regionCompFlagKey(r.id)] = true;
+      }
+      s.flags.introSeen = true;
+      s.flags.endingSeen = true;
       store.save();
       onChange();
     },

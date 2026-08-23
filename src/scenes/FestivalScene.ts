@@ -68,6 +68,7 @@ import { renderHyottoko } from './minigames/hyottokoGame';
 import { renderRokugatsudo } from './minigames/rokugatsudoGame';
 import { renderTsunahiki } from './minigames/tsunahikiGame';
 import type { MinigameApi } from './minigames/types';
+import { HELP_NUDGE } from './minigames/arcade';
 
 /** おまつりが おわった ときの かざり(はなび—ちょうちん—はなび) */
 const FINALE_ROW = ['sparkle:amber', 'lantern:crimson', 'sparkle:amber'] as const;
@@ -288,10 +289,24 @@ export class FestivalScene extends Phaser.Scene {
     // あそびかたの ゆびマークと、忘れた ときの 「?」
     this.howto?.stop();
     this.howto = showHowTo(this, kind, GAME_AREA_Y);
+    this.armStuckHelp();
     addHelpButton(this, GAME_W - 28, TOP_H / 2, UI_TEXT.howto.title, festIntro(kind), this.howto);
     // 1回 あそんだら つぎからは 説明モーダルを 出さない
     store.state.playedGame[kind] = true;
     store.save();
+  }
+
+
+  /* ミニゲームの さいちゅうの 手引き。
+     ゆびマークは 「5びょう さわらない」と 出る しくみだが、
+     でたらめに タップして いる子には 出て こない(手は うごいて いる ため)。
+     点が しばらく 入らない ときは アーケード側が しらせて くれる ので、
+     ここで ゆびマークを 出しなおす(scenes/minigames/arcade.ts の HELP_NUDGE)。
+     ききみみは シーンが おわる ときに はずす(つけっぱなしに しない) */
+  private armStuckHelp(): void {
+    this.events.off(HELP_NUDGE);
+    this.events.on(HELP_NUDGE, () => this.howto?.nudge());
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.events.off(HELP_NUDGE));
   }
 
   /** やたいの 品ぞろえ: recipe.menu(未指定なら ingredients)を解決する */

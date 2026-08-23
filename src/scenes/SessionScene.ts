@@ -33,6 +33,7 @@ import { renderFish } from './minigames/fishGame';
 import { renderFlick } from './minigames/flickGame';
 import { renderDefense } from './minigames/defenseGame';
 import type { MinigameApi } from './minigames/types';
+import { HELP_NUDGE } from './minigames/arcade';
 
 export type SessionMode = 'instant' | 'harvest' | 'care';
 
@@ -211,12 +212,26 @@ export class SessionScene extends Phaser.Scene {
     // あそびかたの ゆびマーク(データに ある ゲームだけ)。字が 読めなくても わかるように
     this.howto?.stop();
     this.howto = showHowTo(this, engine, GAME_AREA_Y);
+    this.armStuckHelp();
     // 忘れた ときの 見なおし口。説明文は データの 案内文を そのまま つかう
     const helpText = engine === 'care' && g.type === 'plant' ? g.care.label : prompt;
     this.helpBtn?.destroy();
     this.helpBtn = addHelpButton(this, GAME_W - 28, TOP_H / 2, UI_TEXT.howto.title, helpText, this.howto);
     store.state.playedGame[engine] = true;
     store.save();
+  }
+
+
+  /* ミニゲームの さいちゅうの 手引き。
+     ゆびマークは 「5びょう さわらない」と 出る しくみだが、
+     でたらめに タップして いる子には 出て こない(手は うごいて いる ため)。
+     点が しばらく 入らない ときは アーケード側が しらせて くれる ので、
+     ここで ゆびマークを 出しなおす(scenes/minigames/arcade.ts の HELP_NUDGE)。
+     ききみみは シーンが おわる ときに はずす(つけっぱなしに しない) */
+  private armStuckHelp(): void {
+    this.events.off(HELP_NUDGE);
+    this.events.on(HELP_NUDGE, () => this.howto?.nudge());
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.events.off(HELP_NUDGE));
   }
 
   private sign(text: string): void {
